@@ -1,0 +1,127 @@
+{
+  "_comment": "Project binding for /sprint-check in absolute555. The rule catalogue is generic; this file is the only place that knows THIS repo's layout. backend/ is feature-major: app/features/<area>/{api,services,models,schemas} plus shared infrastructure in app/shared, app/core, app/db. The layer-boundary forbidden_imports encode THIS project's actual rule instead: routers must not reach past the service layer into the ORM, and models must not import services. The globs match the layer inside every area, so a new area is covered the day it is created rather than the day somebody remembers to list it.",
+  "layers": {
+    "back": {
+      "root": "backend",
+      "kind": "service",
+      "code": [
+        "backend/app",
+        "backend/tests"
+      ],
+      "src": [
+        "*.py"
+      ],
+      "docs": [
+        "backend/README.md"
+      ],
+      "config": [
+        "backend/requirements.txt",
+        "backend/requirements-dev.txt",
+        "backend/ruff.toml"
+      ],
+      "styles": [],
+      "changelog": [
+        "backend/CHANGELOG.md"
+      ],
+      "test_artifacts": [
+        "backend/docs/testing"
+      ],
+      "env_example": [
+        "infra/.env.example"
+      ],
+      "forbidden_imports": [
+        {
+          "name": "routers go through services, not the ORM",
+          "in": [
+            "backend/app/features/*/api"
+          ],
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?models\\b|sqlalchemy\\.(select|update|delete)"
+        },
+        {
+          "name": "models hold no service or API logic",
+          "in": [
+            "backend/app/features/*/models"
+          ],
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.((features\\.\\w+\\.)?(services|api)|tasks|shared)\\b|\\bfastapi\\b"
+        },
+        {
+          "name": "domain holds pure rules",
+          "in": [
+            "backend/app/features/*/domain"
+          ],
+          "regex": "^\\s*(from|import)\\s+.*(\\bapp\\.((features\\.\\w+\\.)?(services|api|models)|tasks|shared|core)\\b|\\bfastapi\\b|\\bsqlalchemy\\b)"
+        },
+        {
+          "name": "services stay off transport detail",
+          "in": [
+            "backend/app/features/*/services",
+            "backend/app/shared"
+          ],
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?api\\b|status_code=|HTTP_\\d"
+        }
+      ],
+      "release_ref": "origin/main",
+      "artifact_remote": "origin"
+    },
+    "front": {
+      "root": "frontend",
+      "kind": "ui",
+      "code": [
+        "frontend/src"
+      ],
+      "src": [
+        "*.js",
+        "*.jsx",
+        "*.ts",
+        "*.tsx"
+      ],
+      "docs": [
+        "frontend/README.md"
+      ],
+      "config": [
+        "frontend/package.json"
+      ],
+      "styles": [
+        "*.css",
+        "*.scss"
+      ],
+      "changelog": [
+        "frontend/CHANGELOG.md"
+      ],
+      "env_example": [
+        "frontend/.env.example"
+      ],
+      "forbidden_imports": [
+        {
+          "name": "components do not call axios directly",
+          "in": [
+            "frontend/src/components",
+            "frontend/src/pages"
+          ],
+          "regex": "from\\s+['\\\"]axios['\\\"]"
+        }
+      ],
+      "release_ref": "origin/main",
+      "artifact_remote": "origin",
+      "test_artifacts": [
+        "frontend/docs/testing"
+      ]
+    }
+  },
+  "shared_roots": [
+    "infra"
+  ],
+  "main_branch": "main",
+  "style_token_files": "styles/(palette|tokens[\\w-]*|theme[\\w-]*)\\.(css|scss)|index\\.(css|scss)",
+  "state_libraries": "zustand|@reduxjs/toolkit|mobx|@tanstack/react-query|\\\"swr\\\"|jotai|recoil|valtio",
+  "file_line_limit": 200,
+  "commit_file_limit": 40,
+  "changelog_commit_limit": 25,
+  "artifact_host": "github.com",
+  "test_artifacts": [
+    "docs/testing",
+    "Testing",
+    "ProductSpecification/testing"
+  ],
+  "branch_pattern": "^(features?|feat|fix|hotfix|release|chore|task)/[\\w.-]+$"
+}
