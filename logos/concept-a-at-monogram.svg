@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AdaptiveTutor AT monogram">
+  <title>AdaptiveTutor  Concept A: AT monogram</title>
+  <desc>Interlocking A and T on a rounded teal square  lettermark for OmSTU tutor.</desc>
+  <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+  <!-- A: two strokes + crossbar -->
+  <path d="M148 368 L256 128 L364 368" fill="none" stroke="#1FA89A" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M198 278 H314" fill="none" stroke="#F3F7F5" stroke-width="28" stroke-linecap="round"/>
+  <!-- T crossbar bridging through A apex zone -->
+  <path d="M176 168 H336" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+  <path d="M256 168 V368" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+</svg>

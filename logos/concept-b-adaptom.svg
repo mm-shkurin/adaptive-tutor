@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AdaptOm mark">
+  <title>AdaptiveTutor  Concept B: AdaptOm</title>
+  <desc>Open book / document pages with a citation pin  OmSTU-friendly academic mark.</desc>
+  <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+  <!-- Document stack -->
+  <rect x="118" y="148" width="220" height="268" rx="28" fill="#147A70"/>
+  <rect x="148" y="128" width="220" height="268" rx="28" fill="#1FA89A"/>
+  <rect x="178" y="108" width="220" height="268" rx="28" fill="#F3F7F5"/>
+  <!-- Text lines -->
+  <rect x="214" y="168" width="140" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+  <rect x="214" y="206" width="110" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+  <rect x="214" y="244" width="128" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+  <!-- Citation node -->
+  <circle cx="368" cy="320" r="52" fill="#0B1C1A"/>
+  <circle cx="368" cy="320" r="28" fill="#1FA89A"/>
+  <path d="M368 348 V392" stroke="#1FA89A" stroke-width="16" stroke-linecap="round"/>
+</svg>

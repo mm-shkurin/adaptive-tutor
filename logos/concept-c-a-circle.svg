@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AdaptiveTutor A mark">
+  <title>AdaptiveTutor  Concept C: A in knowledge ring</title>
+  <desc>Letter A inside a progress ring  adaptive learning / knowledge tracer.</desc>
+  <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+  <!-- Progress ring -->
+  <circle cx="256" cy="256" r="168" fill="none" stroke="#14302C" stroke-width="36"/>
+  <path d="M256 88 A168 168 0 1 1 118 350" fill="none" stroke="#1FA89A" stroke-width="36" stroke-linecap="round"/>
+  <!-- Geometric A -->
+  <path d="M176 340 L256 152 L336 340" fill="none" stroke="#F3F7F5" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M210 268 H302" fill="none" stroke="#1FA89A" stroke-width="28" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdaptiveTutor — логотипы (черновики)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; background: #eef6f3; color: #12201e; margin: 0; padding: 32px; }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    .lead { color: #4d6560; margin-bottom: 28px; max-width: 60ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .card { background: #fff; border: 1px solid #d4e2dc; border-radius: 16px; padding: 20px; }
+    .card h2 { font-size: 1rem; margin: 0 0 6px; }
+    .card p { font-size: 0.88rem; color: #4d6560; margin: 0 0 16px; line-height: 1.45; }
+    .stage { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .mark {
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: block;
+    }
+    .mark svg { width: 100%; height: 100%; display: block; }
+    .tiny { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; }
+    .on-dark { background: #0b1c1a; padding: 12px; border-radius: 14px; display: inline-flex; }
+    .names { margin-top: 36px; background: #fff; border: 1px solid #d4e2dc; border-radius: 16px; padding: 22px; }
+    .names ul { margin: 8px 0 0; padding-left: 1.2em; line-height: 1.7; color: #4d6560; }
+    .names strong { color: #12201e; }
+    code { background: #e4f4f0; padding: 1px 6px; border-radius: 4px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>AdaptiveTutor × ОмГТУ — черновики логотипа</h1>
+  <p class="lead">Три направления. Выбери концепт (или смешай) — доведём до favicon / wordmark и воткнём в мокап.</p>
+
+  <div class="grid">
+    <article class="card">
+      <h2>A · AT monogram</h2>
+      <p>Буквы <strong>A+T</strong> (AdaptiveTutor). Хорошо читается в favicon и в шапке ЛМС ОмГТУ.</p>
+      <div class="stage">
+        <span class="mark" aria-label="AT">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img">
+            <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+            <path d="M148 368 L256 128 L364 368" fill="none" stroke="#1FA89A" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M198 278 H314" fill="none" stroke="#F3F7F5" stroke-width="28" stroke-linecap="round"/>
+            <path d="M176 168 H336" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+            <path d="M256 168 V368" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="on-dark">
+          <span class="mark tiny" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+              <path d="M148 368 L256 128 L364 368" fill="none" stroke="#1FA89A" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M198 278 H314" fill="none" stroke="#F3F7F5" stroke-width="28" stroke-linecap="round"/>
+              <path d="M176 168 H336" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+              <path d="M256 168 V368" fill="none" stroke="#F3F7F5" stroke-width="36" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>B · Документ + цитата</h2>
+      <p>Стопка лекций и «пин» источника — метафора RAG. Имя продукта можно писать рядом: <code>AdaptOm</code>.</p>
+      <div class="stage">
+        <span class="mark" aria-label="doc">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img">
+            <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+            <rect x="118" y="148" width="220" height="268" rx="28" fill="#147A70"/>
+            <rect x="148" y="128" width="220" height="268" rx="28" fill="#1FA89A"/>
+            <rect x="178" y="108" width="220" height="268" rx="28" fill="#F3F7F5"/>
+            <rect x="214" y="168" width="140" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+            <rect x="214" y="206" width="110" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+            <rect x="214" y="244" width="128" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+            <circle cx="368" cy="320" r="52" fill="#0B1C1A"/>
+            <circle cx="368" cy="320" r="28" fill="#1FA89A"/>
+            <path d="M368 348 V392" stroke="#1FA89A" stroke-width="16" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="on-dark">
+          <span class="mark tiny" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+              <rect x="118" y="148" width="220" height="268" rx="28" fill="#147A70"/>
+              <rect x="148" y="128" width="220" height="268" rx="28" fill="#1FA89A"/>
+              <rect x="178" y="108" width="220" height="268" rx="28" fill="#F3F7F5"/>
+              <rect x="214" y="168" width="140" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+              <rect x="214" y="206" width="110" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+              <rect x="214" y="244" width="128" height="18" rx="9" fill="#0B1C1A" opacity="0.2"/>
+              <circle cx="368" cy="320" r="52" fill="#0B1C1A"/>
+              <circle cx="368" cy="320" r="28" fill="#1FA89A"/>
+              <path d="M368 348 V392" stroke="#1FA89A" stroke-width="16" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>C · A в кольце прогресса</h2>
+      <p>Буква <strong>A</strong> + дуга Knowledge Tracer. Академично, без привязки к чужому гербу вуза.</p>
+      <div class="stage">
+        <span class="mark" aria-label="A ring">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img">
+            <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+            <circle cx="256" cy="256" r="168" fill="none" stroke="#14302C" stroke-width="36"/>
+            <path d="M256 88 A168 168 0 1 1 118 350" fill="none" stroke="#1FA89A" stroke-width="36" stroke-linecap="round"/>
+            <path d="M176 340 L256 152 L336 340" fill="none" stroke="#F3F7F5" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M210 268 H302" fill="none" stroke="#1FA89A" stroke-width="28" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="on-dark">
+          <span class="mark tiny" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <rect width="512" height="512" rx="112" fill="#0B1C1A"/>
+              <circle cx="256" cy="256" r="168" fill="none" stroke="#14302C" stroke-width="36"/>
+              <path d="M256 88 A168 168 0 1 1 118 350" fill="none" stroke="#1FA89A" stroke-width="36" stroke-linecap="round"/>
+              <path d="M176 340 L256 152 L336 340" fill="none" stroke="#F3F7F5" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M210 268 H302" fill="none" stroke="#1FA89A" stroke-width="28" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="names">
+    <h2>Имена / сокращения под ОмГТУ</h2>
+    <ul>
+      <li><strong>AT</strong> — AdaptiveTutor (нейтрально, коротко для UI)</li>
+      <li><strong>AdaptOm</strong> — Adapt + Om(sk) / OmГТУ, звучит как продукт вуза</li>
+      <li><strong>OmTutor</strong> — явно «тьютор Омска/ОмГТУ»</li>
+      <li><strong>АТ·ОмГТУ</strong> — как подпись в футере, не как главный брендинг</li>
+      <li><strong>ЛекТьютор / LectTutor</strong> — акцент на лекциях (слабее для квизов/прогресса)</li>
+    </ul>
+    <p style="margin-top:14px;color:#4d6560;font-size:0.9rem;">Герб ОмГТУ лучше не вшивать в знак — юридически и визуально рискованно. Достаточно бейджа «для ОмГТУ» рядом с логотипом.</p>
+  </div>
+</body>
+</html>
