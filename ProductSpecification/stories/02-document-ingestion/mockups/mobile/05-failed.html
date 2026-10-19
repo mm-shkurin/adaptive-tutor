@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375">
+  <title>AdaptiveTutor — 05-failed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --ink: #0b1c1a; --foam: #f3f7f5; --page: #eef6f3; --accent: #1fa89a;
+  --accent-deep: #147a70; --mist: #6b857e; --surface: #fff; --surface-2: #eef5f2;
+  --border: #d4e2dc; --text: #12201e; --text-soft: #4d6560; --radius: 12px;
+  --tint: #e4f4f0; --ok: #2a9b6a; --ok-soft: #d7f0e4; --warn: #c9852a;
+  --warn-soft: #f6e8d0; --danger: #c44b4b; --font: Inter, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); color: var(--text); background: var(--page); line-height: 1.5; }
+button, input { font: inherit; }
+.appbar { display: flex; align-items: center; gap: 16px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 28px; }
+.brand { font-weight: 800; font-size: 20px; color: var(--ink); text-decoration: none; }
+.tabs { display: flex; gap: 8px; }
+.tab { height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: transparent; color: var(--text-soft); }
+.tab.on { background: var(--ink); color: var(--foam); }
+.who { margin-left: auto; font-weight: 600; }
+.main { max-width: 1180px; margin: 0 auto; padding: 28px 28px 80px; }
+h1 { font-size: 30px; letter-spacing: -0.4px; }
+.lead { color: var(--text-soft); margin-top: 4px; }
+.docs-entry { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0; }
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); background: var(--surface); padding: 28px 20px; text-align: center; }
+.upload-zone svg { width: 36px; height: 36px; color: var(--accent-deep); margin-bottom: 10px; }
+.upload-hint { color: var(--text-soft); font-size: 0.88rem; margin-top: 6px; }
+.refuse { margin-top: 12px; background: #fdf2f2; color: var(--danger); border: 1px solid #f0c4c4; border-radius: 12px; padding: 12px 14px; font-weight: 600; }
+.docs-section-label { font-size: 0.85rem; font-weight: 700; color: var(--text-soft); margin: 8px 0 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.docs-list { display: flex; flex-direction: column; gap: 10px; }
+.doc-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.doc-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--tint); color: var(--accent-deep); display: grid; place-items: center; flex-shrink: 0; }
+.doc-icon svg { width: 20px; height: 20px; }
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-weight: 600; }
+.doc-meta { font-size: 0.82rem; color: var(--text-soft); }
+.status-pill { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.status-pill.ready { background: var(--ok-soft); color: var(--ok); }
+.status-pill.processing { background: var(--warn-soft); color: var(--warn); }
+.status-pill.waiting { background: var(--surface-2); color: var(--text-soft); border: 1px solid var(--border); }
+.status-pill.failed { background: #fdf2f2; color: var(--danger); }
+.empty { color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px 16px; text-align: center; }
+.bottom { display: none; }
+body.mobile { width: 375px; overflow-x: hidden; }
+body.mobile .tabs, body.mobile .who { display: none; }
+body.mobile .appbar { padding: 12px 16px; }
+body.mobile .main { padding: 20px 16px 88px; }
+body.mobile .docs-entry { grid-template-columns: 1fr; }
+body.mobile h1 { font-size: 26px; }
+body.mobile .bottom { display: flex; position: fixed; left: 0; bottom: 0; width: 375px; background: var(--surface); border-top: 1px solid var(--border); }
+body.mobile .bottom button { flex: 1 1 0; min-width: 0; height: 56px; border: 0; background: transparent; color: var(--text-soft); font-size: 10px; padding: 0 2px; }
+body.mobile .bottom button.on { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body class="mobile">
+
+    <header class="appbar">
+      <a class="brand" href="#">AdaptiveTutor</a>
+      <nav class="tabs"><button class="tab">Чат</button><button class="tab">Викторины</button><button class="tab">Прогресс</button><button class="tab on">Документы</button><button class="tab">Профиль</button></nav>
+      <div class="who">Максим</div>
+    </header>
+    <main class="main">
+      <h1>Документы</h1>
+      <p class="lead">PDF или презентация из фото слайдов — оба пути попадают в индекс для чата</p>
+      
+    <div class="docs-entry">
+      <div>
+        <div class="upload-zone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><div><strong>Загрузить PDF</strong></div><div class="upload-hint">до 50 MB · парсинг и индексация</div></div>
+        
+      </div>
+      <div class="upload-zone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 22h8"></path><path d="M12 18v4"></path></svg><div><strong>Создать презентацию</strong></div><div class="upload-hint">фото слайдов с галереи или камеры</div></div>
+    </div>
+    
+      <div class="docs-section-label">Ваши материалы</div>
+      <div class="docs-list"><div class="doc-row"><div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div><div class="doc-info"><div class="doc-name">Методичка.pdf</div><div class="doc-meta">Не удалось прочитать страницу 12</div></div><span class="status-pill failed">Не удалось</span></div></div>
+    </main>
+    <nav class="bottom"><button>Чат</button><button>Викторины</button><button>Прогресс</button><button class="on">Документы</button><button>Профиль</button></nav>
+    
+</body>
+</html>
