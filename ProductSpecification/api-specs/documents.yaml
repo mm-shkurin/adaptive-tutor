@@ -21,12 +21,13 @@ paths:
         '200':
           description: |
             Не больше 50 документов, сначала новые. Пустая страница — пустой список.
-            Гость получает 401, строка не появляется.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DocumentPage' }
-        '401':
-          description: Сессии нет. Ответ тот же, что у профиля без сессии.
+        '404':
+          description: |
+            Сессии нет. code document_not_found и то же message, что у отсутствующего документа.
+            Список не отдаётся.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -82,8 +83,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-        '401':
-          description: Сессии нет. Строка не создаётся.
+        '404':
+          description: |
+            Сессии нет. code document_not_found и то же message, что у отсутствующего документа.
+            Строка не создаётся.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
