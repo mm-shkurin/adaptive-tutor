@@ -1,42 +1,39 @@
 # Stories — AdaptiveTutor
 
-## MVP Stories
+Восемь историй закрывают мокап `adaptive-tutor-mockup.html`. История 1 — перенос уже работающего входа из absolute555, а не новая разработка. PDF сдвинут на историю 2.
 
-| # | Story | Status | Notes |
-|---|-------|--------|-------|
-| 1 | Document ingestion | TODO | Upload PDF, parse, extract text/tables, index in vector DB |
-| 2 | Chat agent core | TODO | Planner + Retriever + Explainer pipeline |
-| 3 | Quiz generation | TODO | Quizmaster agent generates questions from retrieved context |
-| 4 | Knowledge Tracer basic | TODO | Student profile, weak topic tracking |
-| 5 | UI dashboard | TODO | Multi-tab: Chat, Quiz, Progress, Documents |
-| 6 | Citation rendering | TODO | Show source pages/slides in chat |
-| 7 | Learning modes | TODO | Professor/5yo/Socratic/Examiner switches |
+Источник истории 1: `absolute555`. Вместе со входом переносится профиль человека: имя, фото, выход с отзывом токенов, удаление аккаунта. Заявки поставщика, роли, рейтинг и витрина магазина не переносятся. Тема оформления остаётся на устройстве, как в мокапе. Подтверждение удаления вводом почты берётся из мокапа.
 
-## Story 1: Document Ingestion
+## In Progress
 
-**Goal:** Instructor uploads a PDF → system parses it → extracts text/tables → generates embeddings → stores in vector DB → ready for retrieval.
+| # | Story | Spec | Back | Intg | Front | Sec | Load | Infra | Tests | % |
+|---|-------|------|------|------|-------|-----|------|-------|-------|---|
+| 1 | Вход, лендинг и профиль | ✅ | · | · | · | · | n/a | · | 0/0 | 0% |
+| 2 | PDF-документы | 🔧 | · | · | · | · | · | · | 0/0 | 0% |
 
-**Prerequisites:** None (first story)
+## Backlog
 
-**Scope:**
-- Upload endpoint (POST /documents)
-- PDF parsing (PyMuPDF)
-- Text chunking (semantic chunks, 500-1000 tokens)
-- Table extraction (Camelot)
-- Embedding generation (OpenAI text-embedding-3-small or local)
-- Vector DB insertion (Pinecone or Qdrant)
-- Metadata storage (PostgreSQL): filename, upload date, chunk count, status
+| # | Story | Spec | Back | Intg | Front | Sec | Load | Infra | Tests | % |
+|---|-------|------|------|------|-------|-----|------|-------|-------|---|
+| 3 | Презентации из слайдов | · | · | · | · | · | · | · | 0/0 | 0% |
+| 4 | Чат | · | · | · | · | · | · | · | 0/0 | 0% |
+| 5 | Цитаты | · | · | · | · | · | · | · | 0/0 | 0% |
+| 6 | Режимы обучения | · | · | · | · | · | · | · | 0/0 | 0% |
+| 7 | Викторины | · | · | · | · | · | · | · | 0/0 | 0% |
+| 8 | Прогресс | · | · | · | · | · | · | · | 0/0 | 0% |
 
-**Out of scope:**
-- PPTX/DOCX (future story)
-- Image extraction (future story)
-- Formula extraction (future story)
-- Incremental updates (re-upload full document)
-- Version control for documents
+## Done
 
-**Acceptance criteria:**
-- Valid PDF (10 MB) → indexed in < 30 seconds
-- Invalid/corrupted PDF → 400 error with clear message
-- Extracted text is searchable via vector DB
-- Tables are preserved as structured data
-- Document status visible in UI (pending/processing/ready/failed)
+| # | Story | Spec | Back | Intg | Front | Sec | Load | Infra | Tests | % |
+|---|-------|------|------|------|-------|-----|------|-------|-------|---|
+
+## Что проверяет каждая история
+
+1. **Вход, лендинг и профиль.** Одна история, не две. Гость видит лендинг и входит через Яндекс ID. На экране «Мой профиль» студент меняет имя и фото, тему на этом устройстве, выходит и удаляет аккаунт. Имя, фото, выход и удаление уже есть в absolute555 (`ProfileIdentity`, `renameProfile`, `uploadAvatar`, `logout`, `deleteAccount`). Почта и пароль не используются.
+2. **PDF-документы.** Загрузка PDF, проверка, индекс текста и таблиц, статус. Интервью записано. Документ принадлежит вошедшему пользователю. Слайды из фото сюда не входят.
+3. **Презентации из слайдов.** Галерея, камера, страницы готового PDF, порядок слайдов, черновик, индексация.
+4. **Чат.** Диалог по выбранному материалу, история, новый чат, смена документа, модель, вложение.
+5. **Цитаты.** Ссылка на страницу или слайд и панель «Источники».
+6. **Режимы обучения.** Профессор, Пятилетний, Сократический, Экзаменатор.
+7. **Викторины.** Список, создание, прохождение, результат, повтор.
+8. **Прогресс.** Усвоение, слабые темы, граф, фильтр, активность. Зависит от 4 и 7.
