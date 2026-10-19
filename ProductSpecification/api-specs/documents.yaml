@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: PDF documents of the signed-in person
+  version: 1.0.0
+  description: |
+    Загрузка PDF, список и статус. Ответ не ждёт индексации.
+    Куски и исходный файл наружу не отдаются.
+
+paths:
+  /api/v1/documents:
+    get:
+      summary: Список своих документов
+      operationId: listDocuments
+      tags: [documents]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+      responses:
+        '200':
+          description: |
+            Не больше 50 документов, сначала новые. Пустая страница — пустой список.
+            Гость получает 401, строка не появляется.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentPage' }
+        '401':
+          description: Сессии нет. Ответ тот же, что у профиля без сессии.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    post:
+      summary: Загрузить PDF
+      operationId: uploadDocument
+      tags: [documents]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+          description: |
+            Один ключ — один документ, в том числе когда два запроса пересекаются.
+            Повтор не тратит место в пяти загрузках за минуту.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: |
+                    PDF от 1048576 до 52428800 байт включительно.
+                    Имя файла — 1–255 символов, хранится как пришло.
+                    Поля id, owner, status, page_count, piece_count и error из формы не читаются.
+      responses:
+        '201':
+          description: |
+            Документ создан, статус waiting. Индексация ещё не кончилась.
+            Следующий список уже содержит эту строку.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '200':
+          description: Этот Idempotency-Key уже принят. Тело — тот же документ, новым он не становится.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '400':
+          description: |
+            Отказ до строки. code один из: file_missing, invalid_pdf, empty_pdf,
+            file_too_small, file_too_large, name_missing, name_too_long,
+            encrypted_pdf, virus_detected.
+            virus_detected также на таймаут и нечитаемый ответ проверки.
+            message без текста файла, чужих данных, секрета, стека и пути.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Сессии нет. Строка не создаётся.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: |
+            Шестой принятый файл за эту минуту: code rate_limited.
+            Счётчик не прочитался: code rate_unavailable.
+            Уже принятые пять остаются. Повтор своего ключа сюда не попадает.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/documents/{id}:
+    get:
+      summary: Один свой документ
+      operationId: getDocument
+      tags: [documents]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Документ вошедшего. Статус waiting, indexing, ready или failed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '404':
+          description: |
+            Нет сессии, нет такого id или документ чужой.
+            code document_not_found и одно и то же message во всех трёх случаях.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  schemas:
+    Document:
+      type: object
+      required: [id, name, size_bytes, page_count, piece_count, status, error]
+      properties:
+        id: { type: string, format: uuid }
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Имя файла. Показано как текст, не как разметка.
+        size_bytes:
+          type: integer
+          minimum: 1048576
+          maximum: 52428800
+          description: Ровно столько байт, сколько приняли. Экран сам переводит в МБ.
+        page_count:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: null, пока страницы не прочитаны.
+        piece_count:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 2000
+          description: Число только у ready. Иначе null. У failed кусков в поиске нет.
+        status:
+          type: string
+          enum: [waiting, indexing, ready, failed]
+          description: |
+            Вперёд только waiting → indexing → ready или waiting → indexing → failed.
+        error:
+          type: string
+          nullable: true
+          description: |
+            null, пока документ не failed. У ready всегда null.
+            У failed — причина для строки, без текста файла и без внутреннего пути.
+    DocumentPage:
+      type: object
+      required: [documents, has_next]
+      properties:
+        documents:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/Document' }
+        has_next: { type: boolean }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message:
+          type: string
+          description: Без текста файла, чужих данных, секрета, стека и пути.
