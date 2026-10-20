@@ -23,8 +23,8 @@
 
 ### 1.1 An empty library shows the PDF door and no materials
 - [x] red-selenium
-- [~] red-frontend
-- [ ] green-frontend
+- [x] red-frontend
+- [~] green-frontend
 - [ ] red-frontend-api
 - [ ] green-frontend-api
 - [ ] align-design
