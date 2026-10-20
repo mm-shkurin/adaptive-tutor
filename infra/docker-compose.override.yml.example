@@ -1,0 +1,11 @@
+# Local only. Compose loads this file by itself. It is gitignored.
+#   cd infra && copy docker-compose.override.yml.example docker-compose.override.yml
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT}:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT}:6379"

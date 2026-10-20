@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Profile of the signed-in person
+  version: 1.0.0
+  description: |
+    Имя, почта Яндекса, фото и дата регистрации. Чужой профиль этой спекой не читается
+    и не правится: идентификатора человека в пути нет.
+
+paths:
+  /api/v1/user/profile:
+    get:
+      summary: Свой профиль
+      operationId: getProfile
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Профиль вошедшего
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401':
+          description: Сессии нет, она отозвана или аккаунт удалён. Ответы неразличимы.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      summary: Изменить своё имя
+      operationId: updateProfileName
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileName' }
+      responses:
+        '200':
+          description: Профиль после правки. Почта, дата и фото не меняются из этого тела.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401':
+          description: Сессии нет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: Имя длиннее 60 символов или состоит из пробелов.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/user/avatar:
+    put:
+      summary: Загрузить фото профиля
+      operationId: uploadAvatar
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: jpeg, png или webp, не больше 10 МБ.
+      responses:
+        '200':
+          description: Профиль с новой фотографией. Прежняя заменена.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401':
+          description: Сессии нет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '413':
+          description: Файл больше 10 МБ. Прежняя фотография на месте.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: Файл не jpeg, не png и не webp. Прежняя фотография на месте.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      summary: Убрать фото профиля
+      operationId: deleteAvatar
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Профиль без фотографии
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401':
+          description: Сессии нет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/user:
+    delete:
+      summary: Удалить свой аккаунт
+      operationId: deleteAccount
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Стирает учётную запись вошедшего. Тело не читается: совпадение почты проверяет экран.
+        Следующий вход через тот же Яндекс создаёт нового человека.
+        Повторный вызов с уже отозванной сессией — 401, как для неизвестного токена.
+      responses:
+        '204':
+          description: Аккаунт удалён, сессия закрыта
+        '401':
+          description: Сессии нет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  schemas:
+    Profile:
+      type: object
+      required: [id, name, email, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name:
+          type: string
+          description: Своё имя, если задано. Иначе имя из Яндекса.
+        email:
+          type: string
+          format: email
+          description: Почта Яндекса. С этого экрана не меняется.
+        avatar_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Момент создания аккаунта, UTC. Экран показывает местный календарный день.
+    ProfileName:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          description: Пустая строка возвращает имя из Яндекса.
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message:
+          type: string
+          description: Без токена и без почты.

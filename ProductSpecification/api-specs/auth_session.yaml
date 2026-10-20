@@ -1,0 +1,144 @@
+openapi: 3.0.3
+info:
+  title: Yandex sign-in and session
+  version: 1.0.0
+  description: |
+    Браузер открывает start. Яндекс возвращается на callback сервера.
+    Фронт меняет одноразовый код на пару токенов. Токен в адресе не появляется.
+
+paths:
+  /api/v1/auth/oauth/yandex/start:
+    get:
+      summary: Начать вход через Яндекс ID
+      operationId: startYandexSignIn
+      tags: [auth]
+      responses:
+        '302':
+          description: Редирект на страницу согласия Яндекса
+          headers:
+            Location:
+              schema: { type: string }
+
+  /api/v1/auth/oauth/yandex/callback:
+    get:
+      summary: Возврат от Яндекс ID
+      operationId: finishYandexSignIn
+      tags: [auth]
+      parameters:
+        - { name: code, in: query, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: |
+            Редирект на экран возврата. В адресе либо одноразовый code, либо error:
+            state_invalid, code_missing, provider_failed. Сессии в этом ответе нет.
+          headers:
+            Location:
+              schema: { type: string }
+
+  /api/v1/auth/oauth/exchange:
+    post:
+      summary: Обменять одноразовый код на сессию
+      operationId: exchangeSignInCode
+      tags: [auth]
+      parameters:
+        - name: signin_browser
+          in: cookie
+          required: true
+          schema: { type: string }
+          description: |
+            Кука, которую поставил start в этом браузере. Чужой браузер с тем же code
+            неразличим от кода, которого не было.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Код из callback. Один раз. Повтор, чужой и просроченный код неразличимы.
+      responses:
+        '200':
+          description: Пара токенов. Повтор того же кода второй аккаунт не создаёт.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          description: Код не выдавался, уже потрачен или истёк.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/auth/refresh:
+    post:
+      summary: Обновить access-токен
+      operationId: refreshSession
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Новый access-токен и тот же refresh-токен
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          description: Токен отозван, просрочен или не того вида.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/auth/logout:
+    post:
+      summary: Выйти и отозвать сессию
+      operationId: logout
+      tags: [auth]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Отзывает refresh-токен из тела и access-токен из заголовка.
+        Повторный выход тем же токеном тоже 204.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '204':
+          description: Оба токена больше не открывают профиль
+        '401':
+          description: В заголовке нет сессии
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  schemas:
+    TokenPair:
+      type: object
+      required: [access_token, refresh_token, token_type]
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        token_type: { type: string, enum: [bearer] }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }

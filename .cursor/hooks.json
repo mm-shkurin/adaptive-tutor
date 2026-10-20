@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "python .cursor/hooks/context_hook.py sessionStart"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "python .cursor/hooks/context_hook.py preCompact"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "python .cursor/hooks/context_hook.py sessionEnd"
+      }
+    ]
+  }
+}
