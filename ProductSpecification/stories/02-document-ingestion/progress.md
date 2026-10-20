@@ -12,8 +12,8 @@
 ## Tier 1 — Backend Scenarios (01_API_Tests.md)
 
 ### 4.1 An accepted PDF becomes ready and its text and tables can be searched
-- [~] red-acceptance
-- [ ] design
+- [x] red-acceptance
+- [~] design
 - [ ] red-usecase
 - [ ] green-usecase
 - [ ] adapters-discovery
