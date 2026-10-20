@@ -22,8 +22,8 @@
 ## Tier 1 — Frontend Scenarios (02_UI_Tests.md)
 
 ### 1.1 An empty library shows the PDF door and no materials
-- [ ] red-selenium
-- [ ] red-frontend
+- [x] red-selenium
+- [~] red-frontend
 - [ ] green-frontend
 - [ ] red-frontend-api
 - [ ] green-frontend-api

@@ -15,7 +15,7 @@ class TestEmptyLibraryShowsThePdfDoor(AbstractUiTest):
     And the list reads «Пока нет материалов»
     """
 
-    @pytest.mark.skip(reason="RED: no pdf-door-title (assert 0 == 1)")
+    @pytest.mark.skip(reason="RED: no documents-tab (TimeoutException)")
     def test_should_show_the_pdf_door_and_no_materials(self, signed_in_browser, document_library):
         """UI Test Scenario 1.1: An empty library shows the PDF door and no materials
 
