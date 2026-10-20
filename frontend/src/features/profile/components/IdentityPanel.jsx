@@ -4,49 +4,53 @@ export function IdentityPanel({ screen }) {
   const profile = screen.profile
   const photo = avatarSrc(profile.avatar_url)
   return (
-    <section className="panel">
-      <h3>Личные данные</h3>
-      <p className="meta">Имя и фотографию можно поменять. Пароля здесь нет — вход через Яндекс ID.</p>
+    <section className="profile-card">
+      <h2 className="profile-card-title">Личные данные</h2>
+      <p className="profile-card-sub">Имя и фотографию можно поменять. Пароля здесь нет — вход через Яндекс ID.</p>
       {screen.identityError ? (
         <p className="alert" role="alert" data-testid="profile-identity-error">
           {screen.identityError}
         </p>
       ) : null}
-      <div className="row identity-row">
-        {photo ? (
-          <img className="avatar" src={photo} alt="" data-testid="profile-photo" />
-        ) : (
-          <div className="avatar" data-testid="profile-initials">
-            {initialsOf(profile.name)}
+      <div className="profile-identity">
+        <div className="profile-avatar-col">
+          {photo ? (
+            <img className="avatar lg" src={photo} alt="" data-testid="profile-photo" />
+          ) : (
+            <div className="avatar lg" data-testid="profile-initials">
+              {initialsOf(profile.name)}
+            </div>
+          )}
+          <PhotoActions screen={screen} />
+        </div>
+        <div className="profile-id-meta">
+          <div className="profile-id-name" data-testid="profile-name">
+            {profile.name}
           </div>
-        )}
-        <div>
-          <b data-testid="profile-name">{profile.name}</b>
-          <div className="meta" data-testid="profile-email">
+          <div className="profile-id-email" data-testid="profile-email">
             {profile.email}
           </div>
-          <div className="meta" data-testid="profile-registered">
+          <div className="profile-id-since" data-testid="profile-registered">
             {registrationLine(profile.created_at)}
           </div>
-          <div className="meta" data-testid="profile-role">
+          <div className="profile-id-note" data-testid="profile-role">
             {ROLE_LINE}
           </div>
         </div>
       </div>
-      <PhotoActions screen={screen} />
-      {screen.editing ? <NameEditor screen={screen} /> : <NameButton screen={screen} />}
+      <NameForm screen={screen} />
     </section>
   )
 }
 
 function PhotoActions({ screen }) {
   return (
-    <div className="cta">
-      <button type="button" className="btn btn-outline" onClick={() => screen.fileRef.current?.click()}>
+    <div className="profile-avatar-actions">
+      <button type="button" className="btn btn-outline btn-sm" onClick={() => screen.fileRef.current?.click()}>
         Изменить
       </button>
       {screen.profile.avatar_url ? (
-        <button type="button" className="btn btn-ghost btn-ghost-ink" data-testid="profile-remove-photo" onClick={screen.dropPhoto}>
+        <button type="button" className="btn btn-ghost btn-sm" data-testid="profile-remove-photo" onClick={screen.dropPhoto}>
           Удалить фото
         </button>
       ) : null}
@@ -66,36 +70,36 @@ function PhotoActions({ screen }) {
   )
 }
 
-function NameButton({ screen }) {
+function NameForm({ screen }) {
   return (
-    <div className="cta">
-      <button type="button" className="btn btn-outline" data-testid="profile-edit-name" onClick={screen.startEdit}>
-        Изменить имя
-      </button>
-    </div>
-  )
-}
-
-function NameEditor({ screen }) {
-  return (
-    <div className="name-row">
-      <input
-        type="text"
-        aria-label="Имя"
-        data-testid="profile-name-input"
-        value={screen.draft}
-        maxLength={NAME_LIMIT}
-        onChange={(event) => screen.setDraft(event.target.value.slice(0, NAME_LIMIT))}
-      />
-      <span className={screen.draft.length > NAME_LIMIT ? 'counter over' : 'counter'}>
-        {screen.draft.length} / {NAME_LIMIT}
-      </span>
-      <button type="button" className="btn btn-dark" data-testid="profile-save" disabled={screen.saving} onClick={screen.saveName}>
-        {screen.saving ? 'Сохраняем…' : 'Сохранить'}
-      </button>
-      <button type="button" className="btn btn-outline" data-testid="profile-cancel" onClick={screen.cancelEdit}>
-        Отмена
-      </button>
+    <div className="name-form">
+      <label className="name-label" htmlFor="name-input">
+        Имя
+      </label>
+      <div className="name-input-row">
+        <input
+          id="name-input"
+          className="name-input"
+          type="text"
+          aria-label="Имя"
+          data-testid="profile-name-input"
+          value={screen.draft}
+          maxLength={NAME_LIMIT}
+          placeholder="Например, Анна Ковалёва"
+          onChange={(event) => screen.setDraft(event.target.value.slice(0, NAME_LIMIT))}
+        />
+        <span className={screen.draft.length > NAME_LIMIT ? 'name-counter over' : 'name-counter'}>
+          {screen.draft.length} / {NAME_LIMIT}
+        </span>
+      </div>
+      <div className="name-actions">
+        <button type="button" className="btn btn-dark btn-sm" data-testid="profile-save" disabled={screen.saving} onClick={screen.saveName}>
+          {screen.saving ? 'Сохраняем…' : 'Сохранить'}
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" data-testid="profile-cancel" onClick={screen.cancelEdit}>
+          Отмена
+        </button>
+      </div>
     </div>
   )
 }

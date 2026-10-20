@@ -39,7 +39,9 @@ export function useProfileScreen() {
     setScreen({ status: 'loading' })
     fetchProfile(controller.signal)
       .then((profile) => {
-        if (!controller.signal.aborted) setScreen({ status: 'ready', profile })
+        if (controller.signal.aborted) return
+        setScreen({ status: 'ready', profile })
+        setDraft((current) => (current === '' ? profile.name : current))
       })
       .catch((error) => {
         if (controller.signal.aborted) return
@@ -79,6 +81,7 @@ export function useProfileScreen() {
       const profile = await promise
       if (!names.current.accepts(requestId)) return
       applyProfile(profile)
+      setDraft(profile.name)
       setEditing(false)
     } catch (error) {
       if (!names.current.accepts(requestId)) return
@@ -175,7 +178,11 @@ export function useProfileScreen() {
       setEditing(true)
     },
     setDraft,
-    cancelEdit: () => setEditing(false),
+    cancelEdit: () => {
+      if (screen.status === 'ready') setDraft(screen.profile.name)
+      setIdentityError(null)
+      setEditing(false)
+    },
     saveName,
     pickPhoto,
     dropPhoto,

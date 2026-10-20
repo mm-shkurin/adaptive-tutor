@@ -1,12 +1,13 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { BrandMark, StrokeIcon } from '../../shared/icons'
 import { ProfileMenu } from './ProfileMenu'
 
 const TABS = [
-  ['/chat', 'Чат'],
-  ['/quizzes', 'Викторины'],
-  ['/progress', 'Прогресс'],
-  ['/documents', 'Документы'],
-  ['/profile', 'Профиль'],
+  ['/chat', 'Чат', 'chat'],
+  ['/quizzes', 'Викторины', 'quiz'],
+  ['/progress', 'Прогресс', 'chart'],
+  ['/documents', 'Документы', 'docs'],
+  ['/profile', 'Профиль', 'user'],
 ]
 
 export function AppShell() {
@@ -14,12 +15,14 @@ export function AppShell() {
     <>
       <header className="appbar">
         <NavLink className="brand brand-ink" to="/profile">
+          <BrandMark />
           AdaptiveTutor
         </NavLink>
         <nav className="tabs" aria-label="Разделы">
-          {TABS.map(([to, label]) => (
+          {TABS.map(([to, label, icon]) => (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'tab on' : 'tab')}>
-              {label}
+              <StrokeIcon name={icon} />
+              <span className="label">{label}</span>
             </NavLink>
           ))}
         </nav>

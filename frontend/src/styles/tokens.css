@@ -3,6 +3,7 @@
   --foam: #f3f7f5;
   --page: #eef6f3;
   --accent: #1fa89a;
+  --accent-deep: #147a70;
   --mist: #6b857e;
   --surface: #ffffff;
   --border: #d4e2dc;
@@ -18,7 +19,7 @@
   --nav-on: #0b1c1a;
   --solid: #0b1c1a;
   --on-solid: #f3f7f5;
-  --surface-2: #f3f7f5;
+  --surface-2: #eef5f2;
   --shadow: 0 12px 32px rgba(11, 28, 26, 0.16);
   --font: Inter, "Segoe UI", sans-serif;
   --control: 48px;
@@ -38,6 +39,7 @@
   --solid: #f3f7f5;
   --on-solid: #0b1c1a;
   --surface-2: #18302c;
+  --accent-deep: #5fd4c5;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,5 +57,6 @@
     --solid: #f3f7f5;
     --on-solid: #0b1c1a;
     --surface-2: #18302c;
+    --accent-deep: #5fd4c5;
   }
 }

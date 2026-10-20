@@ -9,22 +9,25 @@ const CHOICES = [
 export function ThemePanel() {
   const { choice, setTheme } = useTheme()
   return (
-    <section className="panel">
-      <h3>Внешний вид</h3>
-      <p className="meta">Оформление на этом устройстве</p>
-      <div className="theme">
-        {CHOICES.map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            className={choice === value ? 'on' : undefined}
-            data-testid={`theme-${value}`}
-            aria-pressed={choice === value}
-            onClick={() => setTheme(value)}
-          >
-            {label}
-          </button>
-        ))}
+    <section className="profile-card">
+      <h2 className="profile-card-title">Внешний вид</h2>
+      <p className="profile-card-sub">Оформление интерфейса на этом устройстве</p>
+      <div className="profile-row">
+        <div className="profile-row-label">Тема оформления</div>
+        <div className="theme-switch" role="group" aria-label="Тема оформления">
+          {CHOICES.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={choice === value ? 'theme-opt active' : 'theme-opt'}
+              data-testid={`theme-${value}`}
+              aria-pressed={choice === value}
+              onClick={() => setTheme(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   )

@@ -5,6 +5,8 @@ import { App } from './app/App'
 import { initTheme } from './shared/theme/themeStore'
 import './styles/tokens.css'
 import './styles/app.css'
+import './styles/landing.css'
+import './styles/profile.css'
 
 initTheme()
 

@@ -9,14 +9,14 @@ export function ProfilePage() {
   const fileRef = useRef(null)
   if (screen.status === 'loading') {
     return (
-      <main className="main" data-testid="profile-loading">
+      <main className="profile-page" data-testid="profile-loading">
         <div className="spinner" aria-hidden="true" />
       </main>
     )
   }
   if (screen.status === 'error') {
     return (
-      <main className="main">
+      <main className="profile-page">
         <p className="alert" role="alert" data-testid="profile-error">
           Не удалось открыть профиль.
         </p>
@@ -27,10 +27,12 @@ export function ProfilePage() {
     )
   }
   return (
-    <main className="main" data-testid="profile">
-      <h2>Мой профиль</h2>
-      <p className="lead">Личные данные, внешний вид и аккаунт</p>
-      <div className="stack">
+    <main className="profile-page" data-testid="profile">
+      <div className="panel-head">
+        <h1>Мой профиль</h1>
+        <p className="profile-lead">Личные данные, внешний вид приложения и управление аккаунтом</p>
+      </div>
+      <div className="profile-stack">
         <IdentityPanel screen={{ ...screen, fileRef }} />
         <ThemePanel />
         <AccountPanel screen={screen} />
