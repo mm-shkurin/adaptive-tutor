@@ -35,13 +35,19 @@ class SessionClient:
         started = self.http.get("/api/v1/auth/oauth/yandex/start")
         if started.status_code != 302:
             return read_result(started)
-        state = parse_qs(urlparse(started.headers["location"]).query)["state"][0]
+        state = self._query_param(started.headers["location"], "state")
         back = self.http.get("/api/v1/auth/oauth/yandex/callback", params={"code": code, "state": state})
         if back.status_code != 302:
             return read_result(back)
-        handoff = parse_qs(urlparse(back.headers["location"]).query).get("code", [""])[0]
+        handoff = self._query_param(back.headers["location"], "code", "")
         exchanged = self.http.post("/api/v1/auth/oauth/exchange", json={"code": handoff})
         return read_result(exchanged)
 
     def close(self) -> None:
         self.http.close()
+
+    def _query_param(self, location: str, key: str, missing: str | None = None) -> str:
+        query = parse_qs(urlparse(location).query)
+        if missing is None:
+            return query[key][0]
+        return query.get(key, [missing])[0]

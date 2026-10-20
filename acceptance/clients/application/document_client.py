@@ -13,7 +13,7 @@ class DocumentClient:
         response = self.http.post(
             "/api/v1/documents",
             headers={
-                "Authorization": f"Bearer {token}",
+                **self._bearer(token),
                 "Idempotency-Key": str(uuid4()),
             },
             files={"file": (filename, content, "application/pdf")},

@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 
 from clients.application.document_client import DocumentClient
+from clients.application.http_result import HttpResult
 from clients.application.index_probe import IndexProbe
 from clients.application.session_client import ScriptedProvider, SessionClient
 
@@ -40,21 +41,13 @@ class DocumentStatements:
         self.opened = self.sessions.open_account("ada@example.test", "Ada")
 
     def then_the_person_is_signed_in(self) -> None:
-        assert self.opened.status_code == 200
-        assert self.opened.body["token_type"] == "bearer"
-        assert self.opened.body["access_token"] is not None
-        assert self.opened.body["refresh_token"] is not None
-        self.token = self.opened.body["access_token"]
+        self.token = self._signed_in(self.opened)
 
     def given_a_neighbour_account(self) -> None:
         self.neighbour_opened = self.sessions.open_account("boris@example.test", "Boris")
 
     def then_the_neighbour_is_signed_in(self) -> None:
-        assert self.neighbour_opened.status_code == 200
-        assert self.neighbour_opened.body["token_type"] == "bearer"
-        assert self.neighbour_opened.body["access_token"] is not None
-        assert self.neighbour_opened.body["refresh_token"] is not None
-        self.neighbour_token = self.neighbour_opened.body["access_token"]
+        self.neighbour_token = self._signed_in(self.neighbour_opened)
 
     def when_the_neighbour_submits_a_pdf(self) -> None:
         self.neighbour_submitted = self.documents.submit_pdf(
@@ -103,12 +96,11 @@ class DocumentStatements:
 
     def then_the_document_becomes_ready_with_its_facts(self) -> None:
         assert self.upload.status_code == 201
-        document_id = self.upload.body["id"]
         assert self.ready.status_code == 200
-        assert self.ready.body == self._ready(document_id)
+        assert self.ready.body == self._ready(self.upload.body["id"])
 
     def then_the_persons_search_finds_the_text_and_the_table(self) -> None:
-        assert self.probe.pieces_for(self.upload.body["id"]) == (FIVE_HUNDRED, JOINED)
+        self._assert_lecture_pieces()
 
     def then_the_extracted_text_matches_the_pdf(self) -> None:
         assert self.probe.extracted_text(self.upload.body["id"]) == EXTRACTED
@@ -119,10 +111,10 @@ class DocumentStatements:
         assert self.probe.pieces_for(self.neighbour_id) == (NEIGHBOUR_TEXT,)
 
     def then_a_piece_of_500_tokens_is_kept(self) -> None:
-        assert self.probe.pieces_for(self.upload.body["id"]) == (FIVE_HUNDRED, JOINED)
+        self._assert_lecture_pieces()
 
     def then_a_shorter_piece_is_joined_onward(self) -> None:
-        assert self.probe.pieces_for(self.upload.body["id"]) == (FIVE_HUNDRED, JOINED)
+        self._assert_lecture_pieces()
 
     def then_the_original_file_is_gone(self) -> None:
         assert self.probe.file_for(self.upload.body["id"]) is None
@@ -134,47 +126,38 @@ class DocumentStatements:
         self.sessions.close()
         self.documents.close()
 
+    def _assert_lecture_pieces(self) -> None:
+        assert self.probe.pieces_for(self.upload.body["id"]) == (FIVE_HUNDRED, JOINED)
+
+    def _signed_in(self, opened: HttpResult) -> str:
+        assert opened.status_code == 200
+        assert opened.body["token_type"] == "bearer"
+        assert opened.body["access_token"] is not None
+        assert opened.body["refresh_token"] is not None
+        return opened.body["access_token"]
+
     def _waiting(self, document_id: str) -> dict:
-        return {
-            "id": document_id,
-            "name": LECTURE_NAME,
-            "size_bytes": len(self.lecture),
-            "page_count": None,
-            "piece_count": None,
-            "status": "waiting",
-            "error": None,
-        }
+        return self._document(document_id, LECTURE_NAME, len(self.lecture), None, None, "waiting")
 
     def _neighbour_waiting(self, document_id: str) -> dict:
-        return {
-            "id": document_id,
-            "name": NEIGHBOUR_NAME,
-            "size_bytes": len(self.neighbour_pdf),
-            "page_count": None,
-            "piece_count": None,
-            "status": "waiting",
-            "error": None,
-        }
+        return self._document(document_id, NEIGHBOUR_NAME, len(self.neighbour_pdf), None, None, "waiting")
 
     def _ready(self, document_id: str) -> dict:
-        return {
-            "id": document_id,
-            "name": LECTURE_NAME,
-            "size_bytes": len(self.lecture),
-            "page_count": PAGE_COUNT,
-            "piece_count": PIECE_COUNT,
-            "status": "ready",
-            "error": None,
-        }
+        return self._document(document_id, LECTURE_NAME, len(self.lecture), PAGE_COUNT, PIECE_COUNT, "ready")
 
     def _neighbour_ready(self, document_id: str) -> dict:
+        return self._document(
+            document_id, NEIGHBOUR_NAME, len(self.neighbour_pdf), PAGE_COUNT, NEIGHBOUR_PIECE_COUNT, "ready"
+        )
+
+    def _document(self, document_id: str, name: str, size_bytes: int, page_count, piece_count, status: str) -> dict:
         return {
             "id": document_id,
-            "name": NEIGHBOUR_NAME,
-            "size_bytes": len(self.neighbour_pdf),
-            "page_count": PAGE_COUNT,
-            "piece_count": NEIGHBOUR_PIECE_COUNT,
-            "status": "ready",
+            "name": name,
+            "size_bytes": size_bytes,
+            "page_count": page_count,
+            "piece_count": piece_count,
+            "status": status,
             "error": None,
         }
 
