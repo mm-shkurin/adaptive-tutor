@@ -13,8 +13,8 @@
 
 ### 4.1 An accepted PDF becomes ready and its text and tables can be searched
 - [x] red-acceptance
-- [~] design
-- [ ] red-usecase
+- [x] design
+- [~] red-usecase
 - [ ] green-usecase
 - [ ] adapters-discovery
 - [ ] green-acceptance
