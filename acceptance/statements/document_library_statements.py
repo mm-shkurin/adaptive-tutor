@@ -19,16 +19,11 @@ NO_MATERIALS = "Пока нет материалов"
 class DocumentLibraryStatements:
     def __init__(self, driver):
         self.driver = driver
+        self.wait = WebDriverWait(driver, WAIT_SECONDS)
 
     def when_the_person_opens_documents(self) -> None:
-        WebDriverWait(self.driver, WAIT_SECONDS).until(
-            self._documents_tab,
-            "no documents-tab",
-        ).click()
-        WebDriverWait(self.driver, WAIT_SECONDS).until(
-            self._documents_heading,
-            "no documents-heading",
-        )
+        self.wait.until(self._documents_tab, "no documents-tab").click()
+        self.wait.until(self._documents_heading, "no documents-heading")
 
     def then_the_heading_is_documents(self) -> None:
         self._assert_visible_text(DOCUMENTS_HEADING, DOCUMENTS)
@@ -46,22 +41,16 @@ class DocumentLibraryStatements:
         self._assert_visible_text(DOCUMENT_LIST, NO_MATERIALS)
 
     def _documents_tab(self, driver):
-        return self._displayed_text(driver, DOCUMENTS_TAB, DOCUMENTS)
+        return next((
+            element for element in driver.find_elements(*DOCUMENTS_TAB)
+            if element.is_displayed() and element.text == DOCUMENTS
+        ), False)
 
     def _documents_heading(self, driver):
-        return self._displayed(driver, DOCUMENTS_HEADING)
-
-    def _displayed(self, driver, locator):
-        for element in driver.find_elements(*locator):
-            if element.is_displayed():
-                return element
-        return False
-
-    def _displayed_text(self, driver, locator, expected: str):
-        for element in driver.find_elements(*locator):
-            if element.is_displayed() and element.text == expected:
-                return element
-        return False
+        return next((
+            element for element in driver.find_elements(*DOCUMENTS_HEADING)
+            if element.is_displayed()
+        ), False)
 
     def _assert_visible_text(self, locator, expected: str) -> None:
         found = [element for element in self.driver.find_elements(*locator) if element.is_displayed()]
