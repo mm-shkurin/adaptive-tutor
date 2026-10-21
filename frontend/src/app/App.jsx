@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { DeletedPage } from '../features/auth/DeletedPage'
 import { OAuthCallbackPage } from '../features/auth/OAuthCallbackPage'
+import { DocumentsPage } from '../features/documents/DocumentsPage'
 import { LandingPage } from '../features/landing/LandingPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { AppShell } from '../features/shell/AppShell'
@@ -19,7 +20,7 @@ export function App() {
           <Route path="/chat" element={<SoonPage title="Чат" />} />
           <Route path="/quizzes" element={<SoonPage title="Викторины" />} />
           <Route path="/progress" element={<SoonPage title="Прогресс" />} />
-          <Route path="/documents" element={<SoonPage title="Документы" />} />
+          <Route path="/documents" element={<DocumentsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

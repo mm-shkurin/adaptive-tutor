@@ -65,6 +65,20 @@ const DRAW = {
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </>
   ),
+  upload: () => (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </>
+  ),
+  screen: () => (
+    <>
+      <rect x="3" y="4" width="18" height="14" rx="2" />
+      <path d="M8 22h8" />
+      <path d="M12 18v4" />
+    </>
+  ),
 }
 
 export function StrokeIcon({ name }) {

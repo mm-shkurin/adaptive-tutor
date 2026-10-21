@@ -20,7 +20,12 @@ export function AppShell() {
         </NavLink>
         <nav className="tabs" aria-label="Разделы">
           {TABS.map(([to, label, icon]) => (
-            <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'tab on' : 'tab')}>
+            <NavLink
+              key={to}
+              to={to}
+              data-testid={to === '/documents' ? 'documents-tab' : undefined}
+              className={({ isActive }) => (isActive ? 'tab on' : 'tab')}
+            >
               <StrokeIcon name={icon} />
               <span className="label">{label}</span>
             </NavLink>
@@ -31,7 +36,12 @@ export function AppShell() {
       <Outlet />
       <nav className="bottom" aria-label="Разделы">
         {TABS.map(([to, label]) => (
-          <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'on' : undefined)}>
+          <NavLink
+            key={to}
+            to={to}
+            data-testid={to === '/documents' ? 'documents-tab' : undefined}
+            className={({ isActive }) => (isActive ? 'on' : undefined)}
+          >
             {label}
           </NavLink>
         ))}

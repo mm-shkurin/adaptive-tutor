@@ -7,6 +7,7 @@ import './styles/tokens.css'
 import './styles/app.css'
 import './styles/landing.css'
 import './styles/profile.css'
+import './styles/documents.css'
 
 initTheme()
 
