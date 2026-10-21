@@ -19,7 +19,7 @@
 - [x] red-usecase (coverage: exact 500 tokens leaves no remainder)
 - [x] green-usecase (coverage: exact 500 tokens leaves no remainder)
 - [x] adapters-discovery (scope: storage, filestore, pdfreader, pieceindex, http; scanned all usecase ports; GAPs: storage missing → red-adapter storage / green-adapter storage, filestore missing → red-adapter filestore / green-adapter filestore, pdfreader missing → red-adapter pdfreader / green-adapter pdfreader, pieceindex missing → red-adapter pieceindex / green-adapter pieceindex, http missing → red-adapter http / green-adapter http)
-- [ ] red-adapter storage
+- [x] red-adapter storage
 - [ ] green-adapter storage
 - [ ] red-adapter filestore
 - [ ] green-adapter filestore
