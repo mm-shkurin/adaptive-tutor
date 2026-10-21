@@ -17,9 +17,13 @@ class ExtractedText:
         pending: list[str] = []
         for paragraph in self.value.split("\n\n"):
             pending.append(paragraph)
-            if _tokens(pending) >= KEPT_TOKENS:
+            tokens = _tokens(pending)
+            if tokens == KEPT_TOKENS:
                 kept.append(_joined(pending))
                 pending = []
+            elif tokens > KEPT_TOKENS:
+                kept.append(_joined(pending[:-1]))
+                pending = [pending[-1]]
         if pending:
             kept.append(_joined(pending))
         return tuple(kept)
