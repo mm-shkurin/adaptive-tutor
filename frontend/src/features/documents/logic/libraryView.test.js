@@ -12,8 +12,7 @@ const readyDocument = {
 }
 
 describe('libraryView', () => {
-  // Error: libraryView is not implemented
-  it.skip('An empty library shows the PDF door and no materials', () => {
+  it('An empty library shows the PDF door and no materials', () => {
     expect(libraryView({ documents: [], has_next: false })).toEqual({
       heading: 'Документы',
       pdfDoor: {
