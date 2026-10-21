@@ -145,8 +145,8 @@ class DocumentStatements:
     async def when_the_neighbours_file_is_read(self) -> None:
         self.neighbour_file = await self.stored.content(self.neighbour_upload.id)
 
-    async def then_the_neighbours_file_is_still_there(self) -> None:
-        assert self.neighbour_file == self.neighbour_pdf
+    async def then_the_neighbours_file_is_already_gone(self) -> None:
+        assert self.neighbour_file is None
 
     async def _assert_lecture_pieces(self) -> None:
         assert self.lecture_pieces == (FIVE_HUNDRED, JOINED)

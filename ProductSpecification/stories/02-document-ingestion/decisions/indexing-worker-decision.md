@@ -25,6 +25,6 @@ The upload must be answered before indexing finishes, and parsing a lecture must
 | The file write or the row write fails | Neither remains. No waiting row without its bytes, and no file without a row. |
 | An empty document id is asked to delete or replace | Nothing is deleted and no pieces change. |
 | Two claims index one document | One piece set. The second claim does not append. |
-| This document's pieces are replaced | The neighbour's pieces and file stay. |
+| This document's pieces are replaced | The neighbour's pieces stay. That neighbour's file is already gone, because their own indexing finished. |
 | Indexing never started | The waiting row is still claimed later and reaches ready or failed. |
 | Indexing ends, ready or failed | This document's original file is gone. |

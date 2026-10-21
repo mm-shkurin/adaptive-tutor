@@ -9,7 +9,11 @@ class SearchDocuments:
         self.pieces = pieces
 
     async def pieces_for(self, owner_id: UUID, document_id: UUID) -> tuple[str, ...]:
-        raise NotImplementedError()
+        if await self.intake.get(owner_id, document_id) is None:
+            return ()
+        return await self.pieces.pieces(document_id)
 
     async def extracted_text(self, owner_id: UUID, document_id: UUID) -> str:
-        raise NotImplementedError()
+        if await self.intake.get(owner_id, document_id) is None:
+            return ""
+        return await self.pieces.extracted(document_id)

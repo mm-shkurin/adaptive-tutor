@@ -8,4 +8,4 @@ class ReadStoredFile:
         self.files = files
 
     async def content(self, document_id: UUID) -> bytes | None:
-        raise NotImplementedError()
+        return await self.files.get(document_id)

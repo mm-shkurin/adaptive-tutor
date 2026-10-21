@@ -18,10 +18,10 @@ class TestAcceptedPdfBecomesReady:
     And a piece of 500 tokens is kept
     And a shorter piece is joined onward
     And the original file is gone
-    And the neighbour's file is still there
+    And the neighbour's pieces remain
+    And the neighbour's file is already gone
     """
 
-    @pytest.mark.skip(reason="RED: SubmitDocument.submit raises NotImplementedError")
     @pytest.mark.asyncio
     async def test_should_become_ready_and_search_the_text_and_the_table(self, documents):
         await documents.given_a_signed_in_person()
@@ -32,6 +32,8 @@ class TestAcceptedPdfBecomesReady:
         await documents.then_the_neighbour_document_is_ready()
         await documents.when_the_neighbour_text_is_searched()
         await documents.then_the_neighbour_text_is_indexed()
+        await documents.when_the_neighbours_file_is_read()
+        await documents.then_the_neighbours_file_is_already_gone()
         await documents.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
         await documents.then_the_upload_is_answered_before_indexing_finishes()
         await documents.when_the_person_reads_the_upload()
@@ -53,4 +55,4 @@ class TestAcceptedPdfBecomesReady:
         await documents.when_the_original_file_is_read()
         await documents.then_the_original_file_is_gone()
         await documents.when_the_neighbours_file_is_read()
-        await documents.then_the_neighbours_file_is_still_there()
+        await documents.then_the_neighbours_file_is_already_gone()

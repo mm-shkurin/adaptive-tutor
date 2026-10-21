@@ -9,4 +9,6 @@ class SubmitDocument:
         self.intake = intake
 
     async def submit(self, owner_id: UUID, name: str, content: bytes) -> Document:
-        raise NotImplementedError()
+        document = Document.accepted(name, len(content))
+        await self.intake.store(owner_id, document, content)
+        return document

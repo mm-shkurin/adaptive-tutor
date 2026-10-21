@@ -15,7 +15,9 @@
 - [x] red-acceptance
 - [x] design
 - [x] red-usecase
-- [~] green-usecase
+- [x] green-usecase
+- [~] red-usecase (coverage: exact 500 tokens leaves no remainder)
+- [ ] green-usecase (coverage: exact 500 tokens leaves no remainder)
 - [ ] adapters-discovery
 - [ ] green-acceptance
 

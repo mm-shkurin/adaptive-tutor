@@ -22,7 +22,8 @@ class TestAcceptedPdfBecomesReady(AbstractBackendTest):
     And a piece of 500 tokens is kept
     And a shorter piece is joined onward
     And the original file is gone
-    And the neighbour's file is still there
+    And the neighbour's pieces remain
+    And the neighbour's file is already gone
     """
 
     def test_should_answer_the_upload_before_indexing_finishes(self, documents):
@@ -62,7 +63,8 @@ class TestAcceptedPdfBecomesReady(AbstractBackendTest):
         And a piece of 500 tokens is kept
         And a shorter piece is joined onward
         And the original file is gone
-        And the neighbour's file is still there
+        And the neighbour's pieces remain
+        And the neighbour's file is already gone
         """
         documents.given_a_signed_in_person()
         documents.then_the_person_is_signed_in()
@@ -73,6 +75,7 @@ class TestAcceptedPdfBecomesReady(AbstractBackendTest):
         documents.when_the_neighbour_document_becomes_ready()
         documents.then_the_neighbour_document_is_ready()
         documents.then_the_neighbour_text_is_indexed()
+        documents.then_the_neighbours_file_is_already_gone()
         documents.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
         documents.when_the_document_finishes_indexing()
         documents.then_the_document_becomes_ready_with_its_facts()
@@ -82,4 +85,4 @@ class TestAcceptedPdfBecomesReady(AbstractBackendTest):
         documents.then_a_piece_of_500_tokens_is_kept()
         documents.then_a_shorter_piece_is_joined_onward()
         documents.then_the_original_file_is_gone()
-        documents.then_the_neighbours_file_is_still_there()
+        documents.then_the_neighbours_file_is_already_gone()

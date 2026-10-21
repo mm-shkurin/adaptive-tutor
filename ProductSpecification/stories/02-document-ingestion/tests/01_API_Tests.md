@@ -167,7 +167,8 @@ And the neighbour's text is absent
 And a piece of 500 tokens is kept
 And a shorter piece is joined onward
 And the original file is gone
-And the neighbour's file is still there
+And the neighbour's pieces remain
+And the neighbour's file is already gone
 ```
 
 ### 4.2 A failed index names the part and leaves nothing searchable

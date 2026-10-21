@@ -119,8 +119,8 @@ class DocumentStatements:
     def then_the_original_file_is_gone(self) -> None:
         assert self.probe.file_for(self.upload.body["id"]) is None
 
-    def then_the_neighbours_file_is_still_there(self) -> None:
-        assert self.probe.file_for(self.neighbour_id) == self.neighbour_pdf
+    def then_the_neighbours_file_is_already_gone(self) -> None:
+        assert self.probe.file_for(self.neighbour_id) is None
 
     def close(self) -> None:
         self.sessions.close()
