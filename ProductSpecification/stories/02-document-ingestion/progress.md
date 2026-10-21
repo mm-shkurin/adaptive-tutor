@@ -25,9 +25,9 @@
 - [x] red-selenium
 - [x] red-frontend
 - [x] green-frontend
-- [~] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
+- [S] red-frontend-api (empty document page is already the shape libraryView reads; doors and empty copy are presentational)
+- [S] green-frontend-api (no API mapping to implement)
+- [~] align-design
 - [ ] green-selenium
 - [ ] demo
 
