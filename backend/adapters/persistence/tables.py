@@ -60,7 +60,7 @@ class DocumentRow(Base):
     piece_count: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(32))
     error: Mapped[str | None] = mapped_column(Text)
-    body: Mapped[bytes] = mapped_column(LargeBinary)
+    body: Mapped[bytes | None] = mapped_column(LargeBinary)
 
     def to_domain(self):
         from domain.document.document import Document
