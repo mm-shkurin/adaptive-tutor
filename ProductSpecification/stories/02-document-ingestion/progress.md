@@ -21,7 +21,7 @@
 - [x] adapters-discovery (scope: storage, filestore, pdfreader, pieceindex, http; scanned all usecase ports; GAPs: storage missing → red-adapter storage / green-adapter storage, filestore missing → red-adapter filestore / green-adapter filestore, pdfreader missing → red-adapter pdfreader / green-adapter pdfreader, pieceindex missing → red-adapter pieceindex / green-adapter pieceindex, http missing → red-adapter http / green-adapter http)
 - [x] red-adapter storage
 - [x] green-adapter storage
-- [ ] red-adapter filestore
+- [x] red-adapter filestore
 - [ ] green-adapter filestore
 - [ ] red-adapter pdfreader
 - [ ] green-adapter pdfreader
