@@ -23,7 +23,7 @@
 - [x] green-adapter storage
 - [x] red-adapter filestore
 - [x] green-adapter filestore
-- [ ] red-adapter pdfreader
+- [x] red-adapter pdfreader
 - [ ] green-adapter pdfreader
 - [ ] red-adapter pieceindex
 - [ ] green-adapter pieceindex
