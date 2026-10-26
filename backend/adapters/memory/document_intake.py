@@ -15,6 +15,7 @@ class MemoryDocumentIntake:
         self._lock = asyncio.Lock()
         self._probe = probe
         self.dead = False
+        self.live = 0
 
     async def find_by_key(self, owner_id: UUID, submission_key: str) -> Document | None:
         async def action():
@@ -67,12 +68,18 @@ class MemoryDocumentIntake:
 
     async def next_waiting(self) -> tuple[Document, bytes] | None:
         async def action():
+            claim = None
             async with self._lock:
                 for document_id in self._order:
                     owner_id, document = self.rows[document_id]
                     if document.status == "waiting":
-                        return document, self.bodies[document_id]
+                        claim = (document, self.bodies[document_id])
+                        break
+            if claim is None:
                 return None
+            if self._probe is not None:
+                await self._probe.synchronize_dual_claim(str(claim[0].id))
+            return claim
 
         return await self._guard(action)
 
@@ -90,6 +97,10 @@ class MemoryDocumentIntake:
         return await self._guard(action)
 
     async def _guard(self, action):
-        if self.dead:
-            raise StoreUnavailable()
-        return await action()
+        self.live += 1
+        try:
+            if self.dead:
+                raise StoreUnavailable()
+            return await action()
+        finally:
+            self.live -= 1

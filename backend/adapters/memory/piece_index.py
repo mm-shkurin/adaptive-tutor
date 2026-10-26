@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from usecase.document.errors import StoreUnavailable
@@ -13,6 +14,15 @@ class MemoryPieceIndex:
     async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None:
         if self.dead:
             raise StoreUnavailable()
+        if self._probe is not None:
+            outcome = self._probe.search_store_outcome()
+            if outcome == "times out":
+                await asyncio.sleep(self._probe.search_store_timeout_seconds())
+                raise StoreUnavailable()
+            if outcome == "refuses":
+                raise StoreUnavailable()
+            if outcome == "answers unreadable":
+                raise StoreUnavailable()
         self.stored[document_id] = pieces
         self.extracted_text[document_id] = extracted
         if self._probe is not None:
