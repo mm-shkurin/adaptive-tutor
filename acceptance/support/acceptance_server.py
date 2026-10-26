@@ -16,6 +16,7 @@ from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
 from adapters.memory.piece_index import MemoryPieceIndex
 from adapters.memory.revocations import MemoryRevocations
+from adapters.memory.upload_rate_limit import MemoryUploadRateLimit
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
@@ -48,11 +49,16 @@ class _Clock:
     def now(self):
         return self.moment
 
+    def advance(self, seconds: int) -> None:
+        self.moment += timedelta(seconds=seconds)
+
 
 class AcceptanceServer:
     def __init__(self):
         self.provider = ScriptedProvider()
         self.probe = IndexProbe()
+        self.clock = _Clock()
+        self.rates = MemoryUploadRateLimit(self.clock)
         port = _free_port()
         self.base_url = f"http://127.0.0.1:{port}"
         self._indexing = asyncio.Event()
@@ -72,7 +78,7 @@ class AcceptanceServer:
             SessionService(store, tokens, MemoryRevocations()),
             ProfileService(store, self.base_url),
             store,
-            SubmitDocument(intake),
+            SubmitDocument(intake, self.rates),
             ReadDocument(intake),
             ListDocuments(intake),
             IndexDocuments(intake, files, reader, pieces),
@@ -85,7 +91,7 @@ class AcceptanceServer:
             MemoryOAuthStore(),
             store,
             tokens,
-            _Clock(),
+            self.clock,
             _state_ttl(),
             timedelta(seconds=120),
             "http://localhost:5173/auth/callback",

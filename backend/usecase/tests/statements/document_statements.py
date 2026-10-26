@@ -1,20 +1,19 @@
 from pathlib import Path
-from uuid import UUID
 
-from domain.document.document import Document
 from usecase.document.index_documents import IndexDocuments
+from usecase.document.list_documents import ListDocuments
 from usecase.document.ports import PdfRead
 from usecase.document.read_document import ReadDocument
 from usecase.document.read_stored_file import ReadStoredFile
 from usecase.document.search_documents import SearchDocuments
 from usecase.document.submit_document import SubmitDocument
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
+from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
 from usecase.tests.scope.document_scope import DocumentScope
+from usecase.tests.statements import document_views as views
+from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 
 FIXTURES = Path(__file__).resolve().parents[4] / "acceptance" / "fixtures"
-PAGE_COUNT = 1
-PIECE_COUNT = 2
-NEIGHBOUR_PIECE_COUNT = 1
 TABLE = "|Topic|Mark|\n|---|---|\n|Limits|91|\n"
 FIVE_HUNDRED = (FIXTURES / "five_hundred.txt").read_text(encoding="utf-8")
 JOINED = (FIXTURES / "joined.txt").read_text(encoding="utf-8")
@@ -22,7 +21,7 @@ EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
 NEIGHBOUR_TEXT = (FIXTURES / "neighbour.txt").read_text(encoding="utf-8")
 
 
-class DocumentStatements:
+class DocumentStatements(UploadRateStatements):
     def __init__(
         self,
         submit: SubmitDocument,
@@ -30,13 +29,19 @@ class DocumentStatements:
         read: ReadDocument,
         search: SearchDocuments,
         stored: ReadStoredFile,
+        listed: ListDocuments,
         reader: FakePdfReader,
+        rates: FakeUploadRateLimit,
+        clock,
     ):
         self.submit = submit
         self.index = index
         self.read = read
         self.search = search
         self.stored = stored
+        self.listed = listed
+        self.rates = rates
+        self.clock = clock
         self.scope = DocumentScope.builder()
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.neighbour_pdf = (FIXTURES / "neighbour.pdf").read_bytes()
@@ -52,8 +57,10 @@ class DocumentStatements:
         self.extracted = None
         self.original_file = None
         self.neighbour_file = None
-        reader.register(self.lecture, PdfRead(EXTRACTED, TABLE, PAGE_COUNT))
-        reader.register(self.neighbour_pdf, PdfRead(NEIGHBOUR_TEXT, "", PAGE_COUNT))
+        self.refusal = None
+        self.race_results = None
+        reader.register(self.lecture, PdfRead(EXTRACTED, TABLE, views.PAGE_COUNT))
+        reader.register(self.neighbour_pdf, PdfRead(NEIGHBOUR_TEXT, "", views.PAGE_COUNT))
 
     async def given_a_signed_in_person(self) -> None:
         self.person_id = self.scope.person_id
@@ -67,14 +74,18 @@ class DocumentStatements:
         )
 
     async def then_the_neighbour_upload_is_waiting(self) -> None:
-        assert self.neighbour_upload == self._neighbour_waiting(self.neighbour_upload.id)
+        assert self.neighbour_upload == views.waiting(
+            self.neighbour_upload.id, self.scope.neighbour_name, len(self.neighbour_pdf)
+        )
 
     async def when_the_neighbour_document_is_indexed(self) -> None:
         await self.index.index_waiting()
         self.neighbour_ready = await self.read.read(self.neighbour_id, self.neighbour_upload.id)
 
     async def then_the_neighbour_document_is_ready(self) -> None:
-        assert self.neighbour_ready == self._neighbour_ready(self.neighbour_upload.id)
+        assert self.neighbour_ready == views.neighbour_ready(
+            self.neighbour_upload.id, self.scope.neighbour_name, len(self.neighbour_pdf)
+        )
 
     async def when_the_neighbour_text_is_searched(self) -> None:
         self.neighbour_pieces = await self.search.pieces_for(self.neighbour_id, self.neighbour_upload.id)
@@ -86,27 +97,27 @@ class DocumentStatements:
         self.upload = await self.submit.submit(self.person_id, self.scope.lecture_name, self.lecture)
 
     async def then_the_upload_is_answered_before_indexing_finishes(self) -> None:
-        assert self.upload == self._waiting(self.upload.id)
+        assert self.upload == views.waiting(self.upload.id, self.scope.lecture_name, len(self.lecture))
 
     async def when_the_person_reads_the_upload(self) -> None:
         self.read_back = await self.read.read(self.person_id, self.upload.id)
 
     async def then_the_next_read_shows_the_document_as_waiting_not_a_stale_copy(self) -> None:
         assert self.read_back == self.upload
-        assert self.read_back == self._waiting(self.upload.id)
+        assert self.read_back == views.waiting(self.upload.id, self.scope.lecture_name, len(self.lecture))
 
     async def when_indexing_finishes(self) -> None:
         await self.index.index_waiting()
         self.ready = await self.read.read(self.person_id, self.upload.id)
 
     async def then_the_document_becomes_ready(self) -> None:
-        assert self.ready == self._ready(self.upload.id)
+        assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
 
     async def then_the_ready_document_shows_the_file_name_size_pages_and_pieces(self) -> None:
-        assert self.ready == self._ready(self.upload.id)
+        assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
 
     async def then_the_ready_document_has_no_failure_reason(self) -> None:
-        assert self.ready == self._ready(self.upload.id)
+        assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
 
     async def when_the_person_searches_the_lecture(self) -> None:
         self.lecture_pieces = await self.search.pieces_for(self.person_id, self.upload.id)
@@ -150,45 +161,3 @@ class DocumentStatements:
 
     async def _assert_lecture_pieces(self) -> None:
         assert self.lecture_pieces == (FIVE_HUNDRED, JOINED)
-
-    def _waiting(self, document_id: UUID) -> Document:
-        return self._document(document_id, self.scope.lecture_name, len(self.lecture), None, None, "waiting")
-
-    def _neighbour_waiting(self, document_id: UUID) -> Document:
-        return self._document(
-            document_id, self.scope.neighbour_name, len(self.neighbour_pdf), None, None, "waiting"
-        )
-
-    def _ready(self, document_id: UUID) -> Document:
-        return self._document(
-            document_id, self.scope.lecture_name, len(self.lecture), PAGE_COUNT, PIECE_COUNT, "ready"
-        )
-
-    def _neighbour_ready(self, document_id: UUID) -> Document:
-        return self._document(
-            document_id,
-            self.scope.neighbour_name,
-            len(self.neighbour_pdf),
-            PAGE_COUNT,
-            NEIGHBOUR_PIECE_COUNT,
-            "ready",
-        )
-
-    def _document(
-        self,
-        document_id: UUID,
-        name: str,
-        size_bytes: int,
-        page_count: int | None,
-        piece_count: int | None,
-        status: str,
-    ) -> Document:
-        return Document(
-            id=document_id,
-            name=name,
-            size_bytes=size_bytes,
-            page_count=page_count,
-            piece_count=piece_count,
-            status=status,
-            error=None,
-        )

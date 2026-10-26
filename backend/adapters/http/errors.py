@@ -6,7 +6,7 @@ from domain.account.name import NameNotAllowed
 from domain.account.photo import PhotoNotAllowed, PhotoTooLarge
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
-from usecase.document.errors import DocumentNotFound, InvalidDocument
+from usecase.document.errors import DocumentNotFound, InvalidDocument, RateLimited, RateUnavailable
 from usecase.document.errors import StoreUnavailable as DocumentStoreUnavailable
 
 _UNAUTHORIZED = {"code": "unauthorized", "message": "Credentials are not valid"}
@@ -23,6 +23,8 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(Unauthorized, _status(401, _UNAUTHORIZED))
     app.add_exception_handler(DocumentNotFound, _status(404, _DOCUMENT_MISSING))
     app.add_exception_handler(InvalidDocument, _invalid_document)
+    app.add_exception_handler(RateLimited, _rate_refusal)
+    app.add_exception_handler(RateUnavailable, _rate_refusal)
     app.add_exception_handler(NameNotAllowed, _status(422, _NAME))
     app.add_exception_handler(PhotoNotAllowed, _status(422, _PHOTO))
     app.add_exception_handler(PhotoTooLarge, _status(413, _LARGE))
@@ -41,3 +43,7 @@ def _status(status: int, body: dict):
 
 async def _invalid_document(_request: Request, exc: InvalidDocument) -> JSONResponse:
     return JSONResponse(status_code=400, content={"code": exc.code, "message": exc.message})
+
+
+async def _rate_refusal(_request: Request, exc: RateLimited | RateUnavailable) -> JSONResponse:
+    return JSONResponse(status_code=429, content={"code": exc.code, "message": exc.message})

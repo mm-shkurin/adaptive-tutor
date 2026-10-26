@@ -10,6 +10,7 @@ from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
 from adapters.memory.piece_index import MemoryPieceIndex
 from adapters.memory.revocations import MemoryRevocations
+from adapters.memory.upload_rate_limit import MemoryUploadRateLimit
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
@@ -66,12 +67,14 @@ class Bundle:
     store: MemoryAccountStore
     clock: Clock
     provider: ScriptedProvider
+    rates: MemoryUploadRateLimit
 
 
 def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
     store = MemoryAccountStore()
     clock = Clock()
     provider = ScriptedProvider()
+    rates = MemoryUploadRateLimit(clock)
     tokens = JwtTokens("a" * 32, "b" * 32, timedelta(minutes=60), timedelta(days=30))
     sign_in = SignIn(
         provider,
@@ -94,13 +97,13 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         SessionService(store, tokens, MemoryRevocations()),
         ProfileService(store, "http://testserver"),
         store,
-        SubmitDocument(intake),
+        SubmitDocument(intake, rates),
         ReadDocument(intake),
         ListDocuments(intake),
         IndexDocuments(intake, files, reader, pieces),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
-    return Bundle(client, store, clock, provider)
+    return Bundle(client, store, clock, provider, rates)
 
 
 def allow(bundle: Bundle, code: str, subject: str, email: str, name: str) -> None:

@@ -428,36 +428,36 @@
 - [ ] green-acceptance
 
 ### 4.1 A sixth upload in the minute is refused and the five stay
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (delivery without red/green; HTTP + usecase together)
+- [S] design (UploadRateLimit port; fixed minute window in Redis/memory)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (RedisUploadRateLimit + MemoryUploadRateLimit; wired in SubmitDocument)
+- [x] green-acceptance (HTTP 429 rate_limited via TestClient)
 
 ### 4.2 Two uploads that arrive together on the last free slot accept only one
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (covered with 4.1–4.4 rate-limit piece)
+- [S] design (atomic try_accept)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (same port as 4.1)
+- [x] green-acceptance (usecase race; HTTP covered by shared wiring)
 
 ### 4.3 An upload at the start of the next minute is accepted
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (covered with 4.1–4.4 rate-limit piece)
+- [S] design (window key from clock minute)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (same port as 4.1)
+- [x] green-acceptance (HTTP TestClient + clock advance)
 
 ### 4.4 An unreadable upload count refuses the upload
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (covered with 4.1–4.4 rate-limit piece)
+- [S] design (RedisError → rate_unavailable)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (same port as 4.1)
+- [x] green-acceptance (HTTP 429 rate_unavailable via TestClient)
 
 ### 5.1 A failure echoes no secret, file text, stack, or path
 - [ ] red-acceptance

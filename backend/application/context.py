@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from adapters.cache.redis_oauth import RedisOAuthStore
 from adapters.cache.redis_revocations import RedisRevocations
+from adapters.cache.redis_upload_rate import RedisUploadRateLimit
 from adapters.filestore.file_store import PostgresFileStore
 from adapters.oauth.fake import FakeOAuthProvider
 from adapters.oauth.yandex import YandexOAuthProvider
@@ -73,6 +74,7 @@ def _context(settings: Settings) -> AppContext:
     files = PostgresFileStore(sessions)
     pieces = PostgresPieceIndex(sessions)
     reader = PyPdfReader()
+    clock = _WallClock()
     return AppContext(
         config=RuntimeConfig(settings.state_ttl, settings.cors_origins),
         sign_in=SignIn(
@@ -80,7 +82,7 @@ def _context(settings: Settings) -> AppContext:
             RedisOAuthStore(redis),
             accounts,
             tokens,
-            _WallClock(),
+            clock,
             settings.state_ttl,
             settings.handoff_ttl,
             settings.frontend_callback_url,
@@ -88,7 +90,7 @@ def _context(settings: Settings) -> AppContext:
         session=SessionService(accounts, tokens, RedisRevocations(redis)),
         profile=ProfileService(accounts, settings.public_base_url),
         accounts=accounts,
-        submit_document=SubmitDocument(intake),
+        submit_document=SubmitDocument(intake, RedisUploadRateLimit(redis, clock)),
         read_document=ReadDocument(intake),
         list_documents=ListDocuments(intake),
         index_documents=IndexDocuments(intake, files, reader, pieces),

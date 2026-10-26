@@ -1,8 +1,14 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
-pytest.register_assert_rewrite("usecase.tests.statements.document_statements")
+pytest.register_assert_rewrite(
+    "usecase.tests.statements.document_statements",
+    "usecase.tests.statements.upload_rate_statements",
+)
 
 from usecase.document.index_documents import IndexDocuments
+from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
 from usecase.document.read_stored_file import ReadStoredFile
 from usecase.document.search_documents import SearchDocuments
@@ -11,7 +17,19 @@ from usecase.tests.fake.document.fake_document_intake import FakeDocumentIntake
 from usecase.tests.fake.document.fake_file_store import FakeFileStore
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
 from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
+from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
 from usecase.tests.statements.document_statements import DocumentStatements
+
+
+class Clock:
+    def __init__(self):
+        self.moment = datetime(2024, 5, 6, 7, 8, 9, tzinfo=timezone.utc)
+
+    def now(self):
+        return self.moment
+
+    def advance(self, seconds: int) -> None:
+        self.moment += timedelta(seconds=seconds)
 
 
 @pytest.fixture
@@ -21,11 +39,16 @@ def documents():
     intake = FakeDocumentIntake(bodies)
     files = FakeFileStore(bodies)
     pieces = FakePieceIndex()
+    clock = Clock()
+    rates = FakeUploadRateLimit(clock)
     return DocumentStatements(
-        SubmitDocument(intake),
+        SubmitDocument(intake, rates),
         IndexDocuments(intake, files, reader, pieces),
         ReadDocument(intake),
         SearchDocuments(intake, pieces),
         ReadStoredFile(files),
+        ListDocuments(intake),
         reader,
+        rates,
+        clock,
     )

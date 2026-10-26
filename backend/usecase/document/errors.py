@@ -11,3 +11,13 @@ class InvalidDocument(Exception):
         self.code = code
         self.message = message
         super().__init__(message)
+
+
+class RateLimited(Exception):
+    code = "rate_limited"
+    message = "Too many uploads in this minute"
+
+
+class RateUnavailable(Exception):
+    code = "rate_unavailable"
+    message = "Upload limit could not be checked"
