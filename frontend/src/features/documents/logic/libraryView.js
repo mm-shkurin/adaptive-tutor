@@ -1,55 +1,62 @@
 const EMPTY_LIST = 'Пока нет материалов'
 
-const STATUS_LABEL = {
-  waiting: 'Ждёт',
-  indexing: 'В процессе',
-  ready: 'Готов',
-  failed: 'Не удалось',
+const LIBRARY_COPY = {
+  heading: 'Документы',
+  pdfDoor: {
+    title: 'Загрузить PDF',
+    hint: 'до 50 MB · парсинг и индексация',
+  },
+  presentationDoor: 'Создать презентацию',
 }
 
-const STATUS_PILL = {
-  waiting: 'waiting',
-  indexing: 'processing',
-  ready: 'ready',
-  failed: 'failed',
+const STATUS = {
+  waiting: { label: 'Ждёт', pill: 'waiting' },
+  indexing: { label: 'В процессе', pill: 'processing' },
+  ready: { label: 'Готов', pill: 'ready' },
+  failed: { label: 'Не удалось', pill: 'failed' },
 }
 
 export function libraryView(page) {
-  const emptyList = page.documents.length === 0 ? EMPTY_LIST : null
   return {
-    heading: 'Документы',
-    pdfDoor: {
-      title: 'Загрузить PDF',
-      hint: 'до 50 MB · парсинг и индексация',
-    },
-    presentationDoor: 'Создать презентацию',
-    emptyList,
+    ...LIBRARY_COPY,
+    emptyList: emptyListMessage(page.documents),
     rows: page.documents.map(documentRow),
   }
 }
 
+function emptyListMessage(documents) {
+  return documents.length === 0 ? EMPTY_LIST : null
+}
+
 function documentRow(document) {
+  const status = STATUS[document.status]
   return {
     id: document.id,
     name: document.name,
     meta: documentMeta(document),
-    statusLabel: STATUS_LABEL[document.status],
-    statusPill: STATUS_PILL[document.status],
+    statusLabel: status.label,
+    statusPill: status.pill,
     failureReason: document.status === 'failed' ? document.error : null,
   }
 }
 
 function documentMeta(document) {
   const size = formatMegabytes(document.size_bytes)
-  if (document.status === 'waiting') return `${size} · ждёт индексации`
-  if (document.status === 'indexing') {
-    const pages = document.page_count == null ? '' : `${document.page_count} стр. · `
-    return `${size} · ${pages}индексация…`
+  switch (document.status) {
+    case 'waiting':
+      return `${size} · ждёт индексации`
+    case 'indexing':
+      return indexingMeta(size, document.page_count)
+    case 'ready':
+      return `${size} · ${document.page_count} стр. · ${document.piece_count} чанков`
+    default:
+      return size
   }
-  if (document.status === 'ready') {
-    return `${size} · ${document.page_count} стр. · ${document.piece_count} чанков`
-  }
-  return size
+}
+
+function indexingMeta(size, pageCount) {
+  const pages = pageCount == null ? '' : `${pageCount} стр. · `
+  return `${size} · ${pages}индексация…`
 }
 
 function formatMegabytes(sizeBytes) {

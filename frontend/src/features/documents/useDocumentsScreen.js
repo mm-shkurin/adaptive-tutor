@@ -19,15 +19,18 @@ export function useDocumentsScreen() {
       })
       .catch((error) => {
         if (controller.signal.aborted) return
-        if (isSessionExpired(error)) {
-          endSession()
-          navigate('/', { replace: true })
-          return
-        }
+        if (leaveIfExpired(error, navigate)) return
         setScreen({ status: 'error' })
       })
     return () => controller.abort()
   }, [navigate])
 
   return screen
+}
+
+function leaveIfExpired(error, navigate) {
+  if (!isSessionExpired(error)) return false
+  endSession()
+  navigate('/', { replace: true })
+  return true
 }
