@@ -1,12 +1,14 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from adapters.pdfreader.pdf_reader import PyPdfReader
 
-FIXTURES = Path(__file__).parent.parent.parent.parent / "acceptance" / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[3].parent / "acceptance" / "fixtures"
+EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
+TABLE = "|Topic|Mark|\n|---|---|\n|Limits|91|\n"
 
 
-@pytest.mark.skip(reason="RED: PdfReader adapter not implemented")
 class TestPdfReader:
     """PdfReader adapter tests.
 
@@ -20,7 +22,7 @@ class TestPdfReader:
 
         result = await reader.read(pdf_content)
 
-        assert result.text == "Lecture content\n\nTable follows"
+        assert result.text == EXTRACTED
 
     @pytest.mark.asyncio
     async def test_should_extract_tables_from_pdf(self):
@@ -29,7 +31,7 @@ class TestPdfReader:
 
         result = await reader.read(pdf_content)
 
-        assert result.table == "|Topic|Mark|\n|---|---|\n|Limits|91|\n"
+        assert result.table == TABLE
 
     @pytest.mark.asyncio
     async def test_should_count_pages(self):

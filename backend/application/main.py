@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adapters.http.auth import router as auth_router
+from adapters.http.documents import router as documents_router
 from adapters.http.errors import register_errors
 from adapters.http.media import router as media_router
 from adapters.http.profile import router as profile_router
@@ -28,6 +29,7 @@ def create_app(context: AppContext | None = None) -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1/auth")
     app.include_router(profile_router, prefix="/api/v1/user")
     app.include_router(media_router, prefix="/api/v1/media")
+    app.include_router(documents_router, prefix="/api/v1/documents")
     return app
 
 

@@ -1,14 +1,22 @@
+import asyncio
 import socket
 import threading
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 import httpx
 import uvicorn
+from fastapi import FastAPI
 
 from adapters.memory.account_store import MemoryAccountStore
+from adapters.memory.document_intake import MemoryDocumentIntake
+from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
+from adapters.memory.piece_index import MemoryPieceIndex
 from adapters.memory.revocations import MemoryRevocations
+from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
@@ -17,6 +25,10 @@ from clients.application.session_client import ScriptedProvider
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
+from usecase.document.index_documents import IndexDocuments
+from usecase.document.list_documents import ListDocuments
+from usecase.document.read_document import ReadDocument
+from usecase.document.submit_document import SubmitDocument
 
 
 def _state_ttl() -> timedelta:
@@ -43,17 +55,28 @@ class AcceptanceServer:
         self.probe = IndexProbe()
         port = _free_port()
         self.base_url = f"http://127.0.0.1:{port}"
+        self._indexing = asyncio.Event()
         self._serve(port)
 
     def _context(self) -> AppContext:
         store = MemoryAccountStore()
         tokens = JwtTokens("a" * 32, "b" * 32, timedelta(minutes=60), timedelta(days=30))
+        bodies: dict[UUID, bytes] = {}
+        intake = MemoryDocumentIntake(bodies, self.probe)
+        files = MemoryFileStore(bodies, self.probe)
+        pieces = MemoryPieceIndex(self.probe)
+        reader = PyPdfReader()
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
             SessionService(store, tokens, MemoryRevocations()),
             ProfileService(store, self.base_url),
             store,
+            SubmitDocument(intake),
+            ReadDocument(intake),
+            ListDocuments(intake),
+            IndexDocuments(intake, files, reader, pieces),
+            self._indexing,
         )
 
     def _sign_in(self, store: MemoryAccountStore, tokens: JwtTokens) -> SignIn:
@@ -69,12 +92,28 @@ class AcceptanceServer:
         )
 
     def _serve(self, port: int) -> None:
-        app = create_app(self._context())
+        ctx = self._context()
+
+        @asynccontextmanager
+        async def lifespan(app: FastAPI):
+            task = asyncio.create_task(self._index_loop(ctx))
+            app.state.indexing_task = task
+            yield
+            task.cancel()
+
+        app = create_app(ctx)
+        app.router.lifespan_context = lifespan
         app.state.index_probe = self.probe
         self._server = uvicorn.Server(
             uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", access_log=False)
         )
         self._thread = threading.Thread(target=self._server.run, daemon=True)
+
+    async def _index_loop(self, ctx: AppContext) -> None:
+        while not self._server.should_exit:
+            if self.probe.indexing_released():
+                await ctx.index_documents.index_waiting()
+            await asyncio.sleep(0.05)
 
     def start(self) -> None:
         self._thread.start()

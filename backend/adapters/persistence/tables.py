@@ -61,6 +61,7 @@ class DocumentRow(Base):
     status: Mapped[str] = mapped_column(String(32))
     error: Mapped[str | None] = mapped_column(Text)
     body: Mapped[bytes | None] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     def to_domain(self):
         from domain.document.document import Document
@@ -82,3 +83,18 @@ class DocumentRow(Base):
         self.piece_count = document.piece_count
         self.status = document.status
         self.error = document.error
+
+
+class DocumentPieceRow(Base):
+    __tablename__ = "document_pieces"
+
+    document_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
+    body: Mapped[str] = mapped_column(Text)
+
+
+class DocumentExtractionRow(Base):
+    __tablename__ = "document_extractions"
+
+    document_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    text: Mapped[str] = mapped_column(Text)

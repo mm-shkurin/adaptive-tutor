@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select
@@ -5,6 +6,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, Operation
 
 from adapters.persistence.tables import DocumentRow
 from domain.document.document import Document
+from usecase.document.list_documents import PAGE_SIZE
 from usecase.document.ports import DocumentIntake
 
 
@@ -24,6 +26,7 @@ class PostgresDocumentIntake(DocumentIntake):
                 status=document.status,
                 error=document.error,
                 body=content,
+                created_at=datetime.now(timezone.utc),
             )
             session.add(row)
 
@@ -52,11 +55,29 @@ class PostgresDocumentIntake(DocumentIntake):
     async def next_waiting(self) -> tuple[Document, bytes] | None:
         async def work(session):
             row = await session.scalar(
-                select(DocumentRow).where(DocumentRow.status == "waiting").order_by(DocumentRow.id).limit(1)
+                select(DocumentRow)
+                .where(DocumentRow.status == "waiting")
+                .order_by(DocumentRow.created_at)
+                .limit(1)
             )
-            if row is None:
+            if row is None or row.body is None:
                 return None
             return row.to_domain(), bytes(row.body)
+
+        return await self._run(work)
+
+    async def list_page(self, owner_id: UUID, page: int) -> tuple[tuple[Document, ...], bool]:
+        async def work(session):
+            rows = (
+                await session.scalars(
+                    select(DocumentRow)
+                    .where(DocumentRow.owner_id == owner_id)
+                    .order_by(DocumentRow.created_at.desc())
+                    .offset((page - 1) * PAGE_SIZE)
+                    .limit(PAGE_SIZE + 1)
+                )
+            ).all()
+            return tuple(row.to_domain() for row in rows[:PAGE_SIZE]), len(rows) > PAGE_SIZE
 
         return await self._run(work)
 

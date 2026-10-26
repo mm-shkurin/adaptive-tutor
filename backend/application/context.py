@@ -1,3 +1,4 @@
+import asyncio
 import os
 from dataclasses import dataclass
 from datetime import timedelta
@@ -6,14 +7,22 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from adapters.cache.redis_oauth import RedisOAuthStore
 from adapters.cache.redis_revocations import RedisRevocations
+from adapters.filestore.file_store import PostgresFileStore
 from adapters.oauth.fake import FakeOAuthProvider
 from adapters.oauth.yandex import YandexOAuthProvider
+from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.persistence.account_store import PostgresAccountStore
+from adapters.pieceindex.piece_index import PostgresPieceIndex
+from adapters.storage.document_intake import PostgresDocumentIntake
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.settings import Settings, load_settings
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
+from usecase.document.index_documents import IndexDocuments
+from usecase.document.list_documents import ListDocuments
+from usecase.document.read_document import ReadDocument
+from usecase.document.submit_document import SubmitDocument
 
 
 @dataclass
@@ -29,6 +38,16 @@ class AppContext:
     session: SessionService
     profile: ProfileService
     accounts: object
+    submit_document: SubmitDocument
+    read_document: ReadDocument
+    list_documents: ListDocuments
+    index_documents: IndexDocuments
+    _indexing: asyncio.Event | None = None
+
+    def schedule_indexing(self) -> None:
+        if self._indexing is None:
+            return
+        self._indexing.set()
 
 
 def build_production_context(env=None) -> AppContext:
@@ -50,6 +69,10 @@ def _context(settings: Settings) -> AppContext:
         settings.refresh_ttl,
     )
     provider = _provider(settings)
+    intake = PostgresDocumentIntake(sessions)
+    files = PostgresFileStore(sessions)
+    pieces = PostgresPieceIndex(sessions)
+    reader = PyPdfReader()
     return AppContext(
         config=RuntimeConfig(settings.state_ttl, settings.cors_origins),
         sign_in=SignIn(
@@ -65,6 +88,10 @@ def _context(settings: Settings) -> AppContext:
         session=SessionService(accounts, tokens, RedisRevocations(redis)),
         profile=ProfileService(accounts, settings.public_base_url),
         accounts=accounts,
+        submit_document=SubmitDocument(intake),
+        read_document=ReadDocument(intake),
+        list_documents=ListDocuments(intake),
+        index_documents=IndexDocuments(intake, files, reader, pieces),
     )
 
 

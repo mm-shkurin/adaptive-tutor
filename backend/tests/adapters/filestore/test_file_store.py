@@ -1,9 +1,24 @@
 import pytest
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from adapters.filestore.file_store import PostgresFileStore
 from adapters.persistence.tables import DocumentRow
-from domain.document.document import Document
+
+
+def _row(document_id):
+    return DocumentRow(
+        id=document_id,
+        owner_id=uuid4(),
+        name="test.pdf",
+        size_bytes=1024,
+        page_count=None,
+        piece_count=None,
+        status="waiting",
+        error=None,
+        body=b"",
+        created_at=datetime.now(timezone.utc),
+    )
 
 
 class TestFileStore:
@@ -21,7 +36,7 @@ class TestFileStore:
 
         async with sessions() as session:
             async with session.begin():
-                session.add(DocumentRow(id=document_id, owner_id=uuid4(), name="test.pdf", size_bytes=1024, page_count=None, piece_count=None, status="waiting", error=None, body=b""))
+                session.add(_row(document_id))
 
         await store.put(document_id, content)
         retrieved = await store.get(document_id)
@@ -36,7 +51,7 @@ class TestFileStore:
 
         async with sessions() as session:
             async with session.begin():
-                session.add(DocumentRow(id=document_id, owner_id=uuid4(), name="test.pdf", size_bytes=1024, page_count=None, piece_count=None, status="waiting", error=None, body=b""))
+                session.add(_row(document_id))
 
         await store.put(document_id, content)
         await store.delete(document_id)

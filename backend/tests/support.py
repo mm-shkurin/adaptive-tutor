@@ -5,8 +5,12 @@ from urllib.parse import parse_qs, urlparse
 from fastapi.testclient import TestClient
 
 from adapters.memory.account_store import MemoryAccountStore
+from adapters.memory.document_intake import MemoryDocumentIntake
+from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
+from adapters.memory.piece_index import MemoryPieceIndex
 from adapters.memory.revocations import MemoryRevocations
+from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
@@ -14,6 +18,10 @@ from domain.account.identity import ProviderIdentity
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
+from usecase.document.index_documents import IndexDocuments
+from usecase.document.list_documents import ListDocuments
+from usecase.document.read_document import ReadDocument
+from usecase.document.submit_document import SubmitDocument
 
 WHEN = datetime(2024, 5, 6, 7, 8, 9, tzinfo=timezone.utc)
 CREATED = "2024-05-06T07:08:09Z"
@@ -75,12 +83,21 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         timedelta(seconds=handoff_ttl),
         "http://localhost:5173/auth/callback",
     )
+    bodies = {}
+    intake = MemoryDocumentIntake(bodies)
+    files = MemoryFileStore(bodies)
+    pieces = MemoryPieceIndex()
+    reader = PyPdfReader()
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
         sign_in,
         SessionService(store, tokens, MemoryRevocations()),
         ProfileService(store, "http://testserver"),
         store,
+        SubmitDocument(intake),
+        ReadDocument(intake),
+        ListDocuments(intake),
+        IndexDocuments(intake, files, reader, pieces),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(client, store, clock, provider)

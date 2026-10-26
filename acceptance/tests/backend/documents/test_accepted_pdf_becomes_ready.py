@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: POST /api/v1/documents returns 404 (assert 404 == 201)")
 @pytest.mark.backend
 class TestAcceptedPdfBecomesReady(AbstractBackendTest):
     """An accepted PDF becomes ready and its text and tables can be searched.

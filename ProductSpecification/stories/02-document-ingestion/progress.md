@@ -24,12 +24,12 @@
 - [x] red-adapter filestore
 - [x] green-adapter filestore
 - [x] red-adapter pdfreader
-- [ ] green-adapter pdfreader
-- [ ] red-adapter pieceindex
-- [ ] green-adapter pieceindex
-- [ ] red-adapter http
-- [ ] green-adapter http
-- [ ] green-acceptance
+- [x] green-adapter pdfreader
+- [S] red-adapter pieceindex (delivery without red/green; tests + impl together)
+- [x] green-adapter pieceindex
+- [S] red-adapter http (delivery without red/green; routes + wiring together)
+- [x] green-adapter http
+- [x] green-acceptance
 
 ## Tier 1 — Frontend Scenarios (02_UI_Tests.md)
 
@@ -39,7 +39,7 @@
 - [x] green-frontend
 - [S] red-frontend-api (empty document page is already the shape libraryView reads; doors and empty copy are presentational)
 - [S] green-frontend-api (no API mapping to implement)
-- [~] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 

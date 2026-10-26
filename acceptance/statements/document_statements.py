@@ -62,6 +62,7 @@ class DocumentStatements:
         self.neighbour_id = document_id
 
     def when_the_neighbour_document_becomes_ready(self) -> None:
+        self.probe.release_indexing()
         self.neighbour_ready = self._until_ready(self.neighbour_token, self.neighbour_id)
 
     def then_the_neighbour_document_is_ready(self) -> None:
@@ -92,6 +93,7 @@ class DocumentStatements:
         assert self.listed.body == {"documents": [uploaded], "has_next": False}
 
     def when_the_document_finishes_indexing(self) -> None:
+        self.probe.release_indexing()
         self.ready = self._until_ready(self.token, self.upload.body["id"])
 
     def then_the_document_becomes_ready_with_its_facts(self) -> None:

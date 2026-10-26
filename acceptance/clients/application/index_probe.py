@@ -1,8 +1,12 @@
+import threading
+
+
 class IndexProbe:
     def __init__(self):
         self._pieces: dict[str, tuple[str, ...]] = {}
         self._extracted: dict[str, str] = {}
         self._files: dict[str, bytes] = {}
+        self._release = threading.Event()
 
     def remember_file(self, document_id: str, content: bytes) -> None:
         self._files[document_id] = content
@@ -22,3 +26,12 @@ class IndexProbe:
 
     def extracted_text(self, document_id: str) -> str:
         return self._extracted.get(document_id, "")
+
+    def release_indexing(self) -> None:
+        self._release.set()
+
+    def indexing_released(self) -> bool:
+        return self._release.is_set()
+
+    def wait_for_indexing_release(self, timeout: float) -> bool:
+        return self._release.wait(timeout)
