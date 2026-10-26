@@ -16,3 +16,27 @@ export function isProfileBody(value) {
     (value.avatar_url === null || typeof value.avatar_url === 'string')
   )
 }
+
+const DOCUMENT_STATUSES = new Set(['waiting', 'indexing', 'ready', 'failed'])
+
+export function isDocumentBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.size_bytes === 'number' &&
+    (value.page_count === null || typeof value.page_count === 'number') &&
+    (value.piece_count === null || typeof value.piece_count === 'number') &&
+    DOCUMENT_STATUSES.has(value.status) &&
+    (value.error === null || typeof value.error === 'string')
+  )
+}
+
+export function isDocumentPageBody(value) {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.documents) &&
+    value.documents.every(isDocumentBody) &&
+    typeof value.has_next === 'boolean'
+  )
+}

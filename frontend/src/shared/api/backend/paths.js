@@ -12,4 +12,8 @@ export const BACKEND = {
     avatar: `${V1}/user/avatar`,
     account: `${V1}/user`,
   },
+  documents: {
+    list: `${V1}/documents`,
+    item: (id) => `${V1}/documents/${id}`,
+  },
 }

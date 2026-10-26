@@ -1,10 +1,26 @@
 import { StrokeIcon } from '../../shared/icons'
-import { libraryView } from './logic/libraryView'
-
-const EMPTY_PAGE = { documents: [], has_next: false }
+import { DocumentRow } from './components/DocumentRow'
+import { useDocumentsScreen } from './useDocumentsScreen'
 
 export function DocumentsPage() {
-  const view = libraryView(EMPTY_PAGE)
+  const screen = useDocumentsScreen()
+  if (screen.status === 'loading') {
+    return (
+      <main className="documents-page" data-testid="documents-loading">
+        <div className="spinner" aria-hidden="true" />
+      </main>
+    )
+  }
+  if (screen.status === 'error') {
+    return (
+      <main className="documents-page">
+        <p className="alert" role="alert" data-testid="documents-error">
+          Не удалось открыть документы.
+        </p>
+      </main>
+    )
+  }
+  const { view } = screen
   return (
     <main className="documents-page">
       <h1 data-testid="documents-heading">{view.heading}</h1>
@@ -34,6 +50,9 @@ export function DocumentsPage() {
       <div className="docs-section-label">Ваши материалы</div>
       <div className="docs-list" data-testid="document-list">
         {view.emptyList ? <p className="documents-empty">{view.emptyList}</p> : null}
+        {view.rows.map((row) => (
+          <DocumentRow key={row.id} row={row} />
+        ))}
       </div>
     </main>
   )

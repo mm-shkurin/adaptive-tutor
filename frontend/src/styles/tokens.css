@@ -20,6 +20,11 @@
   --solid: #0b1c1a;
   --on-solid: #f3f7f5;
   --surface-2: #eef5f2;
+  --tint: #e4f4f0;
+  --ok: #2a9b6a;
+  --ok-soft: #d7f0e4;
+  --warn: #c9852a;
+  --warn-soft: #f6e8d0;
   --shadow: 0 12px 32px rgba(11, 28, 26, 0.16);
   --font: Inter, "Segoe UI", sans-serif;
   --control: 48px;

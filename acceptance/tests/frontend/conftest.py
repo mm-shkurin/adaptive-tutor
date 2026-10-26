@@ -106,7 +106,9 @@ def ui():
         app_url = f"http://127.0.0.1:{port}"
         _wait_http(app_url, vite, log_path)
         driver = _chrome()
-        signed_in = SignedInBrowserStatements(driver, app_url, server.base_url, server.provider)
+        signed_in = SignedInBrowserStatements(
+            driver, app_url, server.base_url, server.provider, server.probe
+        )
         library = DocumentLibraryStatements(driver)
         yield signed_in, library
     finally:

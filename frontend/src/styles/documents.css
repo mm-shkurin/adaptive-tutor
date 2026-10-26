@@ -67,6 +67,81 @@
   text-align: center;
 }
 
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.doc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--accent-deep);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.doc-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-name {
+  font-weight: 600;
+}
+
+.doc-meta {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+.doc-failure {
+  font-size: 0.82rem;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
+.status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-pill.ready {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.status-pill.processing {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.status-pill.waiting {
+  background: var(--surface-2);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+}
+
+.status-pill.failed {
+  background: #fdf2f2;
+  color: var(--danger);
+}
+
 @media (max-width: 800px) {
   .documents-page { padding: 20px 16px 88px; }
   .documents-page h1 { font-size: 26px; }
