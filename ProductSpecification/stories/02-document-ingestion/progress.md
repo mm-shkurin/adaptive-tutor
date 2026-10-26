@@ -126,28 +126,28 @@
 - [ ] green-acceptance
 
 ### 3.1 The same submission stored twice is one document
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (delivery without red/green; HTTP + usecase together)
+- [S] design (Idempotency-Key on DocumentIntake; unique per owner; replay skips rate)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (Memory + Postgres find_by_key/store; migration 0005)
+- [x] green-acceptance (HTTP 200 replay / 201 create via TestClient)
 
 ### 3.2 Two overlapping copies of one submission store one document
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (covered with 3.1–3.3 one-submission piece)
+- [S] design (atomic claim; DuplicateSubmission → replay)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (same intake as 3.1)
+- [x] green-acceptance (usecase race; HTTP covered by shared wiring)
 
 ### 3.3 Uploading the same PDF again creates another document
-- [ ] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] red-acceptance (covered with 3.1–3.3 one-submission piece)
+- [S] design (new Idempotency-Key → new row even when bytes match)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (same intake as 3.1)
+- [x] green-acceptance (HTTP TestClient)
 
 ### 4.2 A failed index names the part and leaves nothing searchable
 - [ ] red-acceptance

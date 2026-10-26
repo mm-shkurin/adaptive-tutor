@@ -18,7 +18,7 @@ class TestDocumentIntake:
         document = Document.accepted("lecture.pdf", 1024)
         content = b"pdf content"
 
-        await intake.store(owner_id, document, content)
+        await intake.store(owner_id, document, content, str(uuid4()))
         retrieved = await intake.get(owner_id, document.id)
 
         assert retrieved.id == document.id
@@ -31,7 +31,7 @@ class TestDocumentIntake:
         document = Document.accepted("lecture.pdf", 1024)
         updated = document.indexing()
 
-        await intake.store(owner_id, document, b"content")
+        await intake.store(owner_id, document, b"content", str(uuid4()))
         await intake.save(updated)
         retrieved = await intake.get(owner_id, document.id)
         assert retrieved.status == "indexing"
@@ -42,8 +42,8 @@ class TestDocumentIntake:
         ready = Document.accepted("ready.pdf", 1024).ready(1, 2)
         owner_id = uuid4()
 
-        await intake.store(owner_id, waiting, b"waiting content")
-        await intake.store(owner_id, ready, b"ready content")
+        await intake.store(owner_id, waiting, b"waiting content", str(uuid4()))
+        await intake.store(owner_id, ready, b"ready content", str(uuid4()))
 
         result = await intake.next_waiting()
 

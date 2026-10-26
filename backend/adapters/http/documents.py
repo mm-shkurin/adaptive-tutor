@@ -31,12 +31,17 @@ async def upload_document(
     idempotency_key: str = Header(..., alias="Idempotency-Key", min_length=1, max_length=255),
 ):
     account = await _caller(request)
-    del idempotency_key
     name = _name(file.filename)
     content = await _read_pdf(file)
-    document = await request.app.state.ctx.submit_document.submit(account.id, name, content)
-    request.app.state.ctx.schedule_indexing()
-    return JSONResponse(status_code=201, content=_json(document))
+    accepted = await request.app.state.ctx.submit_document.submit(
+        account.id, name, content, idempotency_key
+    )
+    if accepted.created:
+        request.app.state.ctx.schedule_indexing()
+    return JSONResponse(
+        status_code=201 if accepted.created else 200,
+        content=_json(accepted.document),
+    )
 
 
 @router.get("/{document_id}")

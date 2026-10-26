@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
@@ -6,11 +7,12 @@ from usecase.document.ports import PdfRead
 from usecase.document.read_document import ReadDocument
 from usecase.document.read_stored_file import ReadStoredFile
 from usecase.document.search_documents import SearchDocuments
-from usecase.document.submit_document import SubmitDocument
+from usecase.document.submit_document import AcceptedSubmission, SubmitDocument
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
 from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
+from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
 from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 
 FIXTURES = Path(__file__).resolve().parents[4] / "acceptance" / "fixtures"
@@ -21,7 +23,7 @@ EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
 NEIGHBOUR_TEXT = (FIXTURES / "neighbour.txt").read_text(encoding="utf-8")
 
 
-class DocumentStatements(UploadRateStatements):
+class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
     def __init__(
         self,
         submit: SubmitDocument,
@@ -59,8 +61,18 @@ class DocumentStatements(UploadRateStatements):
         self.neighbour_file = None
         self.refusal = None
         self.race_results = None
+        self.submission_key = None
+        self.replay = None
+        self.earlier = None
+        self.second_upload = None
         reader.register(self.lecture, PdfRead(EXTRACTED, TABLE, views.PAGE_COUNT))
         reader.register(self.neighbour_pdf, PdfRead(NEIGHBOUR_TEXT, "", views.PAGE_COUNT))
+
+    async def _accept(
+        self, owner_id, name: str, content: bytes, submission_key: str | None = None
+    ) -> AcceptedSubmission:
+        key = str(uuid4()) if submission_key is None else submission_key
+        return await self.submit.submit(owner_id, name, content, key)
 
     async def given_a_signed_in_person(self) -> None:
         self.person_id = self.scope.person_id
@@ -69,9 +81,9 @@ class DocumentStatements(UploadRateStatements):
         self.neighbour_id = self.scope.neighbour_id
 
     async def when_the_neighbour_submits_a_pdf(self) -> None:
-        self.neighbour_upload = await self.submit.submit(
-            self.neighbour_id, self.scope.neighbour_name, self.neighbour_pdf
-        )
+        self.neighbour_upload = (
+            await self._accept(self.neighbour_id, self.scope.neighbour_name, self.neighbour_pdf)
+        ).document
 
     async def then_the_neighbour_upload_is_waiting(self) -> None:
         assert self.neighbour_upload == views.waiting(
@@ -94,7 +106,9 @@ class DocumentStatements(UploadRateStatements):
         assert self.neighbour_pieces == (NEIGHBOUR_TEXT,)
 
     async def when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table(self) -> None:
-        self.upload = await self.submit.submit(self.person_id, self.scope.lecture_name, self.lecture)
+        self.upload = (
+            await self._accept(self.person_id, self.scope.lecture_name, self.lecture)
+        ).document
 
     async def then_the_upload_is_answered_before_indexing_finishes(self) -> None:
         assert self.upload == views.waiting(self.upload.id, self.scope.lecture_name, len(self.lecture))

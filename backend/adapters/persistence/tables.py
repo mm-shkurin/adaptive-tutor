@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, Integer, LargeBinary, String, Text, Uuid
+from sqlalchemy import DateTime, Integer, LargeBinary, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -51,9 +51,15 @@ class AvatarRow(Base):
 
 class DocumentRow(Base):
     __tablename__ = "documents"
+    __table_args__ = (
+        UniqueConstraint(
+            "owner_id", "idempotency_key", name="documents_owner_idempotency_key_uq"
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     owner_id: Mapped[UUID] = mapped_column(index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
     size_bytes: Mapped[int] = mapped_column(Integer)
     page_count: Mapped[int | None] = mapped_column(Integer)

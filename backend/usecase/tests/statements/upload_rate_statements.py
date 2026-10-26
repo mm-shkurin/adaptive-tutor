@@ -1,21 +1,21 @@
 import asyncio
 
-from domain.document.document import Document
 from usecase.document.errors import RateLimited, RateUnavailable
+from usecase.document.submit_document import AcceptedSubmission
 
 
 class UploadRateStatements:
     async def given_five_accepted_uploads_in_the_current_minute(self) -> None:
         for index in range(5):
-            await self.submit.submit(self.person_id, f"lecture-{index}.pdf", self.lecture)
+            await self._accept(self.person_id, f"lecture-{index}.pdf", self.lecture)
 
     async def given_four_accepted_uploads_in_the_current_minute(self) -> None:
         for index in range(4):
-            await self.submit.submit(self.person_id, f"lecture-{index}.pdf", self.lecture)
+            await self._accept(self.person_id, f"lecture-{index}.pdf", self.lecture)
 
     async def when_the_person_submits_a_sixth_pdf(self) -> None:
         try:
-            await self.submit.submit(self.person_id, "sixth.pdf", self.lecture)
+            await self._accept(self.person_id, "sixth.pdf", self.lecture)
             self.refusal = None
         except RateLimited as error:
             self.refusal = error
@@ -31,13 +31,13 @@ class UploadRateStatements:
 
     async def when_two_uploads_pass_the_count_check_together(self) -> None:
         self.race_results = await asyncio.gather(
-            self.submit.submit(self.person_id, "race-a.pdf", self.lecture),
-            self.submit.submit(self.person_id, "race-b.pdf", self.lecture),
+            self._accept(self.person_id, "race-a.pdf", self.lecture),
+            self._accept(self.person_id, "race-b.pdf", self.lecture),
             return_exceptions=True,
         )
 
     async def then_one_of_them_is_accepted_and_the_other_is_refused(self) -> None:
-        accepted = [item for item in self.race_results if isinstance(item, Document)]
+        accepted = [item for item in self.race_results if isinstance(item, AcceptedSubmission)]
         refused = [item for item in self.race_results if isinstance(item, RateLimited)]
         assert len(accepted) == 1
         assert len(refused) == 1
@@ -59,7 +59,9 @@ class UploadRateStatements:
         self.clock.advance(2)
 
     async def then_the_next_upload_is_accepted(self) -> None:
-        self.upload = await self.submit.submit(self.person_id, "next-minute.pdf", self.lecture)
+        self.upload = (
+            await self._accept(self.person_id, "next-minute.pdf", self.lecture)
+        ).document
         assert self.upload.status == "waiting"
 
     async def then_the_five_from_the_previous_minute_stay(self) -> None:
@@ -72,7 +74,7 @@ class UploadRateStatements:
 
     async def when_the_person_submits_a_valid_pdf_under_rate_check(self) -> None:
         try:
-            await self.submit.submit(self.person_id, self.scope.lecture_name, self.lecture)
+            await self._accept(self.person_id, self.scope.lecture_name, self.lecture)
             self.refusal = None
         except RateUnavailable as error:
             self.refusal = error

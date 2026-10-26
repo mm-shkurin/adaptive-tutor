@@ -2,8 +2,8 @@ import asyncio
 from uuid import UUID
 
 from domain.document.document import Document
+from usecase.document.errors import DuplicateSubmission, StoreUnavailable
 from usecase.document.list_documents import PAGE_SIZE
-from usecase.document.errors import StoreUnavailable
 
 
 class MemoryDocumentIntake:
@@ -11,13 +11,30 @@ class MemoryDocumentIntake:
         self.bodies = bodies if bodies is not None else {}
         self.rows: dict[UUID, tuple[UUID, Document]] = {}
         self._order: list[UUID] = []
+        self._keys: dict[tuple[UUID, str], UUID] = {}
         self._lock = asyncio.Lock()
         self._probe = probe
         self.dead = False
 
-    async def store(self, owner_id: UUID, document: Document, content: bytes) -> None:
+    async def find_by_key(self, owner_id: UUID, submission_key: str) -> Document | None:
+        async def action():
+            document_id = self._keys.get((owner_id, submission_key))
+            if document_id is None:
+                return None
+            row = self.rows.get(document_id)
+            return None if row is None else row[1]
+
+        return await self._guard(action)
+
+    async def store(
+        self, owner_id: UUID, document: Document, content: bytes, submission_key: str
+    ) -> None:
         async def action():
             async with self._lock:
+                key = (owner_id, submission_key)
+                if key in self._keys:
+                    raise DuplicateSubmission()
+                self._keys[key] = document.id
                 self.rows[document.id] = (owner_id, document)
                 self.bodies[document.id] = content
                 self._order.append(document.id)

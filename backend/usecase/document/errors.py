@@ -21,3 +21,7 @@ class RateLimited(Exception):
 class RateUnavailable(Exception):
     code = "rate_unavailable"
     message = "Upload limit could not be checked"
+
+
+class DuplicateSubmission(Exception):
+    """Another delivery already claimed this Idempotency-Key for the owner."""

@@ -5,6 +5,7 @@ import pytest
 pytest.register_assert_rewrite(
     "usecase.tests.statements.document_statements",
     "usecase.tests.statements.upload_rate_statements",
+    "usecase.tests.statements.one_submission_statements",
 )
 
 from usecase.document.index_documents import IndexDocuments

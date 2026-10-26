@@ -6,6 +6,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, Operation
 
 from adapters.persistence.tables import DocumentRow
 from domain.document.document import Document
+from usecase.document.errors import DuplicateSubmission
 from usecase.document.list_documents import PAGE_SIZE
 from usecase.document.ports import DocumentIntake
 
@@ -14,11 +15,26 @@ class PostgresDocumentIntake(DocumentIntake):
     def __init__(self, sessions):
         self._sessions = sessions
 
-    async def store(self, owner_id: UUID, document: Document, content: bytes) -> None:
+    async def find_by_key(self, owner_id: UUID, submission_key: str) -> Document | None:
+        async def work(session):
+            row = await session.scalar(
+                select(DocumentRow).where(
+                    DocumentRow.owner_id == owner_id,
+                    DocumentRow.idempotency_key == submission_key,
+                )
+            )
+            return None if row is None else row.to_domain()
+
+        return await self._run(work)
+
+    async def store(
+        self, owner_id: UUID, document: Document, content: bytes, submission_key: str
+    ) -> None:
         async def work(session):
             row = DocumentRow(
                 id=document.id,
                 owner_id=owner_id,
+                idempotency_key=submission_key,
                 name=document.name,
                 size_bytes=document.size_bytes,
                 page_count=document.page_count,
@@ -30,7 +46,10 @@ class PostgresDocumentIntake(DocumentIntake):
             )
             session.add(row)
 
-        await self._run(work)
+        try:
+            await self._run(work)
+        except IntegrityError as error:
+            raise DuplicateSubmission() from error
 
     async def get(self, owner_id: UUID, document_id: UUID) -> Document | None:
         async def work(session):
