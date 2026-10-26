@@ -1,9 +1,11 @@
+import { useRef } from 'react'
 import { StrokeIcon } from '../../shared/icons'
 import { DocumentRow } from './components/DocumentRow'
 import { useDocumentsScreen } from './useDocumentsScreen'
 
 export function DocumentsPage() {
   const screen = useDocumentsScreen()
+  const fileRef = useRef(null)
   if (screen.status === 'loading') {
     return (
       <main className="documents-page" data-testid="documents-loading">
@@ -29,7 +31,16 @@ export function DocumentsPage() {
       </p>
       <div className="docs-entry">
         <div>
-          <div className="upload-zone">
+          <div
+            className="upload-zone"
+            role="button"
+            tabIndex={0}
+            data-testid="pdf-door"
+            onClick={() => fileRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') fileRef.current?.click()
+            }}
+          >
             <StrokeIcon name="upload" />
             <div data-testid="pdf-door-title">
               <strong>{view.pdfDoor.title}</strong>
@@ -37,6 +48,19 @@ export function DocumentsPage() {
             <div className="upload-hint" data-testid="pdf-door-hint">
               {view.pdfDoor.hint}
             </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/pdf"
+              hidden
+              data-testid="pdf-upload-input"
+              disabled={screen.uploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                event.target.value = ''
+                if (file) screen.uploadPdf(file)
+              }}
+            />
           </div>
         </div>
         <div className="upload-zone">

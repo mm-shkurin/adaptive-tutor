@@ -40,6 +40,10 @@ class SignedInBrowserStatements:
         assert self.ready_document.status_code == 200
         assert self.ready_document.body["status"] == "ready"
         assert self.ready_document.body["name"] == READY_NAME
+        self.probe.hold_indexing()
+
+    def when_indexing_is_released(self) -> None:
+        self.probe.release_indexing()
 
     def close(self) -> None:
         self.sessions.close()

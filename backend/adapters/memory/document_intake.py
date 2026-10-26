@@ -40,10 +40,13 @@ class MemoryDocumentIntake:
             async with self._lock:
                 row = self.rows.get(document.id)
                 if row is None:
-                    return
+                    return None
                 self.rows[document.id] = (row[0], document)
+                return document.status
 
-        await self._guard(action)
+        status = await self._guard(action)
+        if status == "indexing" and self._probe is not None:
+            await asyncio.sleep(self._probe.indexing_hold_seconds())
 
     async def next_waiting(self) -> tuple[Document, bytes] | None:
         async def action():

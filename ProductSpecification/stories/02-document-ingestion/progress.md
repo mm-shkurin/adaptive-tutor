@@ -54,14 +54,14 @@
 - [S] demo (not in this delivery slice)
 
 ### 2.1 An accepted PDF appears as waiting and then becomes ready
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (frontend-delivery without red/green)
+- [x] green-frontend-api
+- [x] align-design
+- [x] green-selenium
+- [S] demo (not in this delivery slice)
 
 ## Harvest — Tier 1 → Tier 2
 

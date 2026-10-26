@@ -7,6 +7,7 @@ class IndexProbe:
         self._extracted: dict[str, str] = {}
         self._files: dict[str, bytes] = {}
         self._release = threading.Event()
+        self._indexing_hold_seconds = 1.5
 
     def remember_file(self, document_id: str, content: bytes) -> None:
         self._files[document_id] = content
@@ -29,6 +30,12 @@ class IndexProbe:
 
     def release_indexing(self) -> None:
         self._release.set()
+
+    def hold_indexing(self) -> None:
+        self._release.clear()
+
+    def indexing_hold_seconds(self) -> float:
+        return self._indexing_hold_seconds
 
     def indexing_released(self) -> bool:
         return self._release.is_set()
