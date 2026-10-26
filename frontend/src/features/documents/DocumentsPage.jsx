@@ -12,13 +12,15 @@ export function DocumentsPage() {
         PDF или презентация из фото слайдов — оба пути попадают в индекс для чата
       </p>
       <div className="docs-entry">
-        <div className="upload-zone">
-          <StrokeIcon name="upload" />
-          <div data-testid="pdf-door-title">
-            <strong>{view.pdfDoor.title}</strong>
-          </div>
-          <div className="upload-hint" data-testid="pdf-door-hint">
-            {view.pdfDoor.hint}
+        <div>
+          <div className="upload-zone">
+            <StrokeIcon name="upload" />
+            <div data-testid="pdf-door-title">
+              <strong>{view.pdfDoor.title}</strong>
+            </div>
+            <div className="upload-hint" data-testid="pdf-door-hint">
+              {view.pdfDoor.hint}
+            </div>
           </div>
         </div>
         <div className="upload-zone">
