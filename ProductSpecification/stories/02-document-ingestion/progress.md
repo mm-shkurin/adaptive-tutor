@@ -40,7 +40,7 @@
 - [S] red-frontend-api (empty document page is already the shape libraryView reads; doors and empty copy are presentational)
 - [S] green-frontend-api (no API mapping to implement)
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 1.2 A ready document shows its name, size, pages, and piece count
