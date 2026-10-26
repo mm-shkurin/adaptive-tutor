@@ -41,7 +41,7 @@
 - [S] green-frontend-api (no API mapping to implement)
 - [x] align-design
 - [x] green-selenium
-- [ ] demo
+- [x] demo
 
 ### 1.2 A ready document shows its name, size, pages, and piece count
 - [ ] red-selenium
