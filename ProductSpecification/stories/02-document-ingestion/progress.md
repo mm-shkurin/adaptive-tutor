@@ -167,11 +167,11 @@
 
 ### 4.4 Three failed tries end as failed and the next document still indexes
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (IndexingBudget ATTEMPT_LIMIT=3; RETRY requeues waiting until attempts>=3 then `_fail("indexing failed")`; next_waiting continues so a later document still becomes ready)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; ProbeIndexDocuments / FakeIndexDocuments return RETRY while armed)
+- [x] green-acceptance
 
 ### 4.5 Indexing that would store more than 2000 pieces fails the document
 - [x] red-acceptance

@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: indexing retry attempts and permanent failure after three tries")
 @pytest.mark.backend
 class TestThreeFailedTriesAndNextDocumentIndexes(AbstractBackendTest):
     """Three failed tries end as failed and the next document still indexes.
