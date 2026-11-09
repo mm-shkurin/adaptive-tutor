@@ -95,11 +95,11 @@
 
 ### 2.1 An unacceptable file adds no document
 - [x] red-acceptance
-- [~] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design
+- [S] red-usecase (delivery without red/green; refusal is HTTP gate before SubmitDocument)
+- [S] green-usecase (no usecase change)
+- [S] adapters-discovery (HTTP multipart + existing upload_check)
+- [x] green-acceptance
 
 ### 2.2 A file at either size edge is stored as that byte count
 - [x] red-acceptance (harvest: already green)

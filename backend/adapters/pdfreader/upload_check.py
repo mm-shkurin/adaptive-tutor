@@ -4,7 +4,10 @@ from usecase.document.errors import InvalidDocument
 
 
 def reject_unreadable_pdf(content: bytes) -> None:
-    document = pymupdf.open(stream=content, filetype="pdf")
+    try:
+        document = pymupdf.open(stream=content, filetype="pdf")
+    except Exception as error:
+        raise InvalidDocument("invalid_pdf", "File is not a PDF") from error
     try:
         if document.is_encrypted or document.needs_pass:
             raise InvalidDocument("encrypted_pdf", "PDF is encrypted")

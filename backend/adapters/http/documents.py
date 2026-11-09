@@ -1,8 +1,9 @@
 from urllib.parse import unquote
 from uuid import UUID
 
-from fastapi import APIRouter, File, Header, Query, Request, UploadFile
+from fastapi import APIRouter, Header, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
+from starlette.datastructures import UploadFile as FormUpload
 
 from adapters.http.auth import _bearer
 from adapters.pdfreader.upload_check import reject_unreadable_pdf
@@ -40,13 +41,11 @@ async def list_documents(
 async def upload_document(
     request: Request,
     idempotency_key: str = Header(..., alias="Idempotency-Key", min_length=1, max_length=255),
-    file: UploadFile | None = File(None),
 ):
     account = await _caller(request)
-    if file is None:
-        raise InvalidDocument("file_missing", "File is missing")
-    name = _name(file.filename)
-    content = await _read_pdf(file)
+    upload = await _upload_part(request)
+    name = _name(upload.filename)
+    content = await _read_pdf(upload)
     accepted = await request.app.state.ctx.submit_document.submit(
         account.id, name, content, idempotency_key
     )
@@ -73,6 +72,20 @@ async def _caller(request: Request):
         return await request.app.state.ctx.session.caller(_bearer(request))
     except Unauthorized as error:
         raise DocumentNotFound() from error
+
+
+async def _upload_part(request: Request) -> UploadFile:
+    try:
+        form = await request.form()
+    except Exception as error:
+        raise InvalidDocument("file_missing", "File is missing") from error
+    if "file" not in form:
+        raise InvalidDocument("file_missing", "File is missing")
+    part = form["file"]
+    if not isinstance(part, FormUpload):
+        # Empty filename is parsed as a plain field, not an upload.
+        raise InvalidDocument("name_missing", "File name is missing")
+    return part
 
 
 def _name(filename: str | None) -> str:

@@ -14,7 +14,6 @@ class TestUnacceptableFileAddsNoDocument(AbstractBackendTest):
     And the list is unchanged
     """
 
-    @pytest.mark.skip(reason="RED: assert 422 == 400 — missing file returns invalid_request, not file_missing")
     def test_should_refuse_no_file(self, documents):
         """Given a signed-in person with one document
         When the person submits no file
@@ -41,7 +40,6 @@ class TestUnacceptableFileAddsNoDocument(AbstractBackendTest):
         documents.then_the_upload_is_refused("invalid_pdf")
         documents.then_the_list_is_unchanged()
 
-    @pytest.mark.skip(reason="RED: assert 201 == 400 — empty PDF is accepted as waiting")
     def test_should_refuse_a_pdf_with_no_text(self, documents):
         """Given a signed-in person with one document
         When the person submits a PDF with no text
@@ -81,7 +79,6 @@ class TestUnacceptableFileAddsNoDocument(AbstractBackendTest):
         documents.then_the_upload_is_refused("file_too_large")
         documents.then_the_list_is_unchanged()
 
-    @pytest.mark.skip(reason="RED: assert 201 == 400 — encrypted PDF is accepted as waiting")
     def test_should_refuse_an_encrypted_pdf(self, documents):
         """Given a signed-in person with one document
         When the person submits an encrypted PDF
@@ -95,7 +92,6 @@ class TestUnacceptableFileAddsNoDocument(AbstractBackendTest):
         documents.then_the_upload_is_refused("encrypted_pdf")
         documents.then_the_list_is_unchanged()
 
-    @pytest.mark.skip(reason="RED: assert 422 == 400 — empty filename returns invalid_request, not name_missing")
     def test_should_refuse_a_pdf_with_no_file_name(self, documents):
         """Given a signed-in person with one document
         When the person submits a PDF with no file name

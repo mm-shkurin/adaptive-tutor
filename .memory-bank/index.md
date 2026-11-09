@@ -8,7 +8,7 @@ AdaptiveTutor учит по загруженным лекциям: индекс�
 
 1. `ProductSpecification/stories.md` — история 1 в Done; история 2 в Progress; 3–8 в Backlog без спеки.
 2. Режим доставки по умолчанию: `/delivery-loop` → `/backend-delivery` или `/frontend-delivery` (код → тесты из test-spec → refactor). Полный red/green `/continue` — только по явной просьбе.
-3. `ProductSpecification/stories/02-document-ingestion/progress.md` — Tier 1 и harvest закрыты; фронт Tier 2 закрыт; следующий кусок бэкенда: **2.1 An unacceptable file adds no document** (`[~] design`).
+3. `ProductSpecification/stories/02-document-ingestion/progress.md` — Tier 1 и harvest закрыты; фронт Tier 2 закрыт; 2.1 refusal закрыт; следующий кусок бэкенда: **2.4 A name that would split a letter at the limit is not stored broken**.
 4. `ProductSpecification/stories/01-sign-in-profile/progress.md` — закрыта; браузерная проверка против стека пройдена 2026-11-07.
 5. Мокап целиком: `adaptive-tutor-mockup.html`.
 6. Локальный стек для проверки: Postgres/Redis в `infra/`, чистая БД `adaptive_tutor_local` (старая `adaptive_tutor` загрязнена `0005_shop_cart`), API fake-OAuth `:8010`, Vite `:5174` (`:8000`/`:5173` заняты чужими проектами).
