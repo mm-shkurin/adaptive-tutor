@@ -10,6 +10,7 @@ class DocumentNameError(Exception):
 
 
 def canonical_name(raw: str) -> str:
+    """Keep or refuse a whole name. Count grapheme bases, never slice mid-letter."""
     composed = unicodedata.normalize("NFC", raw)
     if composed.strip() == "":
         raise DocumentNameError("name_missing")

@@ -60,7 +60,7 @@ class DocumentRow(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     owner_id: Mapped[UUID] = mapped_column(index=True)
     idempotency_key: Mapped[str] = mapped_column(String(255))
-    name: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(Text)
     size_bytes: Mapped[int] = mapped_column(Integer)
     page_count: Mapped[int | None] = mapped_column(Integer)
     piece_count: Mapped[int | None] = mapped_column(Integer)

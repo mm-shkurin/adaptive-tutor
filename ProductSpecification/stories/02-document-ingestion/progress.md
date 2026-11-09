@@ -119,11 +119,11 @@
 
 ### 2.4 A name that would split a letter at the limit is not stored broken
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (255 grapheme clusters after NFC; refuse >255; never slice; documents.name Text so Postgres does not cut mid-letter)
+- [S] red-usecase (delivery without red/green; name gate is domain + HTTP)
+- [S] green-usecase (no SubmitDocument change)
+- [x] adapters-discovery (DocumentRow.name Text; migration 0006; api-spec grapheme wording)
+- [x] green-acceptance
 
 ### 3.1 The same submission stored twice is one document
 - [S] red-acceptance (delivery without red/green; HTTP + usecase together)

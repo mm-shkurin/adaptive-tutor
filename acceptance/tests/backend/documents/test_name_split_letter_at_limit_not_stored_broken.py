@@ -13,7 +13,6 @@ class TestNameSplitLetterAtLimitNotStoredBroken(AbstractBackendTest):
     And the stored name contains no replacement character
     """
 
-    @pytest.mark.skip(reason="RED: upload refused name_too_long instead of grapheme-safe accept")
     def test_should_not_store_a_broken_letter_at_the_name_limit(self, documents):
         """Given a signed-in person
         When the person submits a PDF whose 255th place falls inside one letter

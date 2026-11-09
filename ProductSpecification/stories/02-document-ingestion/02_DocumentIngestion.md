@@ -32,7 +32,7 @@ A signed-in person uploads a PDF. The app checks it, indexes its text and tables
 |-------|------|
 | File | A PDF. Anything else, or an omitted file, is refused. |
 | Size | 1,048,576–52,428,800 bytes. Empty of text is refused. |
-| Name | 1–255 characters. |
+| Name | 1–255 grapheme clusters after NFC; never sliced mid-letter. |
 | Protection | Encrypted is refused. A virus is refused. |
 | Rate | Five accepted uploads a minute for this person. |
 | Ownership | The signed-in person only. |

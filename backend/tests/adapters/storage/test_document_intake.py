@@ -26,6 +26,19 @@ class TestDocumentIntake:
         assert retrieved.size_bytes == document.size_bytes
 
     @pytest.mark.asyncio
+    async def test_should_store_a_name_that_spans_the_old_varchar_limit(self, intake):
+        owner_id = uuid4()
+        name = ("я" * 254) + "е\u0301"
+        document = Document.accepted(name, 1024)
+
+        await intake.store(owner_id, document, b"pdf content", str(uuid4()))
+        retrieved = await intake.get(owner_id, document.id)
+
+        assert retrieved.name == name
+        assert retrieved.name != name[:255]
+        assert "\ufffd" not in retrieved.name
+
+    @pytest.mark.asyncio
     async def test_should_save_document_status_update(self, intake):
         owner_id = uuid4()
         document = Document.accepted("lecture.pdf", 1024)
