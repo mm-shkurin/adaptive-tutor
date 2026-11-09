@@ -16,6 +16,7 @@ from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
 from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
+from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
 from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 
@@ -28,7 +29,7 @@ EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
 NEIGHBOUR_TEXT = (FIXTURES / "neighbour.txt").read_text(encoding="utf-8")
 
 
-class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
+class DocumentStatements(IndexingClaimStatements, OneSubmissionStatements, UploadRateStatements):
     def __init__(
         self,
         submit: SubmitDocument,

@@ -13,7 +13,6 @@ class TestTwoIndexingClaimsStoreOnePieceSet(AbstractBackendTest):
     And one set of pieces is stored
     """
 
-    @pytest.mark.skip(reason="RED: assert 2 == 1 — concurrent waiting claims both write pieces without atomic claim")
     def test_should_store_one_piece_set_when_two_claims_race(self, documents):
         """Given an accepted document
         When two indexing claims pass the status check together

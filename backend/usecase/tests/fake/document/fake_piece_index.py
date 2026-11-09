@@ -5,10 +5,15 @@ class FakePieceIndex:
     def __init__(self):
         self.stored: dict[UUID, tuple[str, ...]] = {}
         self.extracted_text: dict[UUID, str] = {}
+        self._replace_counts: dict[UUID, int] = {}
 
     async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None:
+        self._replace_counts[document_id] = self._replace_counts.get(document_id, 0) + 1
         self.stored[document_id] = pieces
         self.extracted_text[document_id] = extracted
+
+    def replace_count(self, document_id: UUID) -> int:
+        return self._replace_counts.get(document_id, 0)
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
         return self.stored.get(document_id, ())

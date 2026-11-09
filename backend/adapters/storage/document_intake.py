@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, OperationalError
 
 from adapters.persistence.tables import DocumentRow
@@ -81,7 +81,14 @@ class PostgresDocumentIntake(DocumentIntake):
             )
             if row is None or row.body is None:
                 return None
-            return row.to_domain(), bytes(row.body)
+            result = await session.execute(
+                update(DocumentRow)
+                .where(DocumentRow.id == row.id, DocumentRow.status == "waiting")
+                .values(status="indexing")
+            )
+            if result.rowcount != 1:
+                return None
+            return row.to_domain().indexing(), bytes(row.body)
 
         return await self._run(work)
 

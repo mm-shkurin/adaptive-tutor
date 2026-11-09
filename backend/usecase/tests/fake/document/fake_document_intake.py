@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -14,6 +15,14 @@ class FakeDocumentIntake:
         self._created_at: dict[UUID, datetime] = {}
         self._keys: dict[tuple[UUID, str], UUID] = {}
         self._tick = 0
+        self._lock = asyncio.Lock()
+        self._dual_claim_barrier: asyncio.Barrier | None = None
+
+    def arm_dual_claim(self, parties: int = 2) -> None:
+        self._dual_claim_barrier = asyncio.Barrier(parties)
+
+    def disarm_dual_claim(self) -> None:
+        self._dual_claim_barrier = None
 
     async def find_by_key(self, owner_id: UUID, submission_key: str) -> Document | None:
         document_id = self._keys.get((owner_id, submission_key))
@@ -50,11 +59,29 @@ class FakeDocumentIntake:
         self.rows[document.id] = (row[0], document)
 
     async def next_waiting(self) -> tuple[Document, bytes] | None:
+        async with self._lock:
+            peeked = self._first_waiting()
+        if peeked is None:
+            return None
+        if self._dual_claim_barrier is not None:
+            await self._dual_claim_barrier.wait()
+        async with self._lock:
+            return self._claim(peeked.id)
+
+    def _first_waiting(self) -> Document | None:
         for document_id in self._order:
             document = self.rows[document_id][1]
             if document.status == "waiting":
-                return document, self.bodies[document_id]
+                return document
         return None
+
+    def _claim(self, document_id: UUID) -> tuple[Document, bytes] | None:
+        row = self.rows.get(document_id)
+        if row is None or row[1].status != "waiting":
+            return None
+        claimed = row[1].indexing()
+        self.rows[document_id] = (row[0], claimed)
+        return claimed, self.bodies[document_id]
 
     async def list_page(
         self, owner_id: UUID, page: int, after: UUID | None = None

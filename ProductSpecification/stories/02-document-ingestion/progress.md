@@ -215,11 +215,11 @@
 
 ### 4.10 Two indexing claims of one document store one set of pieces
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (next_waiting atomically claims waiting→indexing; Fake lock+barrier; Postgres UPDATE WHERE status=waiting; loser returns None)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (Fake + Postgres claim; Memory already claimed)
+- [x] green-acceptance
 
 ### 4.11 A second indexing run started while the first is going stores one set
 - [x] red-acceptance

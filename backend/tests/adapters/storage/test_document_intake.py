@@ -1,7 +1,8 @@
-import pytest
-from uuid import UUID, uuid4
+import asyncio
 
-from adapters.storage.document_intake import PostgresDocumentIntake
+import pytest
+from uuid import uuid4
+
 from domain.document.document import Document
 
 
@@ -65,5 +66,22 @@ class TestDocumentIntake:
         assert retrieved_doc.id == waiting.id
         assert retrieved_doc.name == waiting.name
         assert retrieved_doc.size_bytes == waiting.size_bytes
-        assert retrieved_doc.status == "waiting"
+        assert retrieved_doc.status == "indexing"
         assert retrieved_content == b"waiting content"
+        assert await intake.next_waiting() is None
+
+    @pytest.mark.asyncio
+    async def test_should_let_only_one_of_two_racing_claims_proceed(self, intake):
+        owner_id = uuid4()
+        waiting = Document.accepted("race.pdf", 512)
+        await intake.store(owner_id, waiting, b"race content", str(uuid4()))
+
+        first, second = await asyncio.gather(intake.next_waiting(), intake.next_waiting())
+        claimed = [row for row in (first, second) if row is not None]
+
+        assert len(claimed) == 1
+        assert claimed[0][0].id == waiting.id
+        assert claimed[0][0].status == "indexing"
+        assert claimed[0][1] == b"race content"
+        persisted = await intake.get(owner_id, waiting.id)
+        assert persisted.status == "indexing"

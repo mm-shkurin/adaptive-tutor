@@ -102,3 +102,31 @@
 **Why:** Finished documents are terminal — re-running with restored bytes must not rewrite pieces or flip a failed row to ready.
 **Where applied:** `backend/domain/document/document.py`, `backend/usecase/document/index_documents.py`, `acceptance/support/acceptance_server.py` (`_second_indexing_run`)
 **From:** scenario 4.7 (4.7-a-finished-document-is-not-indexed-again)
+
+## Decision: Status moves only go forward through transition
+
+**Decision:** `Document.transition` allows only waiting→indexing and indexing→ready|failed; skip, reverse, and moves from ready/failed raise `InvalidStatusTransition`.
+**Why:** Finished docs used to no-op as HTTP 200 instead of refusing the move.
+**Where applied:** `backend/domain/document/document.py`, acceptance `/move`
+**From:** scenario 4.8 (4.8-a-step-that-skips-or-reverses-indexing-is-refused)
+
+## Decision: Seed failed browser docs without an illegal move
+
+**Decision:** Browser fixtures seed a failed document via `IndexProbe.force_failed_document`, not waiting→failed through `/move`.
+**Why:** waiting→failed is refused by `Document.transition`.
+**Where applied:** `acceptance/clients/application/index_probe.py`, `acceptance/statements/signed_in_browser_statements.py`
+**From:** scenario 4.8 (4.8-a-step-that-skips-or-reverses-indexing-is-refused)
+
+## Decision: Searchability is Document.is_ready
+
+**Decision:** `Document.is_ready()` is true only for `status == "ready"`; `SearchDocuments` gates pieces and extracted text on it.
+**Why:** An unknown/corrupted status must not expose seeded piece rows.
+**Where applied:** `backend/domain/document/document.py`, `backend/usecase/document/search_documents.py`
+**From:** scenario 4.9 (4.9-an-unknown-status-is-not-treated-as-ready)
+
+## Decision: next_waiting claims the document
+
+**Decision:** `DocumentIntake.next_waiting` atomically moves `waiting → indexing` and returns that claim; a concurrent loser gets `None`.
+**Why:** Two workers that both see waiting would otherwise both index and write pieces.
+**Where applied:** Memory, Fake, and Postgres `DocumentIntake.next_waiting`
+**From:** scenario 4.10 (4.10-two-indexing-claims-of-one-document-store-one-set-of-pieces)
