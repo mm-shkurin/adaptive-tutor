@@ -319,8 +319,12 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         await asyncio.sleep(0.1)
         await self.index.index_waiting()
         self.finished = await self.read.read(self.person_id, self.upload.id)
-        assert self.finished.status == "failed"
-        assert self.finished.error == "indexing timed out"
+        assert self.finished == views.failed(
+            self.upload.id,
+            self.scope.lecture_name,
+            len(self.lecture),
+            "indexing timed out",
+        )
 
     async def then_nothing_is_stored_after_that_instant(self) -> None:
         assert self.upload.id not in self.pieces.stored

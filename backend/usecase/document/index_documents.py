@@ -35,7 +35,8 @@ class IndexDocuments:
     async def _index(self, document: Document, content: bytes) -> None:
         if document.status in {"ready", "failed"}:
             return
-        if not self._budget.begin(document.id, self._clock.now()):
+        started = self._clock.now()
+        if not self._budget.begin(document.id, started):
             return
         try:
             await self._run(document, content)
@@ -82,21 +83,32 @@ class IndexDocuments:
         await self.files.delete(document.id)
 
     async def _read(self, document: Document, content: bytes):
-        task = asyncio.create_task(self.reader.read(content))
+        reading = self.reader.read(content)
+        task = asyncio.create_task(reading)
         try:
-            while not task.done():
-                if self._budget.overdue(document.id, self._clock.now()):
-                    self._budget.cancel(document.id)
-                    task.cancel()
-                    await self._fail(document, "indexing timed out")
-                    return None
-                await asyncio.sleep(0.05)
-            return task.result()
+            return await self._read_before_deadline(document, task)
         finally:
-            if not task.done():
-                task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await task
+            await self._close_read_task(task)
+
+    async def _read_before_deadline(self, document: Document, task: asyncio.Task):
+        while not task.done() and not self._deadline_passed(document):
+            await asyncio.sleep(0.05)
+        if task.done():
+            return task.result()
+        self._budget.cancel(document.id)
+        task.cancel()
+        await self._fail(document, "indexing timed out")
+        return None
+
+    def _deadline_passed(self, document: Document) -> bool:
+        now = self._clock.now()
+        return self._budget.overdue(document.id, now)
+
+    async def _close_read_task(self, task: asyncio.Task) -> None:
+        if not task.done():
+            task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
 
     async def _retry(self, document: Document) -> None:
         if self._budget.attempts(document.id) >= ATTEMPT_LIMIT:
