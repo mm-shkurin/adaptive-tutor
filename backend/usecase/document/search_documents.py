@@ -20,4 +20,4 @@ class SearchDocuments:
 
     async def _ready(self, owner_id: UUID, document_id: UUID) -> bool:
         document = await self.intake.get(owner_id, document_id)
-        return document is not None and document.status == "ready"
+        return document is not None and document.is_ready()

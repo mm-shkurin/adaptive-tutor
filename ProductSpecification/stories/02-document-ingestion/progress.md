@@ -207,11 +207,11 @@
 
 ### 4.9 An unknown status is not treated as ready
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (Document.is_ready() is status==ready only; SearchDocuments.pieces_for/extracted_text gate on is_ready so seeded pieces under a corrupted status stay unsearchable)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; acceptance searchable-pieces already uses SearchDocuments)
+- [x] green-acceptance
 
 ### 4.10 Two indexing claims of one document store one set of pieces
 - [x] red-acceptance

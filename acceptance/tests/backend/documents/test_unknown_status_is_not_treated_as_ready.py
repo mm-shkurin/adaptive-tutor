@@ -13,7 +13,6 @@ class TestUnknownStatusIsNotTreatedAsReady(AbstractBackendTest):
     And nothing from the file is newly searchable
     """
 
-    @pytest.mark.skip(reason="RED: SearchDocuments returns seeded pieces while document status is corrupted")
     def test_should_not_treat_an_unknown_status_as_ready(self, documents):
         """Given an accepted document
         When the document is given a status that is not waiting, indexing, ready, or failed
