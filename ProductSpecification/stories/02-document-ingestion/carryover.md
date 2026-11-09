@@ -130,3 +130,24 @@
 **Why:** Two workers that both see waiting would otherwise both index and write pieces.
 **Where applied:** Memory, Fake, and Postgres `DocumentIntake.next_waiting`
 **From:** scenario 4.10 (4.10-two-indexing-claims-of-one-document-store-one-set-of-pieces)
+
+## Quirk: piece replace-count does not prove exclusive claim
+
+**Quirk:** `IndexDocuments._store` skips replace when pieces already exist, so `replace_count == 1` can pass without an atomic waiting claim.
+**Where:** `backend/usecase/document/index_documents.py` (`_store`)
+**Implication:** Dual-claim guards must assert claim cardinality (one non-None `next_waiting`), not write count alone.
+**From:** scenario 4.10 (4.10-two-indexing-claims-of-one-document-store-one-set-of-pieces)
+
+## Decision: In-flight indexing refuses a second `_index`
+
+**Decision:** `IndexingBudget.begin` returns false while the document id is in `_inflight`; overlapping `_index` returns before `_run`.
+**Why:** A second run started mid-read would otherwise re-enter PDF read and race `_store` (replace-count alone can still stay 1).
+**Where applied:** `backend/usecase/document/indexing_budget.py`, `IndexDocuments._index`
+**From:** scenario 4.11 (4.11-a-second-indexing-run-started-while-the-first-is-going-stores-one-set)
+
+## Quirk: Overlapping-run guards need attempt/read count
+
+**Quirk:** `piece_write_count` / `replace_count == 1` stays green even when a second `_index` enters `_run` during a blocked PDF read — `_store` skips once pieces exist.
+**Where:** acceptance `then_the_two_runs_do_not_both_write_pieces`, usecase indexing claim statements
+**Implication:** Assert `indexing_attempts == 1` (acceptance) or `read_count == 1` (usecase) so the in-flight refuse is forced.
+**From:** scenario 4.11 (4.11-a-second-indexing-run-started-while-the-first-is-going-stores-one-set)

@@ -223,11 +223,11 @@
 
 ### 4.11 A second indexing run started while the first is going stores one set
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (IndexingBudget.begin refuses a second in-flight id; overlapping `_index` returns before `_run` / `_store`, so only one replace)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; shared IndexingBudget._inflight on IndexDocuments)
+- [x] green-acceptance
 
 ### 4.12 A stale status write does not erase a newer one
 - [x] red-acceptance

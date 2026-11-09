@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: overlapping indexing runs write pieces twice (piece_write_count 2 not 1)")
 @pytest.mark.backend
 class TestSecondIndexingRunStoresOnePieceSet(AbstractBackendTest):
     """A second indexing run started while the first is going stores one set.

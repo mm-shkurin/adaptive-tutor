@@ -1010,10 +1010,12 @@ class DocumentStatements:
             assert self.probe.pieces_for(document_id) == ()
 
     def then_the_two_runs_do_not_both_write_pieces(self) -> None:
+        document_id = self.upload.body["id"]
         self.probe.allow_pdf_read()
-        self.ready = self._until_ready(self.token, self.upload.body["id"])
+        self.ready = self._until_ready(self.token, document_id)
         self._second_index_thread.join(timeout=30)
-        assert self.probe.piece_write_count(self.upload.body["id"]) == 1
+        assert self.probe.indexing_attempts(document_id) == 1
+        assert self.probe.piece_write_count(document_id) == 1
 
     def then_one_set_of_pieces_exists(self) -> None:
         assert self.ready.status_code == 200

@@ -29,3 +29,24 @@ class IndexingClaimStatements:
     async def then_one_set_of_pieces_is_stored(self) -> None:
         assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
         await self._assert_lecture_pieces()
+
+    async def given_indexing_of_a_document_is_still_running(self) -> None:
+        await self.given_an_accepted_document_that_is_still_indexing()
+
+    async def when_a_second_indexing_run_starts_for_that_document(self) -> None:
+        current = await self.read.read(self.person_id, self.upload.id)
+        self._second_index_task = asyncio.create_task(self.index._index(current, self.lecture))
+        await asyncio.sleep(0.2)
+
+    async def then_the_two_runs_do_not_both_write_pieces(self) -> None:
+        self._reader.allow()
+        await asyncio.wait_for(self._indexing_task, timeout=5)
+        await asyncio.wait_for(self._second_index_task, timeout=5)
+        assert self._reader.read_count == 1
+        assert self.pieces.replace_count(self.upload.id) == 1
+
+    async def then_one_set_of_pieces_exists(self) -> None:
+        self.ready = await self.read.read(self.person_id, self.upload.id)
+        assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
+        self.lecture_pieces = await self.search.pieces_for(self.person_id, self.upload.id)
+        await self._assert_lecture_pieces()
