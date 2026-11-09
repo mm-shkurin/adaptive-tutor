@@ -105,7 +105,10 @@ async def _read_pdf(upload: UploadFile) -> bytes:
         if size > _MAX_BYTES:
             raise InvalidDocument("file_too_large", "File is too large")
         chunks.append(chunk)
-    content = b"".join(chunks)
+    return _require_acceptable_pdf(b"".join(chunks))
+
+
+def _require_acceptable_pdf(content: bytes) -> bytes:
     if len(content) < _MIN_BYTES:
         raise InvalidDocument("file_too_small", "File is too small")
     if not content.startswith(b"%PDF"):
