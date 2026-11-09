@@ -1,3 +1,4 @@
+import asyncio
 import unicodedata
 
 import pymupdf
@@ -7,11 +8,15 @@ from usecase.document.ports import PdfRead, PdfReader
 
 class PyPdfReader(PdfReader):
     async def read(self, content: bytes) -> PdfRead:
-        document = pymupdf.open(stream=content, filetype="pdf")
-        try:
-            return _read_document(document)
-        finally:
-            document.close()
+        return await asyncio.to_thread(_parse_pdf, content)
+
+
+def _parse_pdf(content: bytes) -> PdfRead:
+    document = pymupdf.open(stream=content, filetype="pdf")
+    try:
+        return _read_document(document)
+    finally:
+        document.close()
 
 
 def _read_document(document) -> PdfRead:

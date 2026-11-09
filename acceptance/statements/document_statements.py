@@ -258,7 +258,7 @@ class DocumentStatements:
         assert self.read_back.body["size_bytes"] == self.edge_size
 
     def when_the_person_submits_a_pdf_that_is_costly_to_read_but_within_the_size_limit(self) -> None:
-        self.pathological_pdf = _pdf_of_size(MIN_BYTES)
+        self.pathological_pdf = _pad_pdf_to_minimum(self.lecture)
         self.probe.block_pdf_read()
         self.upload = self.documents.submit_pdf(self.token, PATHOLOGICAL_NAME, self.pathological_pdf)
         assert self.upload.status_code == 201
@@ -270,8 +270,7 @@ class DocumentStatements:
         assert indexing.status_code == 200
         assert indexing.body["status"] == "indexing"
         self.clock.advance(INDEXING_LIMIT_SECONDS)
-        time.sleep(0.3)
-        self.finished = self.documents.read(self.token, document_id)
+        self.finished = self._until_terminal(self.token, document_id)
         assert self.finished.status_code == 200
         assert self.finished.body["status"] in {"ready", "failed"}
 

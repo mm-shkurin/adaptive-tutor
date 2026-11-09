@@ -13,7 +13,6 @@ class TestPathologicalPdfDoesNotIndexPastFiveMinutes(AbstractBackendTest):
     And it does not keep running after that
     """
 
-    @pytest.mark.skip(reason='RED: assert \'indexing\' in {\'failed\', \'ready\'} after five-minute clock advance')
     def test_should_finish_or_fail_within_five_minutes_and_stop(self, documents):
         """Given a signed-in person
         When the person submits a PDF that is costly to read but within the size limit

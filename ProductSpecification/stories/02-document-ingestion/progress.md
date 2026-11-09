@@ -239,11 +239,11 @@
 
 ### 4.13 A pathological PDF does not keep indexing busy past five minutes
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (IndexingBudget 300s + cancel; PyPdfReader via to_thread; after fail, allow must not resume)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (PyPdfReader to_thread; gated acceptance reader already cancellable)
+- [x] green-acceptance
 ## Tier 2 — Integration Scenarios (06_Integration_Tests.md)
 
 ### 1.1 A clean PDF passes the virus check and becomes ready

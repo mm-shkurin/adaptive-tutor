@@ -331,6 +331,30 @@ class DocumentStatements(IndexingClaimStatements, OneSubmissionStatements, Uploa
         assert self.upload.id not in self.pieces.stored
         assert await self.pieces.pieces(self.upload.id) == ()
 
+    async def when_the_person_submits_a_pdf_that_is_costly_to_read_but_within_the_size_limit(
+        self,
+    ) -> None:
+        await self.given_an_accepted_document_that_is_still_indexing()
+
+    async def then_indexing_finishes_or_fails_within_five_minutes(self) -> None:
+        self.clock.advance(DEADLINE_SECONDS)
+        await asyncio.wait_for(self._indexing_task, timeout=2)
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+        assert self.finished.status in {"ready", "failed"}
+
+    async def then_it_does_not_keep_running_after_that(self) -> None:
+        terminal_status = self.finished.status
+        pieces_before = await self.pieces.pieces(self.upload.id)
+        replace_before = self.pieces.replace_count(self.upload.id)
+        self.clock.advance(60)
+        self._reader.allow()
+        await asyncio.sleep(0.1)
+        await self.index.index_waiting()
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+        assert self.finished.status == terminal_status
+        assert await self.pieces.pieces(self.upload.id) == pieces_before
+        assert self.pieces.replace_count(self.upload.id) == replace_before
+
     async def given_a_document_that_is_finished(self, finished: str) -> None:
         self.expected_finished_status = finished
         await self.given_a_signed_in_person()
