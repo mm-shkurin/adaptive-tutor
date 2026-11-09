@@ -56,7 +56,8 @@ class FakeDocumentIntake:
         row = self.rows.get(document.id)
         if row is None:
             return
-        self.rows[document.id] = (row[0], document)
+        chosen = row[1].prefer_terminal(document)
+        self.rows[document.id] = (row[0], chosen)
 
     async def next_waiting(self) -> tuple[Document, bytes] | None:
         async with self._lock:

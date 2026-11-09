@@ -231,11 +231,11 @@
 
 ### 4.12 A stale status write does not erase a newer one
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (Document.prefer_terminal: first finished status wins; Fake/Memory/Postgres save; Postgres FOR UPDATE; acceptance hold_two_loads + stale-save)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (Fake + Memory + Postgres DocumentIntake.save; DocumentRow.apply)
+- [x] green-acceptance
 
 ### 4.13 A pathological PDF does not keep indexing busy past five minutes
 - [x] red-acceptance

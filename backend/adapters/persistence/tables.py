@@ -83,14 +83,13 @@ class DocumentRow(Base):
         )
 
     def apply(self, document) -> None:
-        if self.to_domain().is_finished() and document.status != self.status:
-            return
-        self.name = document.name
-        self.size_bytes = document.size_bytes
-        self.page_count = document.page_count
-        self.piece_count = document.piece_count
-        self.status = document.status
-        self.error = document.error
+        chosen = self.to_domain().prefer_terminal(document)
+        self.name = chosen.name
+        self.size_bytes = chosen.size_bytes
+        self.page_count = chosen.page_count
+        self.piece_count = chosen.piece_count
+        self.status = chosen.status
+        self.error = chosen.error
 
 
 class DocumentPieceRow(Base):

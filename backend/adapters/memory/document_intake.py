@@ -65,11 +65,9 @@ class MemoryDocumentIntake:
                 row = self.rows.get(document.id)
                 if row is None:
                     return None
-                current = row[1]
-                if current.is_finished() and document.status != current.status:
-                    return current.status
-                self.rows[document.id] = (row[0], document)
-                return document.status
+                chosen = row[1].prefer_terminal(document)
+                self.rows[document.id] = (row[0], chosen)
+                return chosen.status
 
         status = await self._guard(action)
         if status == "indexing" and self._probe is not None:

@@ -50,3 +50,36 @@ class IndexingClaimStatements:
         assert self.ready == views.ready(self.upload.id, self.scope.lecture_name, len(self.lecture))
         self.lecture_pieces = await self.search.pieces_for(self.person_id, self.upload.id)
         await self._assert_lecture_pieces()
+
+    async def given_a_document_loaded_twice_while_it_is_indexing(self) -> None:
+        await self.given_an_accepted_document_that_is_still_indexing()
+        current = await self.read.read(self.person_id, self.upload.id)
+        assert current.status == "indexing"
+        self._stale_loads = (current, current)
+
+    async def when_one_save_marks_it_ready_and_the_other_marks_it_failed(self) -> None:
+        from usecase.tests.statements.document_statements import EXTRACTED, FIVE_HUNDRED, JOINED
+
+        ready_write = self._stale_loads[0].ready(views.PAGE_COUNT, views.PIECE_COUNT)
+        failed_write = self._stale_loads[1].failed("forced")
+        await self.pieces.replace(self.upload.id, (FIVE_HUNDRED, JOINED), EXTRACTED)
+        await self.index.intake.save(ready_write)
+        await self.index.intake.save(failed_write)
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+        self.lecture_pieces = await self.search.pieces_for(self.person_id, self.upload.id)
+
+    async def then_the_later_save_does_not_silently_discard_the_earlier_one(self) -> None:
+        assert self.finished.status == "ready"
+
+    async def then_the_document_ends_in_exactly_one_of_those_statuses(self) -> None:
+        assert self.finished.status in {"ready", "failed"}
+
+    async def then_the_pieces_match_that_status(self) -> None:
+        if self.finished.status == "ready":
+            assert self.finished == views.ready(
+                self.upload.id, self.scope.lecture_name, len(self.lecture)
+            )
+            await self._assert_lecture_pieces()
+        else:
+            assert self.lecture_pieces == ()
+            assert await self.pieces.pieces(self.upload.id) == ()

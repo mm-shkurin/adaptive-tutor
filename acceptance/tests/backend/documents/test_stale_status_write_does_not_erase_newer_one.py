@@ -14,7 +14,6 @@ class TestStaleStatusWriteDoesNotEraseNewerOne(AbstractBackendTest):
     And the pieces match that status
     """
 
-    @pytest.mark.skip(reason="RED: assert 'failed' == 'ready' — later failed save overwrote earlier ready")
     def test_should_keep_the_earlier_terminal_status_when_a_stale_save_arrives_later(self, documents):
         """Given a document loaded twice while it is indexing
         When one save marks it ready and the other save marks it failed

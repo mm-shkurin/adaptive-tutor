@@ -64,7 +64,11 @@ class PostgresDocumentIntake(DocumentIntake):
 
     async def save(self, document: Document) -> None:
         async def work(session):
-            row = await session.get(DocumentRow, document.id)
+            row = await session.scalar(
+                select(DocumentRow)
+                .where(DocumentRow.id == document.id)
+                .with_for_update()
+            )
             if row is None:
                 return
             row.apply(document)

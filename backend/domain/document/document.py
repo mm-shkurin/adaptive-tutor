@@ -46,6 +46,11 @@ class Document:
     def is_ready(self) -> bool:
         return self.status == "ready"
 
+    def prefer_terminal(self, incoming: "Document") -> "Document":
+        if self.is_finished() and incoming.status != self.status:
+            return self
+        return incoming
+
     def transition(self, toward: str) -> "Document":
         if self.status == "waiting" and toward == "indexing":
             return self.indexing()

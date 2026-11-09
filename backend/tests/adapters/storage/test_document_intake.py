@@ -51,6 +51,19 @@ class TestDocumentIntake:
         assert retrieved.status == "indexing"
 
     @pytest.mark.asyncio
+    async def test_should_keep_earlier_terminal_status_when_a_stale_save_arrives(self, intake):
+        owner_id = uuid4()
+        indexing = Document.accepted("lecture.pdf", 1024).indexing()
+        await intake.store(owner_id, indexing, b"content", str(uuid4()))
+        await intake.save(indexing)
+
+        await intake.save(indexing.ready(1, 2))
+        await intake.save(indexing.failed("forced"))
+        retrieved = await intake.get(owner_id, indexing.id)
+        assert retrieved.status == "ready"
+        assert retrieved.piece_count == 2
+
+    @pytest.mark.asyncio
     async def test_should_return_next_waiting_document(self, intake):
         waiting = Document.accepted("waiting.pdf", 512)
         ready = Document.accepted("ready.pdf", 1024).ready(1, 2)

@@ -979,13 +979,17 @@ class DocumentStatements:
         indexing = self._until_status(self.token, document_id, "indexing")
         assert indexing.status_code == 200
         assert indexing.body["status"] == "indexing"
-        self.when_a_second_indexing_run_starts_for_that_document()
+        self.probe.hold_two_loads(document_id)
 
     def when_one_save_marks_it_ready_and_the_other_marks_it_failed(self) -> None:
         document_id = self.upload.body["id"]
         self.probe.seed_pieces(document_id, (FIVE_HUNDRED, JOINED), EXTRACTED)
-        self.ready_save = self.documents.move_indexing_status(self.token, document_id, "ready")
-        self.failed_save = self.documents.move_indexing_status(self.token, document_id, "failed")
+        self.ready_save = self.documents.stale_save_from_load(
+            self.token, document_id, 0, "ready"
+        )
+        self.failed_save = self.documents.stale_save_from_load(
+            self.token, document_id, 1, "failed"
+        )
         self.final_read = self.documents.read(self.token, document_id)
 
     def then_the_later_save_does_not_silently_discard_the_earlier_one(self) -> None:

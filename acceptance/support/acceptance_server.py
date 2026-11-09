@@ -165,6 +165,29 @@ class AcceptanceServer:
 
             return _json(updated)
 
+        @app.post("/acceptance/documents/{document_id}/stale-save")
+        async def stale_save_from_load(
+            document_id: UUID, request: Request, body: dict = Body(...)
+        ):
+            account = await document_caller(request)
+            row = self._intake.rows.get(document_id)
+            if row is None or row[0] != account.id:
+                from usecase.document.errors import DocumentNotFound
+
+                raise DocumentNotFound()
+            base = self.probe.held_load(str(document_id), int(body["load"]))
+            toward = body["status"]
+            if toward == "ready":
+                updated = base.ready(1, 2)
+            elif toward == "failed":
+                updated = base.failed("forced")
+            else:
+                updated = base.transition(toward)
+            await self._intake.save(updated)
+            from adapters.http.documents import _json
+
+            return _json(updated)
+
         self._server = uvicorn.Server(
             uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", access_log=False)
         )

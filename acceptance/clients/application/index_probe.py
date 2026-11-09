@@ -157,6 +157,21 @@ class IndexProbe:
         owner, document = row
         self._intake.rows[doc_id] = (owner, replace(document, status=status))
 
+    def hold_two_loads(self, document_id: str) -> None:
+        doc_id = UUID(document_id)
+        row = self._intake.rows.get(doc_id)
+        if row is None:
+            raise KeyError(document_id)
+        document = row[1]
+        self._held_loads = {doc_id: (document, document)}
+
+    def held_load(self, document_id: str, index: int):
+        doc_id = UUID(document_id)
+        loads = getattr(self, "_held_loads", {}).get(doc_id)
+        if loads is None:
+            raise KeyError(document_id)
+        return loads[index]
+
     def force_failed_document(self, document_id: str, reason: str) -> None:
         doc_id = UUID(document_id)
         row = self._intake.rows.get(doc_id)

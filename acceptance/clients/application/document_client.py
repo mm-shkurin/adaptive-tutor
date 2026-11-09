@@ -98,6 +98,16 @@ class DocumentClient:
         )
         return read_result(response)
 
+    def stale_save_from_load(
+        self, token: str, document_id: str, load: int, status: str
+    ) -> HttpResult:
+        response = self.http.post(
+            f"/acceptance/documents/{document_id}/stale-save",
+            headers=self._bearer(token),
+            json={"load": load, "status": status},
+        )
+        return read_result(response)
+
     def close(self) -> None:
         self.http.close()
 
