@@ -57,16 +57,14 @@ class SignedInBrowserStatements:
         self.probe.hold_indexing()
         uploaded = self.documents.submit_pdf(token, "Методичка.pdf", self.lecture)
         assert uploaded.status_code == 201
-        failed = self.documents.move_indexing_status(
-            token,
+        self.probe.force_failed_document(
             uploaded.body["id"],
-            "failed",
             "Не удалось прочитать страницу 12",
         )
+        failed = self.documents.read(token, uploaded.body["id"])
         assert failed.status_code == 200
         assert failed.body["status"] == "failed"
         assert failed.body["error"] == "Не удалось прочитать страницу 12"
-
     def when_indexing_is_released(self) -> None:
         self.probe.release_indexing()
 

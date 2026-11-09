@@ -44,8 +44,6 @@ class Document:
         return self.status in {"ready", "failed"}
 
     def transition(self, toward: str) -> "Document":
-        if self.is_finished():
-            return self
         if self.status == "waiting" and toward == "indexing":
             return self.indexing()
         if self.status == "indexing" and toward == "ready":

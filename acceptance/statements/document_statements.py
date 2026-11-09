@@ -769,11 +769,37 @@ class DocumentStatements:
         assert self.read_back.status_code == 200
         assert self.read_back.body["status"] == "waiting"
 
+    def given_a_document_that_is(self, status: str) -> None:
+        if status == "waiting":
+            self.given_a_document_that_is_waiting()
+            return
+        if status == "indexing":
+            self.given_a_document_that_is_indexing()
+            return
+        self.given_a_document_that_is_finished(status)
+        self.document_id = self.finished.body["id"]
+        self._snapshot_before_move()
+
     def given_a_document_that_is_waiting(self) -> None:
         self.given_a_signed_in_person()
         self.then_the_person_is_signed_in()
         self.given_an_accepted_document_whose_indexing_was_not_started()
         self.document_id = self.upload.body["id"]
+        self._snapshot_before_move()
+
+    def given_a_document_that_is_indexing(self) -> None:
+        self.given_a_signed_in_person()
+        self.then_the_person_is_signed_in()
+        self.probe.block_pdf_read()
+        self.probe.release_indexing()
+        self.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
+        self.document_id = self.upload.body["id"]
+        indexing = self._until_status(self.token, self.document_id, "indexing")
+        assert indexing.status_code == 200
+        assert indexing.body["status"] == "indexing"
+        self._snapshot_before_move()
+
+    def _snapshot_before_move(self) -> None:
         self.pieces_before_move = self.probe.pieces_for(self.document_id)
         self.searchable_before_move = self.documents.searchable_pieces(self.token, self.document_id)
         self.file_before_move = self.probe.file_for(self.document_id)
@@ -785,10 +811,13 @@ class DocumentStatements:
         assert self.move_result.status_code == 409
         assert self.move_result.body["code"] == "invalid_status_transition"
 
-    def then_the_document_stays_waiting(self) -> None:
+    def then_the_document_stays(self, status: str) -> None:
         read = self.documents.read(self.token, self.document_id)
         assert read.status_code == 200
-        assert read.body["status"] == "waiting"
+        assert read.body["status"] == status
+
+    def then_the_document_stays_waiting(self) -> None:
+        self.then_the_document_stays("waiting")
 
     def then_its_pieces_its_search_entries_and_its_file_are_untouched(self) -> None:
         assert self.probe.pieces_for(self.document_id) == self.pieces_before_move

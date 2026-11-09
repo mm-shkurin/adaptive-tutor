@@ -157,6 +157,14 @@ class IndexProbe:
         owner, document = row
         self._intake.rows[doc_id] = (owner, replace(document, status=status))
 
+    def force_failed_document(self, document_id: str, reason: str) -> None:
+        doc_id = UUID(document_id)
+        row = self._intake.rows.get(doc_id)
+        if row is None:
+            raise KeyError(document_id)
+        owner, document = row
+        self._intake.rows[doc_id] = (owner, document.failed(reason))
+
     def seed_pieces(self, document_id: str, pieces: tuple[str, ...], extracted: str) -> None:
         doc_id = UUID(document_id)
         self._pieces_index.stored[doc_id] = pieces

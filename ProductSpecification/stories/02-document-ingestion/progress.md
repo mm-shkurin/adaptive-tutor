@@ -199,11 +199,11 @@
 
 ### 4.8 A step that skips or reverses indexing is refused
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (Document.transition allows only waiting→indexing and indexing→ready|failed; finished and skip/reverse raise InvalidStatusTransition → 409; browser seed uses probe.force_failed_document)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; acceptance /move already maps InvalidStatusTransition)
+- [x] green-acceptance
 
 ### 4.9 An unknown status is not treated as ready
 - [x] red-acceptance
