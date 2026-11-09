@@ -44,7 +44,7 @@ def documents():
     rates = FakeUploadRateLimit(clock)
     return DocumentStatements(
         SubmitDocument(intake, rates),
-        FakeIndexDocuments(intake, files, reader, pieces),
+        FakeIndexDocuments(intake, files, reader, pieces, clock),
         ReadDocument(intake),
         SearchDocuments(intake, pieces),
         ReadStoredFile(files),

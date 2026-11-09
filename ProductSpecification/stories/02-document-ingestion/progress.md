@@ -183,11 +183,11 @@
 
 ### 4.6 Indexing that has not finished in 5 minutes is failed
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (IndexingBudget.DEADLINE_SECONDS=300 + injectable clock; poll during PdfReader.read; cancel task → fail "indexing timed out" + delete file; no pieces; cancelled docs do not begin again)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; FakePdfReader.block + clock wired into FakeIndexDocuments; ProbeGatedPdfReader already gates acceptance)
+- [x] green-acceptance
 
 ### 4.7 A finished document is not indexed again
 - [x] red-acceptance

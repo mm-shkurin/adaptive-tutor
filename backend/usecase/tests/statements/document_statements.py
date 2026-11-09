@@ -1,8 +1,9 @@
+import asyncio
 from pathlib import Path
 from uuid import uuid4
 
 from usecase.document.index_documents import IndexDocuments
-from usecase.document.indexing_budget import PIECE_CAP, TOKENS_PER_PIECE
+from usecase.document.indexing_budget import DEADLINE_SECONDS, PIECE_CAP, TOKENS_PER_PIECE
 from usecase.document.list_documents import ListDocuments
 from usecase.document.ports import PdfRead
 from usecase.document.read_document import ReadDocument
@@ -273,6 +274,57 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         assert self.finished == views.failed(
             self.upload.id, "many_pieces.pdf", len(self.many_pieces_pdf), "too many pieces"
         )
+
+    async def given_an_accepted_document_that_is_still_indexing(self) -> None:
+        self._reader.block()
+        self.upload = (
+            await self._accept(self.person_id, self.scope.lecture_name, self.lecture)
+        ).document
+        self._indexing_task = asyncio.create_task(self.index.index_waiting())
+        self.indexing_started_at = self.clock.now()
+        for _ in range(40):
+            current = await self.read.read(self.person_id, self.upload.id)
+            if current.status == "indexing":
+                self.indexing_started_at = self.clock.now()
+                return
+            await asyncio.sleep(0.05)
+        raise AssertionError("document did not enter indexing")
+
+    async def when_the_clock_is_just_short_of_five_minutes(self) -> None:
+        elapsed = (self.clock.now() - self.indexing_started_at).total_seconds()
+        remaining = DEADLINE_SECONDS - 1 - elapsed
+        assert remaining > 0
+        self.clock.advance(int(remaining))
+        await asyncio.sleep(0.1)
+
+    async def then_the_document_is_still_indexing(self) -> None:
+        current = await self.read.read(self.person_id, self.upload.id)
+        assert current.status == "indexing"
+
+    async def when_five_minutes_have_passed(self) -> None:
+        self.clock.advance(1)
+        await asyncio.wait_for(self._indexing_task, timeout=2)
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+
+    async def then_the_document_is_failed_after_five_minutes(self) -> None:
+        assert self.finished == views.failed(
+            self.upload.id,
+            self.scope.lecture_name,
+            len(self.lecture),
+            "indexing timed out",
+        )
+
+    async def then_in_flight_indexing_is_cancelled(self) -> None:
+        self._reader.allow()
+        await asyncio.sleep(0.1)
+        await self.index.index_waiting()
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+        assert self.finished.status == "failed"
+        assert self.finished.error == "indexing timed out"
+
+    async def then_nothing_is_stored_after_that_instant(self) -> None:
+        assert self.upload.id not in self.pieces.stored
+        assert await self.pieces.pieces(self.upload.id) == ()
 
     async def _assert_lecture_pieces(self) -> None:
         assert self.lecture_pieces == (FIVE_HUNDRED, JOINED)

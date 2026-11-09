@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: indexing timeout does not fail document after five minutes")
 @pytest.mark.backend
 class TestIndexingUnfinishedInFiveMinutesIsFailed(AbstractBackendTest):
     """Indexing that has not finished in 5 minutes is failed.
