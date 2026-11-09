@@ -19,9 +19,6 @@ class TestFailedIndexNamesPartLeavesNothingSearchable(AbstractBackendTest):
     And a retry does not add a second set of pieces
     """
 
-    @pytest.mark.skip(
-        reason='RED: AssertionError: status ready != failed (IndexDocuments marks ready without table-step failure)'
-    )
     def test_should_fail_on_the_table_and_leave_nothing_searchable(self, documents):
         """Given a signed-in person with a neighbour's document
         When indexing fails on one table after an earlier step succeeded

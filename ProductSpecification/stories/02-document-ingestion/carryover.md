@@ -60,3 +60,10 @@
 **Where:** `acceptance/support/acceptance_server.py`, `backend/adapters/memory/document_intake.py`
 **Implication:** Name-length edge cases need a storage round-trip (or live Postgres) to catch column cuts.
 **From:** scenario 2.4 (2.4-a-name-that-would-split-a-letter-at-the-limit-is-not-stored-broken)
+
+## Decision: Mid-index failure is named via `_refusal` → `_fail`
+
+**Decision:** A mid-index failure after a successful PDF read goes through `IndexDocuments._refusal` → `_fail(reason)`; the reason names the failed part.
+**Why:** Tables are not a separate store step; the named failure is the refusal after text was read, before pieces are written.
+**Where applied:** `backend/usecase/document/index_documents.py`, `ProbeIndexDocuments`, `FakeIndexDocuments`
+**From:** scenario 4.2 (4.2-a-failed-index-names-the-part-and-leaves-nothing-searchable)

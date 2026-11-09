@@ -8,7 +8,9 @@ from usecase.document.read_document import ReadDocument
 from usecase.document.read_stored_file import ReadStoredFile
 from usecase.document.search_documents import SearchDocuments
 from usecase.document.submit_document import AcceptedSubmission, SubmitDocument
+from usecase.tests.fake.document.fake_index_documents import FakeIndexDocuments
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
+from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
 from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
@@ -17,6 +19,7 @@ from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 
 FIXTURES = Path(__file__).resolve().parents[4] / "acceptance" / "fixtures"
 TABLE = "|Topic|Mark|\n|---|---|\n|Limits|91|\n"
+TABLE_NAMED = "|Topic|Mark|\n|---|---|\n|Limits|91|"
 FIVE_HUNDRED = (FIXTURES / "five_hundred.txt").read_text(encoding="utf-8")
 JOINED = (FIXTURES / "joined.txt").read_text(encoding="utf-8")
 EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
@@ -35,6 +38,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         reader: FakePdfReader,
         rates: FakeUploadRateLimit,
         clock,
+        pieces: FakePieceIndex,
     ):
         self.submit = submit
         self.index = index
@@ -44,6 +48,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         self.listed = listed
         self.rates = rates
         self.clock = clock
+        self.pieces = pieces
         self.scope = DocumentScope.builder()
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.neighbour_pdf = (FIXTURES / "neighbour.pdf").read_bytes()
@@ -55,6 +60,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         self.upload = None
         self.read_back = None
         self.ready = None
+        self.finished = None
         self.lecture_pieces = None
         self.extracted = None
         self.original_file = None
@@ -65,6 +71,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         self.replay = None
         self.earlier = None
         self.second_upload = None
+        self.piece_writes_before_retry = 0
         reader.register(self.lecture, PdfRead(EXTRACTED, TABLE, views.PAGE_COUNT))
         reader.register(self.neighbour_pdf, PdfRead(NEIGHBOUR_TEXT, "", views.PAGE_COUNT))
 
@@ -172,6 +179,51 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
 
     async def then_the_neighbours_file_is_already_gone(self) -> None:
         assert self.neighbour_file is None
+
+    async def when_indexing_fails_on_one_table_after_an_earlier_step_succeeded(self) -> None:
+        assert isinstance(self.index, FakeIndexDocuments)
+        self.index.fail_table_after_text_step()
+        self.upload = (
+            await self._accept(self.person_id, self.scope.lecture_name, self.lecture)
+        ).document
+        await self.index.index_waiting()
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+
+    async def then_the_document_is_failed(self) -> None:
+        assert self.finished == views.failed(
+            self.upload.id, self.scope.lecture_name, len(self.lecture), TABLE_NAMED
+        )
+
+    async def then_the_failure_names_that_table(self) -> None:
+        assert self.finished.error == TABLE_NAMED
+
+    async def then_nothing_from_the_file_can_be_searched(self) -> None:
+        assert await self.search.pieces_for(self.person_id, self.upload.id) == ()
+        assert await self.search.extracted_text(self.person_id, self.upload.id) == ""
+
+    async def then_no_piece_rows_remain(self) -> None:
+        assert self.upload.id not in self.pieces.stored
+        assert await self.pieces.pieces(self.upload.id) == ()
+
+    async def then_the_neighbours_document_and_file_are_unchanged(self) -> None:
+        assert self.neighbour_ready == views.neighbour_ready(
+            self.neighbour_upload.id, self.scope.neighbour_name, len(self.neighbour_pdf)
+        )
+        assert await self.search.pieces_for(self.neighbour_id, self.neighbour_upload.id) == (
+            NEIGHBOUR_TEXT,
+        )
+        assert await self.stored.content(self.neighbour_upload.id) is None
+
+    async def when_indexing_is_retried(self) -> None:
+        self.piece_writes_before_retry = len(self.pieces.stored.get(self.upload.id, ()))
+        await self.index.index_waiting()
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+
+    async def then_a_retry_does_not_add_a_second_set_of_pieces(self) -> None:
+        assert len(self.pieces.stored.get(self.upload.id, ())) == self.piece_writes_before_retry
+        assert self.finished == views.failed(
+            self.upload.id, self.scope.lecture_name, len(self.lecture), TABLE_NAMED
+        )
 
     async def _assert_lecture_pieces(self) -> None:
         assert self.lecture_pieces == (FIVE_HUNDRED, JOINED)

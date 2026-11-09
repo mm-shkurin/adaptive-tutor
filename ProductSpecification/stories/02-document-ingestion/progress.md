@@ -151,11 +151,11 @@
 
 ### 4.2 A failed index names the part and leaves nothing searchable
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (_refusal after successful read → `_fail` with named reason; file deleted; no pieces written; failed is terminal so retry skips virus/pieces)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; ProbeIndexDocuments / FakeIndexDocuments arm table failure on IndexDocuments hooks)
+- [x] green-acceptance
 
 ### 4.3 A document whose indexing never started still finishes
 - [x] red-acceptance (harvest: already green)

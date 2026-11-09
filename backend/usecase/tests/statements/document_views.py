@@ -19,6 +19,10 @@ def neighbour_ready(document_id: UUID, name: str, size_bytes: int) -> Document:
     return document(document_id, name, size_bytes, PAGE_COUNT, NEIGHBOUR_PIECE_COUNT, "ready")
 
 
+def failed(document_id: UUID, name: str, size_bytes: int, reason: str) -> Document:
+    return document(document_id, name, size_bytes, None, None, "failed", reason)
+
+
 def document(
     document_id: UUID,
     name: str,
@@ -26,6 +30,7 @@ def document(
     page_count: int | None,
     piece_count: int | None,
     status: str,
+    error: str | None = None,
 ) -> Document:
     return Document(
         id=document_id,
@@ -34,5 +39,5 @@ def document(
         page_count=page_count,
         piece_count=piece_count,
         status=status,
-        error=None,
+        error=error,
     )

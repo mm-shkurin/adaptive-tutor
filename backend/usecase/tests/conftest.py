@@ -8,7 +8,6 @@ pytest.register_assert_rewrite(
     "usecase.tests.statements.one_submission_statements",
 )
 
-from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
 from usecase.document.read_stored_file import ReadStoredFile
@@ -16,6 +15,7 @@ from usecase.document.search_documents import SearchDocuments
 from usecase.document.submit_document import SubmitDocument
 from usecase.tests.fake.document.fake_document_intake import FakeDocumentIntake
 from usecase.tests.fake.document.fake_file_store import FakeFileStore
+from usecase.tests.fake.document.fake_index_documents import FakeIndexDocuments
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
 from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
@@ -44,7 +44,7 @@ def documents():
     rates = FakeUploadRateLimit(clock)
     return DocumentStatements(
         SubmitDocument(intake, rates),
-        IndexDocuments(intake, files, reader, pieces),
+        FakeIndexDocuments(intake, files, reader, pieces),
         ReadDocument(intake),
         SearchDocuments(intake, pieces),
         ReadStoredFile(files),
@@ -52,4 +52,5 @@ def documents():
         reader,
         rates,
         clock,
+        pieces,
     )
