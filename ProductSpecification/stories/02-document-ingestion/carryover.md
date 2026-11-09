@@ -95,3 +95,10 @@
 **Where:** `backend/usecase/tests/statements/document_statements.py`
 **Implication:** Without those, a second run still ends ready/failed with the same pieces (`_store` skips; table arm still refuses).
 **From:** scenario 4.7 (4.7-a-finished-document-is-not-indexed-again)
+
+## Decision: Finished docs refuse rework in `_index`
+
+**Decision:** `IndexDocuments._index` returns immediately when `Document.is_finished()`; a forced second run still calls `_index` so that guard is what refuses rework.
+**Why:** Finished documents are terminal — re-running with restored bytes must not rewrite pieces or flip a failed row to ready.
+**Where applied:** `backend/domain/document/document.py`, `backend/usecase/document/index_documents.py`, `acceptance/support/acceptance_server.py` (`_second_indexing_run`)
+**From:** scenario 4.7 (4.7-a-finished-document-is-not-indexed-again)
