@@ -23,6 +23,7 @@ from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
 from usecase.document.submit_document import SubmitDocument
+from usecase.tests.fake.document.fake_virus_check import FakeVirusCheck
 
 WHEN = datetime(2024, 5, 6, 7, 8, 9, tzinfo=timezone.utc)
 CREATED = "2024-05-06T07:08:09Z"
@@ -97,7 +98,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         SessionService(store, tokens, MemoryRevocations()),
         ProfileService(store, "http://testserver"),
         store,
-        SubmitDocument(intake, rates),
+        SubmitDocument(intake, rates, FakeVirusCheck()),
         ReadDocument(intake),
         ListDocuments(intake),
         IndexDocuments(intake, files, reader, pieces),

@@ -15,7 +15,7 @@ from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
 from clients.application.probe_piece_index import ProbePieceIndex
-from clients.application.probe_submit_document import ProbeSubmitDocument
+from clients.application.probe_virus_check import ProbeVirusCheck
 from adapters.memory.revocations import MemoryRevocations
 from adapters.memory.upload_rate_limit import MemoryUploadRateLimit
 from adapters.pdfreader.pdf_reader import PyPdfReader
@@ -95,7 +95,7 @@ class AcceptanceServer:
             SessionService(store, tokens, MemoryRevocations()),
             ProfileService(store, self.base_url),
             store,
-            ProbeSubmitDocument(intake, self.rates, self.probe),
+            SubmitDocument(intake, self.rates, ProbeVirusCheck(self.probe)),
             ReadDocument(intake),
             ListDocuments(intake),
             ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock),

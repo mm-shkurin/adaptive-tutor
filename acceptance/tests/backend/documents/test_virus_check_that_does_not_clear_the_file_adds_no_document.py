@@ -16,7 +16,6 @@ class TestVirusCheckThatDoesNotClearTheFileAddsNoDocument(AbstractBackendTest):
     And the file is not indexed
     """
 
-    @pytest.mark.skip(reason="RED: assert 201 == 400 — virus check not enforced on upload")
     @pytest.mark.parametrize(
         "outcome",
         [

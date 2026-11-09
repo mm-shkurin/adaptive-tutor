@@ -26,6 +26,8 @@ class Settings:
     yandex_authorize_url: str
     yandex_token_url: str
     yandex_info_url: str
+    clamav_host: str
+    clamav_port: int
 
 
 def load_settings(env) -> Settings:
@@ -38,7 +40,8 @@ def load_settings(env) -> Settings:
         raise StartupError("Yandex client settings are unset")
     if not _text(env, "QDRANT_URL"):
         raise StartupError("Qdrant settings are unset")
-    if not _text(env, "CLAMAV_HOST"):
+    clamav_host = _text(env, "CLAMAV_HOST")
+    if not clamav_host:
         raise StartupError("virus check is unset")
     return Settings(
         database_url=_required(env, "DATABASE_URL"),
@@ -59,6 +62,8 @@ def load_settings(env) -> Settings:
         yandex_authorize_url=_text(env, "YANDEX_AUTHORIZE_URL", "https://oauth.yandex.ru/authorize"),
         yandex_token_url=_text(env, "YANDEX_TOKEN_URL", "https://oauth.yandex.ru/token"),
         yandex_info_url=_text(env, "YANDEX_INFO_URL", "https://login.yandex.ru/info"),
+        clamav_host=clamav_host,
+        clamav_port=_int(env, "CLAMAV_PORT", 3310),
     )
 
 

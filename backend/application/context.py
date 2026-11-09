@@ -16,6 +16,7 @@ from adapters.persistence.account_store import PostgresAccountStore
 from adapters.pieceindex.piece_index import PostgresPieceIndex
 from adapters.storage.document_intake import PostgresDocumentIntake
 from adapters.tokens.jwt_tokens import JwtTokens
+from adapters.virus.clamav import ClamavVirusCheck
 from application.settings import Settings, load_settings
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -90,7 +91,11 @@ def _context(settings: Settings) -> AppContext:
         session=SessionService(accounts, tokens, RedisRevocations(redis)),
         profile=ProfileService(accounts, settings.public_base_url),
         accounts=accounts,
-        submit_document=SubmitDocument(intake, RedisUploadRateLimit(redis, clock)),
+        submit_document=SubmitDocument(
+            intake,
+            RedisUploadRateLimit(redis, clock),
+            ClamavVirusCheck(settings.clamav_host, settings.clamav_port),
+        ),
         read_document=ReadDocument(intake),
         list_documents=ListDocuments(intake),
         index_documents=IndexDocuments(intake, files, reader, pieces),

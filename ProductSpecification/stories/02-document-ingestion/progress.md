@@ -248,19 +248,19 @@
 
 ### 1.1 A clean PDF passes the virus check and becomes ready
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (VirusCheck.clear on SubmitDocument; ProbeVirusCheck; ClamavVirusCheck zINSTREAM)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (ClamavVirusCheck + ProbeVirusCheck; wired in application context)
+- [x] green-acceptance
 
 ### 1.2 A virus check that does not clear the file adds no document
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (same VirusCheck; finds_virus/times_out/answers_unreadable → virus_detected, no row)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (same port as 1.1)
+- [x] green-acceptance
 
 ### 2.1 A search store that does not accept the index fails the document
 - [x] red-acceptance

@@ -75,7 +75,7 @@ _DISCLOSURE_PATH_MARKERS = (
 )
 _DISCLOSURE_INTERNAL_MARKERS = (
     "ProbePieceIndex",
-    "ProbeSubmitDocument",
+    "ProbeVirusCheck",
     "ProbeIndexDocuments",
     "MemoryDocumentIntake",
     "StoreUnavailable",

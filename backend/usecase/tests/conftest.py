@@ -7,6 +7,7 @@ pytest.register_assert_rewrite(
     "usecase.tests.statements.upload_rate_statements",
     "usecase.tests.statements.one_submission_statements",
     "usecase.tests.statements.indexing_claim_statements",
+    "usecase.tests.statements.virus_check_statements",
 )
 
 from usecase.document.list_documents import ListDocuments
@@ -20,6 +21,7 @@ from usecase.tests.fake.document.fake_index_documents import FakeIndexDocuments
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
 from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
+from usecase.tests.fake.document.fake_virus_check import FakeVirusCheck
 from usecase.tests.statements.document_statements import DocumentStatements
 
 
@@ -43,8 +45,9 @@ def documents():
     pieces = FakePieceIndex()
     clock = Clock()
     rates = FakeUploadRateLimit(clock)
+    virus = FakeVirusCheck()
     return DocumentStatements(
-        SubmitDocument(intake, rates),
+        SubmitDocument(intake, rates, virus),
         FakeIndexDocuments(intake, files, reader, pieces, clock),
         ReadDocument(intake),
         SearchDocuments(intake, pieces),
@@ -54,4 +57,5 @@ def documents():
         rates,
         clock,
         pieces,
+        virus,
     )

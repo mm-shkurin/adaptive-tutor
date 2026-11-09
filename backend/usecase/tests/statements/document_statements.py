@@ -14,11 +14,13 @@ from usecase.tests.fake.document.fake_index_documents import FakeIndexDocuments
 from usecase.tests.fake.document.fake_pdf_reader import FakePdfReader
 from usecase.tests.fake.document.fake_piece_index import FakePieceIndex
 from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLimit
+from usecase.tests.fake.document.fake_virus_check import FakeVirusCheck
 from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
 from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
 from usecase.tests.statements.upload_rate_statements import UploadRateStatements
+from usecase.tests.statements.virus_check_statements import VirusCheckStatements
 
 FIXTURES = Path(__file__).resolve().parents[4] / "acceptance" / "fixtures"
 TABLE = "|Topic|Mark|\n|---|---|\n|Limits|91|\n"
@@ -29,7 +31,9 @@ EXTRACTED = (FIXTURES / "extracted.txt").read_text(encoding="utf-8")
 NEIGHBOUR_TEXT = (FIXTURES / "neighbour.txt").read_text(encoding="utf-8")
 
 
-class DocumentStatements(IndexingClaimStatements, OneSubmissionStatements, UploadRateStatements):
+class DocumentStatements(
+    IndexingClaimStatements, OneSubmissionStatements, UploadRateStatements, VirusCheckStatements
+):
     def __init__(
         self,
         submit: SubmitDocument,
@@ -42,6 +46,7 @@ class DocumentStatements(IndexingClaimStatements, OneSubmissionStatements, Uploa
         rates: FakeUploadRateLimit,
         clock,
         pieces: FakePieceIndex,
+        virus: FakeVirusCheck,
     ):
         self.submit = submit
         self.index = index
@@ -52,6 +57,7 @@ class DocumentStatements(IndexingClaimStatements, OneSubmissionStatements, Uploa
         self.rates = rates
         self.clock = clock
         self.pieces = pieces
+        self.virus = virus
         self.scope = DocumentScope.builder()
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.neighbour_pdf = (FIXTURES / "neighbour.pdf").read_bytes()

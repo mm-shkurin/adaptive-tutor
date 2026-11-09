@@ -3,7 +3,7 @@ from uuid import UUID
 
 from domain.document.document import Document
 from usecase.document.errors import DuplicateSubmission
-from usecase.document.ports import DocumentIntake, UploadRateLimit
+from usecase.document.ports import DocumentIntake, UploadRateLimit, VirusCheck
 
 
 @dataclass(frozen=True)
@@ -13,13 +13,15 @@ class AcceptedSubmission:
 
 
 class SubmitDocument:
-    def __init__(self, intake: DocumentIntake, rates: UploadRateLimit):
+    def __init__(self, intake: DocumentIntake, rates: UploadRateLimit, virus: VirusCheck):
         self.intake = intake
         self.rates = rates
+        self.virus = virus
 
     async def submit(
         self, owner_id: UUID, name: str, content: bytes, submission_key: str
     ) -> AcceptedSubmission:
+        await self.virus.clear(content)
         existing = await self.intake.find_by_key(owner_id, submission_key)
         if existing is not None:
             return AcceptedSubmission(existing, created=False)
