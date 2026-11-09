@@ -228,6 +228,5 @@ class AcceptanceServer:
         row = intake.rows.get(uid)
         if row is None:
             raise KeyError(document_id)
-        document = row[1]
         content = intake.bodies.get(uid) or b""
-        await self._ctx.index_documents._index(document, content)
+        await self._ctx.index_documents._index(row[1], content)

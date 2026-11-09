@@ -1,6 +1,5 @@
 import asyncio
 import contextlib
-from dataclasses import replace
 from datetime import datetime, timezone
 
 from domain.document.document import Document
@@ -33,7 +32,7 @@ class IndexDocuments:
         await self._index(claimed[0], claimed[1])
 
     async def _index(self, document: Document, content: bytes) -> None:
-        if document.status in {"ready", "failed"}:
+        if document.is_finished():
             return
         started = self._clock.now()
         if not self._budget.begin(document.id, started):
@@ -114,8 +113,7 @@ class IndexDocuments:
         if self._budget.attempts(document.id) >= ATTEMPT_LIMIT:
             await self._fail(document, "indexing failed")
             return
-        waiting = replace(document, status="waiting", error=None, page_count=None, piece_count=None)
-        await self.intake.save(waiting)
+        await self.intake.save(document.waiting())
 
     async def _fail(self, document: Document, reason: str) -> None:
         await self.intake.save(document.failed(reason))

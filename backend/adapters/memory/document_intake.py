@@ -66,7 +66,7 @@ class MemoryDocumentIntake:
                 if row is None:
                     return None
                 current = row[1]
-                if current.status in {"ready", "failed"} and document.status != current.status:
+                if current.is_finished() and document.status != current.status:
                     return current.status
                 self.rows[document.id] = (row[0], document)
                 return document.status
