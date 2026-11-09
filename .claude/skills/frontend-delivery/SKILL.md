@@ -85,4 +85,5 @@ description: Провести экран через фронтовый конв�
 | Контракт путей | `python scripts/check_api_contract.py` |
 | Browser acceptance | `pytest acceptance` (нужны backend + frontend) |
 
-CI: `.github/workflows/frontend.yml`. После куска — `/clear-session`.
+CI: `.github/workflows/frontend.yml`. После куска — `/clear-session` (в
+`/delivery-loop afk` clear между кусками не делать — см. режим afk в `/delivery-loop`).

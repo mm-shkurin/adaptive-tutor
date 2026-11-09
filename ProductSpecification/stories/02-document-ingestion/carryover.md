@@ -151,3 +151,45 @@
 **Where:** acceptance `then_the_two_runs_do_not_both_write_pieces`, usecase indexing claim statements
 **Implication:** Assert `indexing_attempts == 1` (acceptance) or `read_count == 1` (usecase) so the in-flight refuse is forced.
 **From:** scenario 4.11 (4.11-a-second-indexing-run-started-while-the-first-is-going-stores-one-set)
+
+## Decision: First terminal status wins on save
+
+**Decision:** `Document.prefer_terminal` keeps a finished row when a later save brings a different status; intakes apply that under save (Postgres with `FOR UPDATE`).
+**Why:** Two loads taken while indexing can both transition locally; last-write-wins would erase an earlier ready with a stale failed.
+**Where applied:** `backend/domain/document/document.py`; Fake / Memory / Postgres `DocumentIntake.save`
+**From:** scenario 4.12 (4.12-a-stale-status-write-does-not-erase-a-newer-one)
+
+## Quirk: Stale terminal writes need frozen loads
+
+**Quirk:** Sequential acceptance `/move` ready→failed is 409 after 4.8; concurrent stale writes need two held indexing snapshots and `/stale-save`.
+**Where:** `acceptance/clients/application/index_probe.py` (`hold_two_loads`), `acceptance/support/acceptance_server.py`
+**Implication:** Do not simulate last-write races with two fresh re-reads through `/move`.
+**From:** scenario 4.12 (4.12-a-stale-status-write-does-not-erase-a-newer-one)
+
+## Decision: PDF parse runs off the event loop
+
+**Decision:** `PyPdfReader.read` parses via `asyncio.to_thread` so the five-minute deadline can cancel the await.
+**Why:** Sync pymupdf on the loop would block the deadline poll for a costly file.
+**Where applied:** `backend/adapters/pdfreader/pdf_reader.py`
+**From:** scenario 4.13 (4.13-a-pathological-pdf-does-not-keep-indexing-busy-past-five-minutes)
+
+## Quirk: Synthetic `_pdf_of_size` fails pymupdf
+
+**Quirk:** `_pdf_of_size` builds bytes that pymupdf cannot open (`invalid_pdf`); padded real fixtures pass the upload gate.
+**Where:** `acceptance/statements/document_statements.py` (`_pdf_of_size`, `_pad_pdf_to_minimum`)
+**Implication:** Costly/pathological acceptance bodies should pad `lecture.pdf` (or another readable fixture), not `_pdf_of_size`.
+**From:** scenario 4.13 (4.13-a-pathological-pdf-does-not-keep-indexing-busy-past-five-minutes)
+
+## Decision: Upload virus scan is VirusCheck on SubmitDocument
+
+**Decision:** `VirusCheck.clear(content)` runs at the start of `SubmitDocument.submit`; Probe and ClamAV implement the port.
+**Why:** Settings already required ClamAV; unclean files must add no row.
+**Where applied:** `backend/usecase/document/submit_document.py`, `adapters/virus/clamav.py`, `ProbeVirusCheck`
+**From:** scenario 1.1 (1.1-1.2-virus-check-on-upload)
+
+## Quirk: Idempotent replay still virus-scans
+
+**Quirk:** `SubmitDocument` calls `virus.clear` before the idempotency lookup, so a replayed Idempotency-Key still scans.
+**Where:** `backend/usecase/document/submit_document.py`
+**Implication:** Upload-path scan counts include replays; indexing retries are a separate “no second virus check” path.
+**From:** scenario 1.1 (1.1-1.2-virus-check-on-upload)
