@@ -229,9 +229,5 @@ class AcceptanceServer:
         if row is None:
             raise KeyError(document_id)
         document = row[1]
-        if document.status in {"ready", "failed"}:
-            return
-        content = intake.bodies.get(uid)
-        if content is None:
-            return
+        content = intake.bodies.get(uid) or b""
         await self._ctx.index_documents._index(document, content)

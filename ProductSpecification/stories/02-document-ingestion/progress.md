@@ -191,11 +191,11 @@
 
 ### 4.7 A finished document is not indexed again
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (_index returns on ready/failed; second run still calls `_index` so that guard refuses rework; file may already be gone)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; AcceptanceServer `_second_indexing_run` + FakeIndexDocuments)
+- [x] green-acceptance
 
 ### 4.8 A step that skips or reverses indexing is refused
 - [x] red-acceptance

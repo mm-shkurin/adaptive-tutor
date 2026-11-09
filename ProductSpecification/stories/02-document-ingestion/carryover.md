@@ -67,3 +67,31 @@
 **Why:** Tables are not a separate store step; the named failure is the refusal after text was read, before pieces are written.
 **Where applied:** `backend/usecase/document/index_documents.py`, `ProbeIndexDocuments`, `FakeIndexDocuments`
 **From:** scenario 4.2 (4.2-a-failed-index-names-the-part-and-leaves-nothing-searchable)
+
+## Quirk: Token-cap before pieces()
+
+**Quirk:** `over_piece_cap` after `ExtractedText.pieces()` never fails a many_pieces-scale PDF in practice — splitting ~1M tokens hangs before the document can become failed.
+**Where:** `backend/usecase/document/index_documents.py`, `backend/domain/document/extracted_text.py`
+**Implication:** Run `over_piece_cap(0, text)` (token branch) before calling `pieces()`.
+**From:** scenario 4.5 (4.5-indexing-that-would-store-more-than-2000-pieces-fails-the-document)
+
+## Decision: Fail over-cap PDFs before piece splitting
+
+**Decision:** Fail over-cap PDFs with `too many pieces` via a token-cap check before splitting; keep the piece-count check after `pieces()` for the non-token path.
+**Why:** The fixture exceeds `PIECE_CAP * TOKENS_PER_PIECE` without needing a completed split.
+**Where applied:** `backend/usecase/document/index_documents.py`, `indexing_budget.over_piece_cap`
+**From:** scenario 4.5 (4.5-indexing-that-would-store-more-than-2000-pieces-fails-the-document)
+
+## Quirk: FakeIndexDocuments needs the injectable Clock
+
+**Quirk:** `FakeIndexDocuments` must receive the same injectable `Clock` as `DocumentStatements`.
+**Where:** `backend/usecase/tests/conftest.py`
+**Implication:** Advancing `documents.clock` never trips `IndexingBudget.overdue` if the indexer still uses `_WallClock`.
+**From:** scenario 4.6 (4.6-indexing-that-has-not-finished-in-5-minutes-is-failed)
+
+## Quirk: Finished re-index needs a cleared table arm and a read count
+
+**Quirk:** Clearing `_fail_table_after_text` and counting `FakePdfReader.read_count` are required for a real sanity fail on a second index of a finished document.
+**Where:** `backend/usecase/tests/statements/document_statements.py`
+**Implication:** Without those, a second run still ends ready/failed with the same pieces (`_store` skips; table arm still refuses).
+**From:** scenario 4.7 (4.7-a-finished-document-is-not-indexed-again)

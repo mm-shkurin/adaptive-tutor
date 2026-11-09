@@ -3,9 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(
-    reason="RED: second indexing run on ready document raises KeyError; table failure still yields ready"
-)
 @pytest.mark.backend
 class TestFinishedDocumentIsNotIndexedAgain(AbstractBackendTest):
     """A finished document is not indexed again.

@@ -330,5 +330,38 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         assert self.upload.id not in self.pieces.stored
         assert await self.pieces.pieces(self.upload.id) == ()
 
+    async def given_a_document_that_is_finished(self, finished: str) -> None:
+        self.expected_finished_status = finished
+        await self.given_a_signed_in_person()
+        if finished == "ready":
+            await self.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
+            await self.when_indexing_finishes()
+            self.finished = self.ready
+        else:
+            await self.when_indexing_fails_on_one_table_after_an_earlier_step_succeeded()
+            assert self.finished.status == "failed"
+
+    async def when_indexing_is_requested_again_for_that_document(self) -> None:
+        if isinstance(self.index, FakeIndexDocuments):
+            self.index._fail_table_after_text = False
+        self.pieces_before_second_index = await self.pieces.pieces(self.finished.id)
+        self.reads_before_second_index = self._reader.read_count
+        await self.index._index(self.finished, self.lecture)
+        self.finished = await self.read.read(self.person_id, self.finished.id)
+
+    async def then_the_document_stays_finished(self) -> None:
+        assert self._reader.read_count == self.reads_before_second_index
+        if self.expected_finished_status == "ready":
+            assert self.finished == views.ready(
+                self.finished.id, self.scope.lecture_name, len(self.lecture)
+            )
+        else:
+            assert self.finished == views.failed(
+                self.finished.id, self.scope.lecture_name, len(self.lecture), TABLE_NAMED
+            )
+
+    async def then_no_second_set_of_pieces_is_stored(self) -> None:
+        assert await self.pieces.pieces(self.finished.id) == self.pieces_before_second_index
+
     async def _assert_lecture_pieces(self) -> None:
         assert self.lecture_pieces == (FIVE_HUNDRED, JOINED)

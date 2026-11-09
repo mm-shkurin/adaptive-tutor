@@ -6,6 +6,7 @@ from usecase.document.ports import PdfRead
 class FakePdfReader:
     def __init__(self):
         self.reads: dict[bytes, PdfRead] = {}
+        self.read_count = 0
         self._allowed = True
 
     def register(self, content: bytes, read: PdfRead) -> None:
@@ -20,4 +21,5 @@ class FakePdfReader:
     async def read(self, content: bytes) -> PdfRead:
         while not self._allowed:
             await asyncio.sleep(0.05)
+        self.read_count += 1
         return self.reads[content]
