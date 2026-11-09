@@ -32,3 +32,31 @@
 **Why:** Upload answers before indexing finishes; the list is the status source.
 **Where applied:** `frontend/src/features/documents/useDocumentsScreen.js`
 **From:** scenario 2.1 (2.1-an-accepted-pdf-appears-as-waiting-and-then-becomes-ready)
+
+## Decision: Upload refusals stay before SubmitDocument
+
+**Decision:** Refuse unacceptable uploads in the HTTP adapter before `SubmitDocument`; no usecase change for this scenario.
+**Why:** The outline codes are request-boundary validation; calling submit would consume rate/idempotency on a refused file.
+**Where applied:** `backend/adapters/http/documents.py`, `backend/adapters/pdfreader/upload_check.py`
+**From:** scenario 2.1 (2.1-an-unacceptable-file-adds-no-document)
+
+## Quirk: Empty upload filename arrives as a plain form field
+
+**Quirk:** A multipart `file` part with an empty filename is parsed as a plain `str` form field, not `UploadFile`.
+**Where:** Starlette/`request.form()` consumed by `backend/adapters/http/documents.py` `_upload_part`
+**Implication:** Presence of key `file` that is not an `UploadFile` must map to `name_missing`, not `file_missing`.
+**From:** scenario 2.1 (2.1-an-unacceptable-file-adds-no-document)
+
+## Decision: Document names are grapheme-limited and stored as text
+
+**Decision:** The 255 name limit is NFC grapheme clusters; storage is `Text`, not `VARCHAR(255)`.
+**Why:** A combining mark at the edge is two code points and one letter; a code-point cap would refuse or cut it.
+**Where applied:** `backend/domain/document/file_name.py`, migration `0006`, `DocumentRow.name`, `documents.yaml`
+**From:** scenario 2.4 (2.4-a-name-that-would-split-a-letter-at-the-limit-is-not-stored-broken)
+
+## Quirk: Acceptance document intake has no VARCHAR length
+
+**Quirk:** Acceptance wires `MemoryDocumentIntake`, so a grapheme-safe name longer than 255 code points can pass HTTP acceptance while Postgres `VARCHAR(255)` would still fail.
+**Where:** `acceptance/support/acceptance_server.py`, `backend/adapters/memory/document_intake.py`
+**Implication:** Name-length edge cases need a storage round-trip (or live Postgres) to catch column cuts.
+**From:** scenario 2.4 (2.4-a-name-that-would-split-a-letter-at-the-limit-is-not-stored-broken)
