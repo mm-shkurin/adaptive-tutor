@@ -175,11 +175,11 @@
 
 ### 4.5 Indexing that would store more than 2000 pieces fails the document
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (token overflow via `over_piece_cap` before `pieces()` so a 1M+ token PDF fails as `too many pieces` without splitting; piece-count branch kept after split; nothing searchable)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; FakePdfReader / real many_pieces.pdf fixture)
+- [x] green-acceptance
 
 ### 4.6 Indexing that has not finished in 5 minutes is failed
 - [x] red-acceptance

@@ -2,6 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from usecase.document.index_documents import IndexDocuments
+from usecase.document.indexing_budget import PIECE_CAP, TOKENS_PER_PIECE
 from usecase.document.list_documents import ListDocuments
 from usecase.document.ports import PdfRead
 from usecase.document.read_document import ReadDocument
@@ -52,6 +53,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         self.scope = DocumentScope.builder()
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.neighbour_pdf = (FIXTURES / "neighbour.pdf").read_bytes()
+        self.many_pieces_pdf = b"%PDF-1.4 many-pieces-fixture"
         self.person_id = self.scope.person_id
         self.neighbour_id = self.scope.neighbour_id
         self.neighbour_upload = None
@@ -72,6 +74,7 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
         self.earlier = None
         self.second_upload = None
         self.piece_writes_before_retry = 0
+        self._reader = reader
         reader.register(self.lecture, PdfRead(EXTRACTED, TABLE, views.PAGE_COUNT))
         reader.register(self.neighbour_pdf, PdfRead(NEIGHBOUR_TEXT, "", views.PAGE_COUNT))
 
@@ -251,6 +254,24 @@ class DocumentStatements(OneSubmissionStatements, UploadRateStatements):
     async def then_the_later_document_still_becomes_ready(self) -> None:
         assert self.later_final == views.ready(
             self.later.id, self.scope.lecture_name, len(self.lecture)
+        )
+
+    async def when_the_person_submits_a_pdf_that_would_store_more_than_2000_pieces(self) -> None:
+        overflow = "w " * (PIECE_CAP * TOKENS_PER_PIECE + 1)
+        self._reader.register(
+            self.many_pieces_pdf, PdfRead(overflow, "", views.PAGE_COUNT)
+        )
+        self.upload = (
+            await self._accept(self.person_id, "many_pieces.pdf", self.many_pieces_pdf)
+        ).document
+
+    async def when_the_many_pieces_document_finishes_indexing(self) -> None:
+        await self.index.index_waiting()
+        self.finished = await self.read.read(self.person_id, self.upload.id)
+
+    async def then_the_over_limit_document_is_failed(self) -> None:
+        assert self.finished == views.failed(
+            self.upload.id, "many_pieces.pdf", len(self.many_pieces_pdf), "too many pieces"
         )
 
     async def _assert_lecture_pieces(self) -> None:

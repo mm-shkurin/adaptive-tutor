@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: IndexDocuments marks over-limit PDF ready instead of failed")
 @pytest.mark.backend
 class TestIndexingOverPieceLimitFailsDocument(AbstractBackendTest):
     """Indexing that would store more than 2000 pieces fails the document.

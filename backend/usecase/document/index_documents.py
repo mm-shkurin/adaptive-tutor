@@ -59,6 +59,9 @@ class IndexDocuments:
             await self._fail(document, reason)
             return
         extracted = ExtractedText.compose(read.text)
+        if over_piece_cap(0, extracted.value):
+            await self._fail(document, "too many pieces")
+            return
         parts = extracted.pieces()
         if over_piece_cap(len(parts), extracted.value):
             await self._fail(document, "too many pieces")
