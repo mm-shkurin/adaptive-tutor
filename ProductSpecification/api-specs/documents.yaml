@@ -17,6 +17,14 @@ paths:
         - name: page
           in: query
           schema: { type: integer, minimum: 1, default: 1 }
+          description: |
+            Смещение страницами по 50. Игнорируется, если передан after.
+        - name: after
+          in: query
+          schema: { type: string, format: uuid }
+          description: |
+            Keyset: документы строго старше этой строки (created_at, id),
+            сначала новые. Для следующей страницы после живой вставки.
       responses:
         '200':
           description: |

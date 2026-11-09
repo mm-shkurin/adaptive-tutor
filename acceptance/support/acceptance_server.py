@@ -3,12 +3,12 @@ import socket
 import threading
 import time
 from contextlib import asynccontextmanager
-from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 import httpx
 import uvicorn
 from fastapi import Body, FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.document_intake import MemoryDocumentIntake
@@ -21,6 +21,7 @@ from adapters.memory.upload_rate_limit import MemoryUploadRateLimit
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from clients.application.probe_gated_pdf_reader import ProbeGatedPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
+from domain.document.document import InvalidStatusTransition
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
 from clients.application.index_probe import IndexProbe
@@ -80,7 +81,7 @@ class AcceptanceServer:
             DISCLOSURE_KNOWN_SECRET, "b" * 32, timedelta(minutes=60), timedelta(days=30)
         )
         bodies: dict[UUID, bytes] = {}
-        intake = MemoryDocumentIntake(bodies, self.probe)
+        intake = MemoryDocumentIntake(bodies, self.probe, now=self.clock.now)
         files = MemoryFileStore(bodies, self.probe)
         pieces = ProbePieceIndex(self.probe)
         self.probe.attach_intake(intake)
@@ -97,7 +98,7 @@ class AcceptanceServer:
             ProbeSubmitDocument(intake, self.rates, self.probe),
             ReadDocument(intake),
             ListDocuments(intake),
-            ProbeIndexDocuments(intake, files, reader, pieces, self.probe),
+            ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock),
             self._indexing,
         )
 
@@ -149,29 +150,16 @@ class AcceptanceServer:
 
                 raise DocumentNotFound()
             document = row[1]
-            toward = body["status"]
-            if toward == "ready":
-                updated = document.ready(1, 1)
-            elif toward == "failed":
-                updated = replace(
-                    document,
-                    status="failed",
-                    error="forced",
-                    page_count=None,
-                    piece_count=None,
+            try:
+                updated = document.transition(body["status"])
+            except InvalidStatusTransition:
+                return JSONResponse(
+                    status_code=409,
+                    content={
+                        "code": "invalid_status_transition",
+                        "message": "Status transition is not allowed",
+                    },
                 )
-            elif toward == "indexing":
-                updated = document.indexing()
-            elif toward == "waiting":
-                updated = replace(
-                    document,
-                    status="waiting",
-                    page_count=None,
-                    piece_count=None,
-                    error=None,
-                )
-            else:
-                updated = replace(document, status=toward)
             await self._intake.save(updated)
             from adapters.http.documents import _json
 
@@ -241,5 +229,9 @@ class AcceptanceServer:
         if row is None:
             raise KeyError(document_id)
         document = row[1]
-        content = intake.bodies[uid]
+        if document.status in {"ready", "failed"}:
+            return
+        content = intake.bodies.get(uid)
+        if content is None:
+            return
         await self._ctx.index_documents._index(document, content)

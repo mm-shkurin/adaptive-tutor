@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${env:ADAPTIVE_TUTOR_DATABASE_URL}"
+      ]
+    },
+    "redis": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-redis",
+        "${env:ADAPTIVE_TUTOR_REDIS_URL}"
+      ]
+    }
+  }
+}

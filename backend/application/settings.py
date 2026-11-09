@@ -36,6 +36,10 @@ def load_settings(env) -> Settings:
     client_secret = _text(env, "YANDEX_CLIENT_SECRET")
     if provider == "yandex" and (not client_id or not client_secret):
         raise StartupError("Yandex client settings are unset")
+    if not _text(env, "QDRANT_URL"):
+        raise StartupError("Qdrant settings are unset")
+    if not _text(env, "CLAMAV_HOST"):
+        raise StartupError("virus check is unset")
     return Settings(
         database_url=_required(env, "DATABASE_URL"),
         redis_url=_required(env, "REDIS_URL"),

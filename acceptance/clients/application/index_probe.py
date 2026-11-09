@@ -94,6 +94,9 @@ class IndexProbe:
     def extracted_text(self, document_id: str) -> str:
         return self._extracted.get(document_id, "")
 
+    def remember_extracted(self, document_id: str, text: str) -> None:
+        self._extracted[document_id] = text
+
     def release_indexing(self) -> None:
         self._release.set()
 

@@ -1,0 +1,7 @@
+{
+  "known": [
+    "frontend/src/features/profile/useProfileScreen.js: 201 строк при лимите 200",
+    "frontend/src/styles/app.css: 275 строк при лимите 200",
+    "frontend/src/styles/landing.css: 574 строк при лимите 200"
+  ]
+}

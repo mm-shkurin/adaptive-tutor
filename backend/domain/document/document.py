@@ -2,6 +2,10 @@ from dataclasses import dataclass, replace
 from uuid import UUID, uuid4
 
 
+class InvalidStatusTransition(Exception):
+    """The step skips or reverses indexing."""
+
+
 @dataclass(frozen=True)
 class Document:
     id: UUID
@@ -29,3 +33,17 @@ class Document:
 
     def ready(self, page_count: int, piece_count: int) -> "Document":
         return replace(self, status="ready", page_count=page_count, piece_count=piece_count, error=None)
+
+    def failed(self, reason: str) -> "Document":
+        return replace(self, status="failed", error=reason, page_count=None, piece_count=None)
+
+    def transition(self, toward: str) -> "Document":
+        if self.status in {"ready", "failed"}:
+            return self
+        if self.status == "waiting" and toward == "indexing":
+            return self.indexing()
+        if self.status == "indexing" and toward == "ready":
+            return self.ready(self.page_count or 1, self.piece_count or 1)
+        if self.status == "indexing" and toward == "failed":
+            return self.failed("forced")
+        raise InvalidStatusTransition()

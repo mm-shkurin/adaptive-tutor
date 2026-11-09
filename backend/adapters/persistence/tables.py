@@ -83,6 +83,8 @@ class DocumentRow(Base):
         )
 
     def apply(self, document) -> None:
+        if self.status in {"ready", "failed"} and document.status != self.status:
+            return
         self.name = document.name
         self.size_bytes = document.size_bytes
         self.page_count = document.page_count

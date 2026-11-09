@@ -50,6 +50,28 @@ describe('libraryView', () => {
     ])
   })
 
+  it('A failed document shows the failure and the reason', () => {
+    const failed = {
+      id: '33333333-3333-3333-3333-333333333333',
+      name: 'Методичка.pdf',
+      size_bytes: 2202009,
+      page_count: null,
+      piece_count: null,
+      status: 'failed',
+      error: 'Не удалось прочитать страницу 12',
+    }
+    const view = libraryView({ documents: [failed], has_next: false })
+    expect(view.emptyList).toBeNull()
+    expect(view.rows[0]).toEqual({
+      id: failed.id,
+      name: 'Методичка.pdf',
+      meta: 'Не удалось прочитать страницу 12',
+      statusLabel: 'Не удалось',
+      statusPill: 'failed',
+      failureReason: 'Не удалось прочитать страницу 12',
+    })
+  })
+
   it('A waiting document shows waiting meta and label', () => {
     const view = libraryView({ documents: [waitingDocument], has_next: false })
     expect(view.rows[0]).toEqual({

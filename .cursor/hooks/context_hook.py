@@ -34,7 +34,7 @@ def digest() -> str:
         parts.append("Next progress lines:\n" + "\n".join(current))
     parts.append(
         "Do not write API or test specs for a story until its interview is confirmed. "
-        "Story 1 interview exists; its next step is the story spec."
+        "Default delivery is /delivery-loop → /backend-delivery or /frontend-delivery."
     )
     return "\n\n".join(parts)
 

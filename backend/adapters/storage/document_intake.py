@@ -85,17 +85,36 @@ class PostgresDocumentIntake(DocumentIntake):
 
         return await self._run(work)
 
-    async def list_page(self, owner_id: UUID, page: int) -> tuple[tuple[Document, ...], bool]:
+    async def list_page(
+        self, owner_id: UUID, page: int, after: UUID | None = None
+    ) -> tuple[tuple[Document, ...], bool]:
         async def work(session):
-            rows = (
-                await session.scalars(
-                    select(DocumentRow)
-                    .where(DocumentRow.owner_id == owner_id)
-                    .order_by(DocumentRow.created_at.desc())
-                    .offset((page - 1) * PAGE_SIZE)
-                    .limit(PAGE_SIZE + 1)
-                )
-            ).all()
+            newest_first = (
+                DocumentRow.created_at.desc(),
+                DocumentRow.id.desc(),
+            )
+            query = select(DocumentRow).where(DocumentRow.owner_id == owner_id)
+            if after is not None:
+                cursor = await session.get(DocumentRow, after)
+                if cursor is not None and cursor.owner_id == owner_id:
+                    query = query.where(
+                        (DocumentRow.created_at < cursor.created_at)
+                        | (
+                            (DocumentRow.created_at == cursor.created_at)
+                            & (DocumentRow.id < cursor.id)
+                        )
+                    )
+                rows = (
+                    await session.scalars(query.order_by(*newest_first).limit(PAGE_SIZE + 1))
+                ).all()
+            else:
+                rows = (
+                    await session.scalars(
+                        query.order_by(*newest_first)
+                        .offset((page - 1) * PAGE_SIZE)
+                        .limit(PAGE_SIZE + 1)
+                    )
+                ).all()
             return tuple(row.to_domain() for row in rows[:PAGE_SIZE]), len(rows) > PAGE_SIZE
 
         return await self._run(work)

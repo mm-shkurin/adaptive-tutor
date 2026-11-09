@@ -25,7 +25,9 @@ class DocumentIntake(Protocol):
 
     async def next_waiting(self) -> tuple[Document, bytes] | None: ...
 
-    async def list_page(self, owner_id: UUID, page: int) -> tuple[tuple[Document, ...], bool]: ...
+    async def list_page(
+        self, owner_id: UUID, page: int, after: UUID | None = None
+    ) -> tuple[tuple[Document, ...], bool]: ...
 
 
 class FileStore(Protocol):

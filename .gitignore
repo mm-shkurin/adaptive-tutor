@@ -78,3 +78,7 @@ coverage/
 *.temp
 tmp/
 temp/
+
+# Local agent / browser artifacts
+.playwright-mcp/
+.memory-bank/session-log.md

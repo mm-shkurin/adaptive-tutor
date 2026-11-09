@@ -1,0 +1,2 @@
+# For local / CI rules gates (scripts/check_*.py)
+PyYAML>=6.0

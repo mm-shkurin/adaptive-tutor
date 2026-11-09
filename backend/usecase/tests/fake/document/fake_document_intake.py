@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from domain.document.document import Document
@@ -10,7 +11,9 @@ class FakeDocumentIntake:
         self.bodies = bodies
         self.rows: dict[UUID, tuple[UUID, Document]] = {}
         self._order: list[UUID] = []
+        self._created_at: dict[UUID, datetime] = {}
         self._keys: dict[tuple[UUID, str], UUID] = {}
+        self._tick = 0
 
     async def find_by_key(self, owner_id: UUID, submission_key: str) -> Document | None:
         document_id = self._keys.get((owner_id, submission_key))
@@ -28,6 +31,10 @@ class FakeDocumentIntake:
         self._keys[key] = document.id
         self.rows[document.id] = (owner_id, document)
         self.bodies[document.id] = content
+        self._tick += 1
+        self._created_at[document.id] = datetime(2024, 1, 1, tzinfo=timezone.utc).replace(
+            microsecond=self._tick
+        )
         self._order.append(document.id)
 
     async def get(self, owner_id: UUID, document_id: UUID) -> Document | None:
@@ -49,12 +56,28 @@ class FakeDocumentIntake:
                 return document, self.bodies[document_id]
         return None
 
-    async def list_page(self, owner_id: UUID, page: int) -> tuple[tuple[Document, ...], bool]:
+    async def list_page(
+        self, owner_id: UUID, page: int, after: UUID | None = None
+    ) -> tuple[tuple[Document, ...], bool]:
         owned = [
-            self.rows[document_id][1]
-            for document_id in reversed(self._order)
+            document_id
+            for document_id in self._order
             if self.rows[document_id][0] == owner_id
         ]
-        start = (page - 1) * PAGE_SIZE
-        window = owned[start : start + PAGE_SIZE + 1]
+        owned.sort(
+            key=lambda document_id: (self._created_at[document_id], document_id),
+            reverse=True,
+        )
+        if after is not None and after in self._created_at and after in owned:
+            cursor_at = self._created_at[after]
+            owned = [
+                document_id
+                for document_id in owned
+                if (self._created_at[document_id], document_id) < (cursor_at, after)
+            ]
+            window_ids = owned[: PAGE_SIZE + 1]
+        else:
+            start = (page - 1) * PAGE_SIZE
+            window_ids = owned[start : start + PAGE_SIZE + 1]
+        window = [self.rows[document_id][1] for document_id in window_ids]
         return tuple(window[:PAGE_SIZE]), len(window) > PAGE_SIZE

@@ -109,7 +109,7 @@ def ui():
         signed_in = SignedInBrowserStatements(
             driver, app_url, server.base_url, server.provider, server.probe
         )
-        library = DocumentLibraryStatements(driver)
+        library = DocumentLibraryStatements(driver, app_url)
         yield signed_in, library
     finally:
         if signed_in is not None:

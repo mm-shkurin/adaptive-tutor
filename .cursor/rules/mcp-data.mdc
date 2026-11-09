@@ -1,0 +1,43 @@
+---
+description: Prefer Postgres and Redis MCP over guessing schemas, cache keys, or session state
+alwaysApply: true
+---
+
+# Data MCP usage (Postgres + Redis)
+
+When the task touches persistence, migrations, sessions, OAuth state, or cache behavior in this project, use the project MCP servers before inventing field names, key patterns, or “what’s in the DB/cache”.
+
+## Postgres MCP (`postgres`)
+
+Use when working on:
+- SQLAlchemy models, Alembic migrations, repository/adapters under `backend/`
+- API bugs that depend on real rows (accounts, documents, profiles)
+- Writing or reviewing queries
+
+Prefer:
+1. Inspect the live schema / table columns via MCP first
+2. Run narrow `SELECT`s (specific table, limit, filters) — never dump whole databases
+3. Align code and migrations with what the live schema shows
+
+Do not use Postgres MCP for pure frontend/UI work with no data dependency.
+
+## Redis MCP (`redis`)
+
+Use when working on:
+- Sign-in / OAuth / session / token revocation (`RedisOAuthStore`, `RedisRevocations`, `SessionService`)
+- “User not logged in”, stale session, or cache-related debugging
+
+Prefer:
+1. `list` with a tight key pattern (not `*` unless investigating a real incident)
+2. `get` on the suspect key(s)
+3. Avoid `set` / `delete` unless the user asked to mutate cache/session state, or a test setup clearly requires it
+
+## Already covered elsewhere
+
+- Library/framework docs → Context7 MCP (global rule), not web guesswork
+- Browser UI checks → Playwright / built-in browser tools when needed
+
+## Token discipline
+
+- Pointed MCP queries beat pasting schemas or redis dumps into chat
+- Prefer MCP facts over training-data guesses for this project’s live data layer

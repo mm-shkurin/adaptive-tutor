@@ -10,5 +10,7 @@ class ListDocuments:
     def __init__(self, intake: DocumentIntake):
         self.intake = intake
 
-    async def list(self, owner_id: UUID, page: int) -> tuple[tuple[Document, ...], bool]:
-        return await self.intake.list_page(owner_id, max(page, 1))
+    async def list(
+        self, owner_id: UUID, page: int, after: UUID | None = None
+    ) -> tuple[tuple[Document, ...], bool]:
+        return await self.intake.list_page(owner_id, max(page, 1), after)

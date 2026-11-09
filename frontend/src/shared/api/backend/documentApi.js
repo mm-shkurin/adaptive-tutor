@@ -6,12 +6,13 @@ export function listDocuments(signal) {
   return send(BACKEND.documents.list, { signal, guard: isDocumentPageBody })
 }
 
-export function uploadDocument(file, idempotencyKey) {
+export function uploadDocument(file, idempotencyKey, signal) {
   const form = new FormData()
   form.append('file', file)
   return send(BACKEND.documents.list, {
     method: 'POST',
     body: form,
+    signal,
     headers: { 'Idempotency-Key': idempotencyKey },
     guard: isDocumentBody,
   })

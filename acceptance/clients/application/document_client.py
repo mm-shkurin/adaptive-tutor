@@ -67,9 +67,14 @@ class DocumentClient:
         )
         return read_result(response)
 
-    def list_documents(self, token: str, page: int = 1) -> HttpResult:
+    def list_documents(
+        self, token: str, page: int = 1, after: str | None = None
+    ) -> HttpResult:
+        params: dict = {"page": page}
+        if after is not None:
+            params["after"] = after
         response = self.http.get(
-            "/api/v1/documents", headers=self._bearer(token), params={"page": page}
+            "/api/v1/documents", headers=self._bearer(token), params=params
         )
         return read_result(response)
 
@@ -80,11 +85,16 @@ class DocumentClient:
         )
         return read_result(response)
 
-    def move_indexing_status(self, token: str, document_id: str, status: str) -> HttpResult:
+    def move_indexing_status(
+        self, token: str, document_id: str, status: str, error: str | None = None
+    ) -> HttpResult:
+        body: dict = {"status": status}
+        if error is not None:
+            body["error"] = error
         response = self.http.post(
             f"/acceptance/documents/{document_id}/move",
             headers=self._bearer(token),
-            json={"status": status},
+            json=body,
         )
         return read_result(response)
 

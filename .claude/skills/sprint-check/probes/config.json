@@ -1,11 +1,14 @@
 {
-  "_comment": "Project binding for /sprint-check in absolute555. The rule catalogue is generic; this file is the only place that knows THIS repo's layout. backend/ is feature-major: app/features/<area>/{api,services,models,schemas} plus shared infrastructure in app/shared, app/core, app/db. The layer-boundary forbidden_imports encode THIS project's actual rule instead: routers must not reach past the service layer into the ORM, and models must not import services. The globs match the layer inside every area, so a new area is covered the day it is created rather than the day somebody remembers to list it.",
+  "_comment": "Project binding for AdaptiveTutor. Clean Architecture: domain ← usecase ← adapters ← application. Dependency flow is strictly inward.",
   "layers": {
     "back": {
       "root": "backend",
       "kind": "service",
       "code": [
-        "backend/app",
+        "backend/domain",
+        "backend/usecase",
+        "backend/adapters",
+        "backend/application",
         "backend/tests"
       ],
       "src": [
@@ -16,48 +19,36 @@
       ],
       "config": [
         "backend/requirements.txt",
-        "backend/requirements-dev.txt",
-        "backend/ruff.toml"
+        "backend/alembic.ini"
       ],
       "styles": [],
-      "changelog": [
-        "backend/CHANGELOG.md"
-      ],
-      "test_artifacts": [
-        "backend/docs/testing"
-      ],
+      "changelog": [],
+      "test_artifacts": [],
       "env_example": [
-        "infra/.env.example"
+        "infra/.env.example",
+        "backend/.env.example"
       ],
       "forbidden_imports": [
         {
-          "name": "routers go through services, not the ORM",
+          "name": "domain imports nothing from outer layers",
           "in": [
-            "backend/app/features/*/api"
+            "backend/domain"
           ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?models\\b|sqlalchemy\\.(select|update|delete)"
+          "regex": "^\\s*(from|import)\\s+.*(usecase|adapters|application)\\b|^\\s*(from|import)\\s+.*(fastapi|sqlalchemy)\\b"
         },
         {
-          "name": "models hold no service or API logic",
+          "name": "usecase imports only domain (not adapters/application/HTTP)",
           "in": [
-            "backend/app/features/*/models"
+            "backend/usecase"
           ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.((features\\.\\w+\\.)?(services|api)|tasks|shared)\\b|\\bfastapi\\b"
+          "regex": "^\\s*(from|import)\\s+.*(adapters|application)\\b|^\\s*(from|import)\\s+.*\\bfastapi\\b"
         },
         {
-          "name": "domain holds pure rules",
+          "name": "adapters do not import application wiring",
           "in": [
-            "backend/app/features/*/domain"
+            "backend/adapters"
           ],
-          "regex": "^\\s*(from|import)\\s+.*(\\bapp\\.((features\\.\\w+\\.)?(services|api|models)|tasks|shared|core)\\b|\\bfastapi\\b|\\bsqlalchemy\\b)"
-        },
-        {
-          "name": "services stay off transport detail",
-          "in": [
-            "backend/app/features/*/services",
-            "backend/app/shared"
-          ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?api\\b|status_code=|HTTP_\\d"
+          "regex": "^\\s*(from|import)\\s+.*\\bapplication\\b"
         }
       ],
       "release_ref": "origin/main",
@@ -82,46 +73,31 @@
         "frontend/package.json"
       ],
       "styles": [
-        "*.css",
-        "*.scss"
+        "*.css"
       ],
-      "changelog": [
-        "frontend/CHANGELOG.md"
-      ],
+      "changelog": [],
       "env_example": [
         "frontend/.env.example"
       ],
-      "forbidden_imports": [
-        {
-          "name": "components do not call axios directly",
-          "in": [
-            "frontend/src/components",
-            "frontend/src/pages"
-          ],
-          "regex": "from\\s+['\\\"]axios['\\\"]"
-        }
-      ],
+      "forbidden_imports": [],
       "release_ref": "origin/main",
       "artifact_remote": "origin",
-      "test_artifacts": [
-        "frontend/docs/testing"
-      ]
+      "test_artifacts": []
     }
   },
   "shared_roots": [
-    "infra"
+    "infra",
+    "acceptance"
   ],
   "main_branch": "main",
-  "style_token_files": "styles/(palette|tokens[\\w-]*|theme[\\w-]*)\\.(css|scss)|index\\.(css|scss)",
+  "style_token_files": "styles/(palette|tokens[\\w-]*|theme[\\w-]*)\\.css|index\\.css",
   "state_libraries": "zustand|@reduxjs/toolkit|mobx|@tanstack/react-query|\\\"swr\\\"|jotai|recoil|valtio",
   "file_line_limit": 200,
   "commit_file_limit": 40,
   "changelog_commit_limit": 25,
   "artifact_host": "github.com",
   "test_artifacts": [
-    "docs/testing",
-    "Testing",
-    "ProductSpecification/testing"
+    "ProductSpecification"
   ],
   "branch_pattern": "^(features?|feat|fix|hotfix|release|chore|task)/[\\w.-]+$"
 }

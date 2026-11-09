@@ -28,10 +28,13 @@ The always-on rules (`.claude/rules/*.md`) hold only the high-level map, invaria
 
 | When you are about to… | Read first |
 |------------------------|-----------|
+| Start a session / ask «что дальше» / merge to dev | `.claude/skills/delivery-loop/SKILL.md` |
+| Deliver a story on the backend lane (default) | `.claude/skills/backend-delivery/SKILL.md` |
+| Deliver a screen on the frontend lane (default) | `.claude/skills/frontend-delivery/SKILL.md` |
 | Write or refactor backend code (any layer) | `.claude/guidelines/coding-detail.md` |
 | Write or refactor frontend code or browser tests | `.claude/guidelines/frontend-rules.md` |
-| Write or run TDD tests | `.claude/guidelines/tdd-rules.md` |
-| Execute a scenario or task work unit | `.claude/guidelines/workflow-detail.md` |
+| Write or run classic red/green TDD (`/continue`) | `.claude/guidelines/tdd-rules.md` |
+| Execute a full TDD scenario or task work unit | `.claude/guidelines/workflow-detail.md` |
 | Understand the commit-time review passes | `.claude/guidelines/review-passes-detail.md` |
 | Start/stop services or run load tests | `.claude/guidelines/infrastructure-detail.md` |
 | Edit prompt-library docs | `.claude/guidelines/prompt-rules.md` |

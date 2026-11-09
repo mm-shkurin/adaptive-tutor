@@ -42,6 +42,31 @@ class SignedInBrowserStatements:
         assert self.ready_document.body["name"] == READY_NAME
         self.probe.hold_indexing()
 
+    def given_a_guest(self) -> None:
+        self.driver.get(self.app_url)
+        self.driver.execute_script(
+            "window.localStorage.removeItem(arguments[0]);",
+            STORAGE_KEY,
+        )
+
+    def given_the_document_list_cannot_be_read(self) -> None:
+        self.probe.set_document_store_down()
+
+    def given_a_signed_in_person_with_a_document_that_failed_on_page_12(self) -> None:
+        token = self._open_session("ada@example.test", "Ada")
+        self.probe.hold_indexing()
+        uploaded = self.documents.submit_pdf(token, "Методичка.pdf", self.lecture)
+        assert uploaded.status_code == 201
+        failed = self.documents.move_indexing_status(
+            token,
+            uploaded.body["id"],
+            "failed",
+            "Не удалось прочитать страницу 12",
+        )
+        assert failed.status_code == 200
+        assert failed.body["status"] == "failed"
+        assert failed.body["error"] == "Не удалось прочитать страницу 12"
+
     def when_indexing_is_released(self) -> None:
         self.probe.release_indexing()
 

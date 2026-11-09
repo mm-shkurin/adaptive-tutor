@@ -415,8 +415,11 @@ class DocumentStatements:
         first_ids = [document["id"] for document in self.first_page.body["documents"]]
         next_ids = [document["id"] for document in self.next_page.body["documents"]]
         combined = first_ids + next_ids
+        arrived = self.upload.body["id"]
+        before_arrival = set(self.person_upload_ids) - {arrived}
         assert len(combined) == len(set(combined))
-        assert set(combined) == set(self.person_upload_ids)
+        assert set(combined) == before_arrival
+        assert arrived not in next_ids
         assert len(self.person_upload_ids) == PAGE_SIZE + 2
 
     def when_two_documents_are_uploaded_at_the_same_instant(self) -> None:
@@ -532,6 +535,11 @@ class DocumentStatements:
 
     def when_the_person_reads_the_next_page(self) -> None:
         self.next_page = self.documents.list_documents(self.token, page=2)
+        assert self.next_page.status_code == 200
+
+    def when_the_person_reads_the_next_page_from_the_first_page_cursor(self) -> None:
+        last_id = self.first_page.body["documents"][-1]["id"]
+        self.next_page = self.documents.list_documents(self.token, after=last_id)
         assert self.next_page.status_code == 200
 
     def then_the_page_holds_at_most_fifty_documents(self) -> None:

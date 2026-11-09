@@ -87,15 +87,15 @@
 
 ### 1.3 A page read while a document arrives still covers each document once
 - [x] red-acceptance
-- [~] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] design (keyset `after` UUID + ORDER BY created_at DESC, id DESC; page kept for static 1.2)
+- [S] red-usecase (delivery without red/green)
+- [x] green-usecase
+- [S] adapters-discovery (Postgres + Memory list_page seek; HTTP after query)
+- [x] green-acceptance
 
 ### 2.1 An unacceptable file adds no document
 - [x] red-acceptance
-- [ ] design
+- [~] design
 - [ ] red-usecase
 - [ ] green-usecase
 - [ ] adapters-discovery
@@ -304,84 +304,84 @@
 ## Tier 2 — Frontend Scenarios (02_UI_Tests.md)
 
 ### 0.1 A guest who opens documents sees no list
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (guest never reaches the document API; the session route is the gate)
+- [S] green-frontend-api (no document body to map)
+- [x] align-design
+- [x] green-selenium
+- [S] demo (not in this delivery slice)
 
 ### 1.3 A list that is loading or that failed to load is not the empty library
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (failed load is the existing list call; copy is screenPhase)
+- [S] green-frontend-api (no new response mapping)
+- [x] align-design
+- [x] green-selenium (failed load, retry, and the empty sentence absent; the loading flash is screenPhase vitest)
+- [S] demo (not in this delivery slice)
 
 ### 2.2 A refused upload names the reason and leaves the list
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (frontend-delivery without red/green)
+- [x] green-frontend-api
+- [x] align-design
+- [x] green-selenium
+- [S] demo (not in this delivery slice)
 
 ### 2.3 A failed document shows the failure and the reason
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (frontend-delivery without red/green)
+- [x] green-frontend-api
+- [x] align-design
+- [x] green-selenium
+- [S] demo (not in this delivery slice)
 
 ### 2.4 A second press on one file adds one row
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (one in-flight Idempotency-Key on the existing upload call)
+- [S] green-frontend-api (no new response mapping)
+- [x] align-design
+- [S] green-selenium (not feasible: a second press has to land before the local server answers; vitest createSubmission + pageWithUploaded)
+- [S] demo (not in this delivery slice)
 
 ### 2.5 An older status arriving late does not replace a newer one
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (list replies already return status; the screen drops the older one)
+- [S] green-frontend-api (no new response mapping)
+- [x] align-design
+- [S] green-selenium (not feasible: the browser cannot deliver an older list reply after «Готов»; vitest createListEpoch + fresherPage)
+- [S] demo (not in this delivery slice)
 
 ### 2.6 Leaving before the upload is accepted leaves the list unchanged
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (upload abort uses the existing POST signal)
+- [S] green-frontend-api (no new response mapping)
+- [x] align-design
+- [S] green-selenium (not feasible: lecture.pdf is accepted before the next click; vitest shouldApplyUpload, hook aborts on leave)
+- [S] demo (not in this delivery slice)
 
 ### 6.1 The presentation door does not upload a PDF
-- [ ] red-selenium
-- [ ] red-frontend
-- [ ] green-frontend
-- [ ] red-frontend-api
-- [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
-- [ ] demo
+- [S] red-selenium (frontend-delivery without red/green; tests from test-spec with code)
+- [S] red-frontend (frontend-delivery without red/green)
+- [x] green-frontend
+- [S] red-frontend-api (the door starts no request)
+- [S] green-frontend-api (no document body to map)
+- [x] align-design
+- [x] green-selenium
+- [S] demo (not in this delivery slice)
 
 ## Tier 2 — Security Scenarios (05_Security_Tests.md)
 

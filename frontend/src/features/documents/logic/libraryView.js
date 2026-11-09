@@ -41,6 +41,7 @@ function documentRow(document) {
 }
 
 function documentMeta(document) {
+  if (document.status === 'failed' && document.error) return document.error
   const size = formatMegabytes(document.size_bytes)
   switch (document.status) {
     case 'waiting':

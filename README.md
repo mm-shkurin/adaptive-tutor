@@ -55,7 +55,7 @@ adaptive-tutor/
 
 ### Infrastructure
 - **Containerization**: Docker + Docker Compose
-- **CI/CD**: GitHub Actions (future)
+- **CI/CD**: GitHub Actions (`rules`, `backend`, `frontend`, `audit`) — see `.github/workflows/README.md`
 
 ## Getting Started
 
@@ -110,6 +110,17 @@ cd frontend
 npm run test
 npm run test:e2e
 ```
+
+## CI locally
+
+```bash
+pip install -r scripts/requirements-gates.txt
+bash scripts/ci-local.sh           # rules + backend + frontend
+bash scripts/ci-local.sh --fast    # pytest only (ephemeral Postgres/Redis)
+bash scripts/ci-local.sh --rules
+```
+
+On Windows use Git Bash or WSL for `ci-local.sh`. Details: `.github/workflows/README.md`.
 
 ## Development Workflow
 
