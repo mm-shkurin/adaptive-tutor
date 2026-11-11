@@ -173,6 +173,7 @@ backend() {
       # shellcheck disable=SC1091
       source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
     fi
+    export PYTHONPATH="$ROOT/backend${PYTHONPATH:+:$PYTHONPATH}"
     step "backend: миграции" alembic upgrade head
     if [ "$FAST" = 0 ]; then
       step "backend: откат ревизии" bash -c "alembic downgrade -1 && alembic upgrade head"
