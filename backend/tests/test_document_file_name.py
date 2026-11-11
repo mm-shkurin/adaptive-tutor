@@ -1,6 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 
+from adapters.http.documents import _name
 from domain.document.file_name import DocumentNameError, canonical_name
 from tests.support import bearer, build, sign_in
 
@@ -24,6 +25,13 @@ def test_canonical_name_refuses_two_hundred_fifty_six_graphemes():
         assert error.code == "name_too_long"
     else:
         raise AssertionError("expected name_too_long")
+
+
+def test_http_name_unquotes_percent_encoded_newline_and_keeps_markup():
+    hostile = "report' OR 1=1<script>%0Aline-two.pdf"
+    assert _name(hostile) == "report' OR 1=1<script>\nline-two.pdf"
+    assert "<script>" in _name(hostile)
+    assert "\n" in _name(hostile)
 
 
 def test_upload_keeps_a_name_that_would_split_a_letter_at_the_limit():

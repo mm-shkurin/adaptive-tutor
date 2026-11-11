@@ -16,9 +16,13 @@ class FakeIndexDocuments(IndexDocuments):
         self._failed_once: set[UUID] = set()
         self._indexing_attempts: dict[UUID, int] = {}
         self._indexing_attempt_times: dict[UUID, list[float]] = {}
+        self._remembered_extracted: dict[UUID, str] = {}
 
     def fail_table_after_text_step(self) -> None:
         self._fail_table_after_text = True
+
+    def remembered_extracted(self, document_id: UUID) -> str:
+        return self._remembered_extracted.get(document_id, "")
 
     def fail_ready_save_after_pieces_once(self) -> None:
         self._fail_ready_after_pieces_once = True
@@ -57,8 +61,17 @@ class FakeIndexDocuments(IndexDocuments):
             return RETRY
         if not self._fail_table_after_text:
             return None
+        return self._table_failure(document, read)
+
+    def _table_failure(self, document, read) -> str:
         table = read.table.rstrip("\n")
-        return table if table else "table"
+        if table:
+            return table
+        self._remembered_extracted[document.id] = read.text
+        markup = _markup(document.name)
+        if markup:
+            return f"{markup}\n|Topic|Mark|\n|---|---|\n|Limits|91|"
+        return "table"
 
     async def _store(self, document, parts, extracted) -> None:
         if self._search_store_fail_once and document.id not in self._failed_once:
@@ -71,3 +84,11 @@ class FakeIndexDocuments(IndexDocuments):
             return False
         self._fail_ready_after_pieces_once = False
         return True
+
+
+def _markup(name: str) -> str:
+    start = name.find("' OR 1=1")
+    end = name.find(">", start)
+    if start < 0 or end < 0:
+        return ""
+    return name[start : end + 1]

@@ -393,11 +393,12 @@
 
 ### 1.1 A hostile name and a hostile failure reason stay text
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (name/error kept as opaque text; HTTP `_name` unquotes `%0A`; Fake/Probe table-fail injects markup from name into error; PDF metacharacters stay in remembered extracted text, not searchable)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (HTTP `_name(unquote)`; no new adapter; Fake mirrors Probe `_table_failure` markup)
+- [x] green-acceptance
+- [S] refactor (none: unquote + opaque name/error already transforming; Fake/Probe markup seam stays thin)
 
 ### 2.1 An upload cannot set the server's fields
 - [x] red-acceptance (harvest: already green)

@@ -20,6 +20,7 @@ from usecase.tests.statements import document_views as views
 from usecase.tests.statements.batch_retry_statements import BatchRetryStatements
 from usecase.tests.statements.call_deadline_statements import CallDeadlineStatements
 from usecase.tests.statements.embedding_statements import EmbeddingStatements
+from usecase.tests.statements.hostile_name_statements import HostileNameStatements
 from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
 from usecase.tests.statements.partial_index_statements import PartialIndexStatements
@@ -43,6 +44,7 @@ class DocumentStatements(
     VirusCheckStatements,
     SearchStoreStatements,
     CallDeadlineStatements,
+    HostileNameStatements,
     PartialIndexStatements,
     EmbeddingStatements,
     BatchRetryStatements,

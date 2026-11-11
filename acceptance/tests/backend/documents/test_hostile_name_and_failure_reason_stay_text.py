@@ -20,9 +20,6 @@ class TestHostileNameAndFailureReasonStayText(AbstractBackendTest):
     And query metacharacters in the PDF text are not a command
     """
 
-    @pytest.mark.skip(
-        reason="RED: AssertionError: stored name has literal %0A instead of newline in submitted name"
-    )
     def test_should_keep_hostile_name_and_failure_reason_as_text(self, documents):
         """Given a signed-in person and a neighbour
         When the person uploads a PDF whose name contains query metacharacters and markup

@@ -263,3 +263,17 @@
 **Where:** `FakeDocumentIntake`; `SearchStoreStatements.when_indexing_runs`
 **Implication:** Drain until the upload under test is terminal (or clear earlier waiting docs) before asserting on that upload.
 **From:** scenario 2.5 (2.5-a-call-that-finishes-just-before-its-deadline-still-counts)
+
+## Decision: Hostile names and reasons stay opaque text
+
+**Decision:** Document names and failure reasons are opaque text; HTTP `_name` unquotes percent-encoded newlines and never strips markup or query metacharacters.
+**Why:** sec:XSS / sec:SQLi — hostile content must round-trip as text, not as control or command.
+**Where applied:** `adapters.http.documents._name`; Fake/Probe `_table_failure` markup-from-name
+**From:** scenario 1.1 (1.1-a-hostile-name-and-a-hostile-failure-reason-stay-text)
+
+## Quirk: Empty-table fail remembers PDF extract off the search path
+
+**Quirk:** On empty-table fail, Probe/Fake remember the PDF extract so metacharacters can be asserted as text while the failed document stays unsearchable.
+**Where:** `ProbeIndexDocuments._table_failure`; `FakeIndexDocuments._table_failure`
+**Implication:** Do not expect `SearchDocuments` to expose that body after fail.
+**From:** scenario 1.1 (1.1-a-hostile-name-and-a-hostile-failure-reason-stay-text)
