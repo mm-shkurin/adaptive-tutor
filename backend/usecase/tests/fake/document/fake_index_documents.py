@@ -7,10 +7,14 @@ class FakeIndexDocuments(IndexDocuments):
     def __init__(self, intake, files, reader, pieces, clock=None):
         super().__init__(intake, files, reader, pieces, clock)
         self._fail_table_after_text = False
+        self._fail_ready_after_pieces_once = False
         self._always_fail: set[UUID] = set()
 
     def fail_table_after_text_step(self) -> None:
         self._fail_table_after_text = True
+
+    def fail_ready_save_after_pieces_once(self) -> None:
+        self._fail_ready_after_pieces_once = True
 
     def fail_indexing_always(self, document_id: UUID) -> None:
         self._always_fail.add(document_id)
@@ -22,3 +26,9 @@ class FakeIndexDocuments(IndexDocuments):
             return None
         table = read.table.rstrip("\n")
         return table if table else "table"
+
+    async def _hold_ready(self, document) -> bool:
+        if not self._fail_ready_after_pieces_once:
+            return False
+        self._fail_ready_after_pieces_once = False
+        return True

@@ -15,7 +15,6 @@ class TestRetryAfterPartialIndexDoesNotWritePiecesTwice(AbstractBackendTest):
     And it is not ready while the pieces are incomplete
     """
 
-    @pytest.mark.skip(reason="RED: AssertionError assert 2 == 1 — retry after partial index writes pieces twice")
     def test_should_store_one_piece_set_on_retry_after_partial_index(self, documents):
         """Given indexing wrote the pieces and then failed before recording ready
         When indexing runs again

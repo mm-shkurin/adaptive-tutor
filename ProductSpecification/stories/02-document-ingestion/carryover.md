@@ -193,3 +193,17 @@
 **Where:** `backend/usecase/document/submit_document.py`
 **Implication:** Upload-path scan counts include replays; indexing retries are a separate “no second virus check” path.
 **From:** scenario 1.1 (1.1-1.2-virus-check-on-upload)
+
+## Quirk: FakePieceIndex needs search-store outcome
+
+**Quirk:** FakePieceIndex must `set_outcome` for `times out` / `refuses` / `answers unreadable` or usecase tests never hit `StoreUnavailable`.
+**Where:** `backend/usecase/tests/fake/document/fake_piece_index.py`
+**Implication:** Search-store usecase steps arm the fake before `index_waiting`.
+**From:** scenario 2.1 (2.1-a-search-store-that-does-not-accept-the-index-fails-the-document)
+
+## Decision: Partial ready failure keeps pieces, skips rewrite
+
+**Decision:** After pieces are written, a failed ready step leaves the document indexing with pieces intact; `_store` skips `replace` when pieces already exist so a retry finishes ready with one write.
+**Why:** Search-store write succeeded; rewriting on retry would duplicate the piece set.
+**Where applied:** `IndexDocuments._store`; Fake/Probe `_hold_ready` for the partial-ready seam
+**From:** scenario 2.2 (2.2-a-retry-after-a-partial-index-does-not-write-the-pieces-twice)

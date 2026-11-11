@@ -273,11 +273,12 @@
 
 ### 2.2 A retry after a partial index does not write the pieces twice
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (_store skips replace when pieces already exist; virus only on SubmitDocument; Fake/Probe `_hold_ready` once leaves indexing after pieces so a second `_index` finishes ready without a second write)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; FakeIndexDocuments._hold_ready mirrors ProbeIndexDocuments)
+- [x] green-acceptance
+- [S] refactor (none: `_store` skip already transforming; Fake/Probe `_hold_ready` stay thin hooks)
 
 ### 2.3 An embedding refusal stops, and a server error stays inside the three tries
 - [x] red-acceptance

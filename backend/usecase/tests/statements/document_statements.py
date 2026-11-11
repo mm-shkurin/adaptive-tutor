@@ -19,6 +19,7 @@ from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
 from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
+from usecase.tests.statements.partial_index_statements import PartialIndexStatements
 from usecase.tests.statements.search_store_statements import SearchStoreStatements
 from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 from usecase.tests.statements.virus_check_statements import VirusCheckStatements
@@ -38,6 +39,7 @@ class DocumentStatements(
     UploadRateStatements,
     VirusCheckStatements,
     SearchStoreStatements,
+    PartialIndexStatements,
 ):
     def __init__(
         self,
