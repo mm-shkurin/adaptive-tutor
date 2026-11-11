@@ -291,11 +291,12 @@
 
 ### 2.4 Many indexes that fail together do not retry on the same tick
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (Probe/Fake `_store` raises RetryIndex once per doc; serial `index_waiting` spreads retry starts; IndexingBudget ATTEMPT_LIMIT=3 caps tries)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; Fake mirrors Probe fail-once + attempt timestamps)
+- [x] green-acceptance
+- [S] refactor (none: serial worker already spreads; multi-worker jitter stays a later port concern)
 
 ### 2.5 A call that finishes just before its deadline still counts
 - [x] red-acceptance

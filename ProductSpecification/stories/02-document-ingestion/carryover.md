@@ -221,3 +221,17 @@
 **Where:** `acceptance/clients/application/probe_index_documents.py`, `backend/usecase/tests/fake/document/fake_index_documents.py`
 **Implication:** A real freellmapi adapter must map the same three outcomes into `_refusal` / PAUSE semantics.
 **From:** scenario 2.3 (2.3-an-embedding-refusal-stops-and-a-server-error-stays-inside-the-three-tries)
+
+## Decision: Batch search-store retries are serialized by one worker
+
+**Decision:** A one-shot `RetryIndex` per document requeues waiting; a single `index_waiting` loop spaces second attempts so retry starts are not identical; `ATTEMPT_LIMIT=3` caps tries.
+**Why:** hz-06 forbids a synchronized retry storm after a shared search-store blip.
+**Where applied:** Probe/Fake `_store` fail-once; acceptance index loop; `IndexingBudget`
+**From:** scenario 2.4 (2.4-many-indexes-that-fail-together-do-not-retry-on-the-same-tick)
+
+## Quirk: Spread depends on serial scheduling, not retry jitter
+
+**Quirk:** Retries are spread because only one document is claimed per loop tick, not because `_retry` sleeps with jitter.
+**Where:** `AcceptanceServer._index_loop`, usecase `when_they_retry` sleep between claims
+**Implication:** Parallel workers would need backoff/jitter (interview: Qdrant exponential backoff) or the same-tick assert would fail.
+**From:** scenario 2.4 (2.4-many-indexes-that-fail-together-do-not-retry-on-the-same-tick)

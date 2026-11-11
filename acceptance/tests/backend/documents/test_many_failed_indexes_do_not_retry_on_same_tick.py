@@ -14,9 +14,6 @@ class TestManyFailedIndexesDoNotRetryOnSameTick(AbstractBackendTest):
     And none of them is tried more than three times
     """
 
-    @pytest.mark.skip(
-        reason="RED: AssertionError: document expected a retry, got 0 attempts (indexing attempts not recorded)"
-    )
     def test_should_spread_retries_and_cap_attempts(self, documents):
         """Given many accepted documents
         And the search store fails once for all of them

@@ -10,6 +10,7 @@ pytest.register_assert_rewrite(
     "usecase.tests.statements.virus_check_statements",
     "usecase.tests.statements.partial_index_statements",
     "usecase.tests.statements.embedding_statements",
+    "usecase.tests.statements.batch_retry_statements",
 )
 
 from usecase.document.list_documents import ListDocuments

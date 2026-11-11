@@ -1,6 +1,7 @@
+import time
 from uuid import UUID
 
-from usecase.document.index_documents import PAUSE, RETRY, IndexDocuments
+from usecase.document.index_documents import PAUSE, RETRY, IndexDocuments, RetryIndex
 
 
 class FakeIndexDocuments(IndexDocuments):
@@ -11,6 +12,10 @@ class FakeIndexDocuments(IndexDocuments):
         self._always_fail: set[UUID] = set()
         self._embedding_outcome: str | None = None
         self._embedding_attempts: dict[UUID, int] = {}
+        self._search_store_fail_once = False
+        self._failed_once: set[UUID] = set()
+        self._indexing_attempts: dict[UUID, int] = {}
+        self._indexing_attempt_times: dict[UUID, list[float]] = {}
 
     def fail_table_after_text_step(self) -> None:
         self._fail_table_after_text = True
@@ -27,6 +32,20 @@ class FakeIndexDocuments(IndexDocuments):
     def embedding_attempts(self, document_id: UUID) -> int:
         return self._embedding_attempts.get(document_id, 0)
 
+    def arm_search_store_fails_once_for_all(self) -> None:
+        self._search_store_fail_once = True
+        self._failed_once.clear()
+
+    def indexing_attempts(self, document_id: UUID) -> int:
+        return self._indexing_attempts.get(document_id, 0)
+
+    def indexing_attempt_times(self, document_id: UUID) -> tuple[float, ...]:
+        return tuple(self._indexing_attempt_times.get(document_id, ()))
+
+    def _note_attempt(self, document) -> None:
+        self._indexing_attempts[document.id] = self._indexing_attempts.get(document.id, 0) + 1
+        self._indexing_attempt_times.setdefault(document.id, []).append(time.monotonic())
+
     async def _refusal(self, document, read) -> str | None:
         if self._embedding_outcome == "server_error":
             self._embedding_attempts[document.id] = self._embedding_attempts.get(document.id, 0) + 1
@@ -40,6 +59,12 @@ class FakeIndexDocuments(IndexDocuments):
             return None
         table = read.table.rstrip("\n")
         return table if table else "table"
+
+    async def _store(self, document, parts, extracted) -> None:
+        if self._search_store_fail_once and document.id not in self._failed_once:
+            self._failed_once.add(document.id)
+            raise RetryIndex()
+        await super()._store(document, parts, extracted)
 
     async def _hold_ready(self, document) -> bool:
         if not self._fail_ready_after_pieces_once:

@@ -17,6 +17,7 @@ from usecase.tests.fake.document.fake_upload_rate_limit import FakeUploadRateLim
 from usecase.tests.fake.document.fake_virus_check import FakeVirusCheck
 from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
+from usecase.tests.statements.batch_retry_statements import BatchRetryStatements
 from usecase.tests.statements.embedding_statements import EmbeddingStatements
 from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
@@ -42,6 +43,7 @@ class DocumentStatements(
     SearchStoreStatements,
     PartialIndexStatements,
     EmbeddingStatements,
+    BatchRetryStatements,
 ):
     def __init__(
         self,
