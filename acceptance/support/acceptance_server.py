@@ -25,6 +25,7 @@ from domain.document.document import InvalidStatusTransition
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
 from clients.application.index_probe import IndexProbe
+from clients.application.peak_chat_hold import PeakChatHold
 from clients.application.session_client import ScriptedProvider
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -63,6 +64,7 @@ class AcceptanceServer:
     def __init__(self):
         self.provider = ScriptedProvider()
         self.probe = IndexProbe()
+        self.peak_chat_hold = PeakChatHold()
         self.clock = _Clock()
         self.rates = MemoryUploadRateLimit(self.clock)
         self.logs = LogCapture()
@@ -129,6 +131,7 @@ class AcceptanceServer:
         app = create_app(ctx)
         app.router.lifespan_context = lifespan
         app.state.index_probe = self.probe
+        app.state.peak_chat_hold = self.peak_chat_hold
         search = SearchDocuments(self._intake, self._pieces)
 
         from adapters.http.documents import _caller as document_caller

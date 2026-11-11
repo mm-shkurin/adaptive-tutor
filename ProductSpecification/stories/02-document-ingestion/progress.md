@@ -483,11 +483,12 @@
 
 ### 2.1 An upload during peak chat is answered before indexing finishes
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (PeakChatHold on app.state; chat stub awaits in-flight; baseline counts hold.in_flight==15; upload stays waiting; release in finally)
+- [S] red-usecase (delivery without red/green; no usecase change — upload already returns waiting before index)
+- [S] green-usecase (no usecase change)
+- [S] adapters-discovery (PeakChatHold + chat.py optional hold; AcceptanceServer wires app.state.peak_chat_hold)
+- [x] green-acceptance
+- [S] refactor (none: PeakChatHold thin; PeakChatClient dropped completed-count with the baseline change)
 ## Tier 2 — Infrastructure Scenarios (04_Infrastructure_Tests.md)
 
 ### 1.1 A dead document store refuses the upload and adds no document

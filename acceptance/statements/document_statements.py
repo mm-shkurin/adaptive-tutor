@@ -14,6 +14,7 @@ from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.index_probe import IndexProbe
 from clients.application.peak_chat_client import PEAK_CHAT_IN_FLIGHT, PeakChatClient
+from clients.application.peak_chat_hold import PeakChatHold
 from clients.application.session_client import ScriptedProvider, SessionClient
 from support.disclosure_constants import DISCLOSURE_KNOWN_SECRET, DISCLOSURE_PDF_PHRASE
 from support.log_capture import LogCapture
@@ -105,11 +106,13 @@ class DocumentStatements:
         clock=None,
         rates=None,
         logs: LogCapture | None = None,
+        peak_chat_hold: PeakChatHold | None = None,
     ):
         self._base_url = base_url
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
         self.peak_chat_client: PeakChatClient | None = None
+        self.peak_chat_hold = peak_chat_hold if peak_chat_hold is not None else PeakChatHold()
         self.probe = probe
         self.clock = clock
         self.rates = rates
@@ -189,19 +192,21 @@ class DocumentStatements:
         self.opened = self.sessions.open_account(self.PEAK_CHAT_EMAIL, self.PEAK_CHAT_NAME)
 
     def given_the_peak_chat_baseline(self) -> None:
+        self.peak_chat_hold.arm()
         self.peak_chat_client = PeakChatClient(self._base_url)
         self.peak_chat_client.begin_peak_load(self.token)
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:
-            if self.peak_chat_client.peak_chat_requests_accepted() == PEAK_CHAT_IN_FLIGHT:
+            if self.peak_chat_hold.in_flight() == PEAK_CHAT_IN_FLIGHT:
                 break
             time.sleep(0.05)
-        assert self.peak_chat_client.peak_chat_requests_accepted() == PEAK_CHAT_IN_FLIGHT
+        assert self.peak_chat_hold.in_flight() == PEAK_CHAT_IN_FLIGHT
 
     def when_the_person_uploads_a_pdf(self) -> None:
         self.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
 
     def when_the_peak_chat_finishes(self) -> None:
+        self.peak_chat_hold.release()
         if self.peak_chat_client is not None:
             self.peak_chat_client.join()
 

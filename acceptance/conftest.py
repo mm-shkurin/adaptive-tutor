@@ -25,7 +25,13 @@ def documents():
     server.start()
     try:
         yield DocumentStatements(
-            server.base_url, server.provider, server.probe, server.clock, server.rates, server.logs
+            server.base_url,
+            server.provider,
+            server.probe,
+            server.clock,
+            server.rates,
+            server.logs,
+            server.peak_chat_hold,
         )
     finally:
         server.stop()

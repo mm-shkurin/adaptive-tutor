@@ -22,10 +22,6 @@ class PeakChatClient:
             self._threads.append(thread)
             thread.start()
 
-    def peak_chat_requests_accepted(self) -> int:
-        with self._lock:
-            return sum(1 for result in self._results if result.status_code in (200, 202))
-
     def join(self) -> None:
         for thread in self._threads:
             thread.join(timeout=300)

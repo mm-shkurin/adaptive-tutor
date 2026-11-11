@@ -13,7 +13,6 @@ class TestUploadDuringPeakChatIsAnsweredBeforeIndexingFinishes(AbstractBackendTe
     And the document later becomes ready
     """
 
-    @pytest.mark.skip(reason="RED: assert 0 == 15 — peak chat baseline has no accepted /api/v1/chat/messages")
     def test_should_answer_the_upload_before_indexing_finishes_during_peak_chat(self, documents):
         """Given the peak chat baseline
         When the person uploads a PDF
