@@ -277,3 +277,17 @@
 **Where:** `ProbeIndexDocuments._table_failure`; `FakeIndexDocuments._table_failure`
 **Implication:** Do not expect `SearchDocuments` to expose that body after fail.
 **From:** scenario 1.1 (1.1-a-hostile-name-and-a-hostile-failure-reason-stay-text)
+
+## Decision: Peak chat baseline holds in-flight messages
+
+**Decision:** Acceptance arms `PeakChatHold` on `app.state`; the chat stub awaits it; the baseline asserts `in_flight == 15` and releases in finally.
+**Why:** ExpectedLoad needs concurrent chats during upload; counting completed 202s is not in-flight.
+**Where applied:** `acceptance/clients/application/peak_chat_hold.py`, `backend/adapters/http/chat.py`, `AcceptanceServer`, `DocumentStatements.given_the_peak_chat_baseline`
+**From:** scenario 2.1 (2.1-an-upload-during-peak-chat-is-answered-before-indexing-finishes)
+
+## Quirk: Instant chat 202 is not a peak-chat baseline
+
+**Quirk:** Without a hold, `POST /api/v1/chat/messages` returns 202 immediately so fifteen threads finish before the upload starts.
+**Where:** `backend/adapters/http/chat.py`, `PeakChatClient`
+**Implication:** Peak-chat load must wait on `PeakChatHold.in_flight()`, not on completed response counts.
+**From:** scenario 2.1 (2.1-an-upload-during-peak-chat-is-answered-before-indexing-finishes)
