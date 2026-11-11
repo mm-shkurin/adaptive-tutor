@@ -8,6 +8,7 @@ pytest.register_assert_rewrite(
     "usecase.tests.statements.one_submission_statements",
     "usecase.tests.statements.indexing_claim_statements",
     "usecase.tests.statements.virus_check_statements",
+    "usecase.tests.statements.call_deadline_statements",
     "usecase.tests.statements.partial_index_statements",
     "usecase.tests.statements.embedding_statements",
     "usecase.tests.statements.batch_retry_statements",

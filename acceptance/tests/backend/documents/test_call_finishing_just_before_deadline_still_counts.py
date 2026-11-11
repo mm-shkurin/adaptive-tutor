@@ -3,9 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(
-    reason="RED: assert 'indexing' == 'failed' — search-store deadline timeout leaves document indexing"
-)
 @pytest.mark.backend
 class TestCallFinishingJustBeforeDeadlineStillCounts(AbstractBackendTest):
     """A call that finishes just before its deadline still counts.

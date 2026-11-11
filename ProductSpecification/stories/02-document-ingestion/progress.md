@@ -300,11 +300,13 @@
 
 ### 2.5 A call that finishes just before its deadline still counts
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (call delay < deadline counts as answered; delay >= deadline → virus_detected / StoreUnavailable→failed; Clamav wait_for already; Probe/Fake delay edge)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; Fake mirrors Probe delay vs deadline; ClamavVirusCheck already wait_for)
+- [x] green-acceptance
+- [S] refactor (none: Fake/Probe delay edge already transforming; when_indexing_runs drains to the upload under test)
+
 ## Tier 2 — Frontend Scenarios (02_UI_Tests.md)
 
 ### 0.1 A guest who opens documents sees no list

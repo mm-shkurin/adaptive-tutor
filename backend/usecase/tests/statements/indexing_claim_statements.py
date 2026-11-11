@@ -5,6 +5,8 @@ from usecase.tests.statements import document_views as views
 
 class IndexingClaimStatements:
     async def given_an_accepted_document(self) -> None:
+        self.virus.prepare_call()
+        self.pieces.prepare_call()
         await self.given_a_signed_in_person()
         await self.when_the_person_submits_a_valid_pdf_that_contains_text_and_a_table()
         await self.then_the_upload_is_answered_before_indexing_finishes()

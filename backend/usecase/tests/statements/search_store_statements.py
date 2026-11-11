@@ -6,7 +6,12 @@ class SearchStoreStatements:
         self.pieces.set_outcome(outcome)
 
     async def when_indexing_runs(self) -> None:
-        await self.index.index_waiting()
+        for _ in range(20):
+            current = await self.read.read(self.person_id, self.upload.id)
+            if current.status in {"ready", "failed"}:
+                self.finished = current
+                return
+            await self.index.index_waiting()
         self.finished = await self.read.read(self.person_id, self.upload.id)
 
     async def then_the_document_is_failed_after_search_store(self) -> None:

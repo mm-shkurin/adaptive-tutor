@@ -208,6 +208,13 @@
 **Where applied:** `IndexDocuments._store`; Fake/Probe `_hold_ready` for the partial-ready seam
 **From:** scenario 2.2 (2.2-a-retry-after-a-partial-index-does-not-write-the-pieces-twice)
 
+## Quirk: Partial-ready seam uses `_hold_ready`, not a thrown save
+
+**Quirk:** Partial-ready is simulated by `_hold_ready` returning true once; production ready-save exceptions are not wrapped yet.
+**Where:** `FakeIndexDocuments._hold_ready`, `ProbeIndexDocuments._hold_ready`
+**Implication:** Retry is forced via a second `_index` while status stays `indexing`.
+**From:** scenario 2.2 (2.2-a-retry-after-a-partial-index-does-not-write-the-pieces-twice)
+
 ## Decision: Embedding refusal fails; server error pauses the try
 
 **Decision:** Embedding `refuses` / `unreadable` fail the document as `embedding refused`; `server_error` returns `PAUSE` so `IndexingBudget.begin` still counted the try and the document does not become ready.
@@ -220,6 +227,13 @@
 **Quirk:** There is no Embedding port yet; acceptance and usecase arm outcomes on Probe/Fake `_refusal`.
 **Where:** `acceptance/clients/application/probe_index_documents.py`, `backend/usecase/tests/fake/document/fake_index_documents.py`
 **Implication:** A real freellmapi adapter must map the same three outcomes into `_refusal` / PAUSE semantics.
+**From:** scenario 2.3 (2.3-an-embedding-refusal-stops-and-a-server-error-stays-inside-the-three-tries)
+
+## Quirk: Embedding server_error PAUSE does not requeue waiting
+
+**Quirk:** `server_error` uses PAUSE, so the document can stay `indexing` and is not re-queued by `next_waiting`.
+**Where:** `IndexDocuments` PAUSE branch; Probe/Fake `_refusal`
+**Implication:** Later tries need an explicit re-entry (or a future requeue) after a server-error pause.
 **From:** scenario 2.3 (2.3-an-embedding-refusal-stops-and-a-server-error-stays-inside-the-three-tries)
 
 ## Decision: Batch search-store retries are serialized by one worker
@@ -235,3 +249,17 @@
 **Where:** `AcceptanceServer._index_loop`, usecase `when_they_retry` sleep between claims
 **Implication:** Parallel workers would need backoff/jitter (interview: Qdrant exponential backoff) or the same-tick assert would fail.
 **From:** scenario 2.4 (2.4-many-indexes-that-fail-together-do-not-retry-on-the-same-tick)
+
+## Decision: External-call delay below deadline still counts
+
+**Decision:** Virus and search-store calls count as answered when delay is below the call deadline; delay at or past the deadline refuses the upload or fails the document via StoreUnavailable.
+**Why:** hz-02/hz-07 — finishing just before the budget still counts; at the budget the caller stops.
+**Where applied:** Probe/Fake virus and piece-index delay edges; `ClamavVirusCheck.wait_for`
+**From:** scenario 2.5 (2.5-a-call-that-finishes-just-before-its-deadline-still-counts)
+
+## Quirk: Multi-step usecase leaves earlier waiting docs
+
+**Quirk:** A multi-step usecase scenario can leave earlier uploads waiting in the same Fake intake; one `index_waiting` then claims the wrong document.
+**Where:** `FakeDocumentIntake`; `SearchStoreStatements.when_indexing_runs`
+**Implication:** Drain until the upload under test is terminal (or clear earlier waiting docs) before asserting on that upload.
+**From:** scenario 2.5 (2.5-a-call-that-finishes-just-before-its-deadline-still-counts)
