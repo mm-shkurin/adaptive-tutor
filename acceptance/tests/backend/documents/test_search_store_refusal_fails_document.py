@@ -3,16 +3,13 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(
-    reason="RED: assert 'indexing' == 'failed' — search-store refusal leaves document indexing"
-)
 @pytest.mark.backend
 class TestSearchStoreRefusalFailsDocument(AbstractBackendTest):
     """A search store that does not accept the index fails the document.
 
     Scenario Outline:
     Given an accepted document
-    And the search store refuses
+    And the search store <outcome>
     When indexing runs
     Then the document is failed
     And the document is not ready
@@ -20,9 +17,19 @@ class TestSearchStoreRefusalFailsDocument(AbstractBackendTest):
     And the failure is visible on the document
     """
 
-    def test_should_fail_the_document_when_the_search_store_refuses(self, documents):
+    @pytest.mark.parametrize(
+        "outcome",
+        [
+            "times out",
+            "refuses",
+            "answers unreadable",
+        ],
+    )
+    def test_should_fail_the_document_when_the_search_store_does_not_accept(
+        self, documents, outcome
+    ):
         """Given an accepted document
-        And the search store refuses
+        And the search store does not accept the index
         When indexing runs
         Then the document is failed
         And the document is not ready
@@ -30,7 +37,7 @@ class TestSearchStoreRefusalFailsDocument(AbstractBackendTest):
         And the failure is visible on the document
         """
         documents.given_an_accepted_document()
-        documents.and_the_search_store_refuses()
+        documents.and_the_search_store(outcome)
         documents.when_indexing_runs()
         documents.then_the_document_is_failed_after_indexing()
         documents.then_the_finished_document_is_not_ready()

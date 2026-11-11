@@ -868,8 +868,11 @@ class DocumentStatements:
         assert self.finished.body["status"] in {"waiting", "indexing"}
         assert self.probe.embedding_attempts(document_id) == 1
 
+    def and_the_search_store(self, outcome: str) -> None:
+        self.probe.set_search_store_outcome(outcome)
+
     def and_the_search_store_refuses(self) -> None:
-        self.probe.set_search_store_outcome("refuses")
+        self.and_the_search_store("refuses")
 
     def given_a_virus_check_and_a_search_store_call(self) -> None:
         self.probe.prepare_virus_and_search_store_calls()

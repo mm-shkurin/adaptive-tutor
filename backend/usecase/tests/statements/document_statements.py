@@ -19,6 +19,7 @@ from usecase.tests.scope.document_scope import DocumentScope
 from usecase.tests.statements import document_views as views
 from usecase.tests.statements.indexing_claim_statements import IndexingClaimStatements
 from usecase.tests.statements.one_submission_statements import OneSubmissionStatements
+from usecase.tests.statements.search_store_statements import SearchStoreStatements
 from usecase.tests.statements.upload_rate_statements import UploadRateStatements
 from usecase.tests.statements.virus_check_statements import VirusCheckStatements
 
@@ -32,7 +33,11 @@ NEIGHBOUR_TEXT = (FIXTURES / "neighbour.txt").read_text(encoding="utf-8")
 
 
 class DocumentStatements(
-    IndexingClaimStatements, OneSubmissionStatements, UploadRateStatements, VirusCheckStatements
+    IndexingClaimStatements,
+    OneSubmissionStatements,
+    UploadRateStatements,
+    VirusCheckStatements,
+    SearchStoreStatements,
 ):
     def __init__(
         self,

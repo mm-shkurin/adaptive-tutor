@@ -264,11 +264,12 @@
 
 ### 2.1 A search store that does not accept the index fails the document
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (PieceIndex.replace raises StoreUnavailable on times out / refuses / answers unreadable; IndexDocuments._store catch → _fail("search store refused") + delete file; nothing searchable)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no new adapter; ProbePieceIndex / FakePieceIndex / MemoryPieceIndex outcomes; PostgresPieceIndex already maps DB errors to StoreUnavailable)
+- [x] green-acceptance
+- [S] refactor (none: StoreUnavailable→fail already transforming; Fake/Probe/Memory raise consistently; SearchStoreStatements is thin Gherkin mapping)
 
 ### 2.2 A retry after a partial index does not write the pieces twice
 - [x] red-acceptance
