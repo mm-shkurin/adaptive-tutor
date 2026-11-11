@@ -9,9 +9,6 @@ _EMBEDDING_OUTCOMES = (
 )
 
 
-@pytest.mark.skip(
-    reason="RED: assert 'ready' == 'failed' — embedding outcomes not applied during indexing"
-)
 @pytest.mark.backend
 class TestEmbeddingRefusalAndServerErrorRetryBudget(AbstractBackendTest):
     """An embedding refusal stops, and a server error stays inside the three tries.

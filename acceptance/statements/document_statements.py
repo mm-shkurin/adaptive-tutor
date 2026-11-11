@@ -844,7 +844,22 @@ class DocumentStatements:
 
     def when_indexing_runs(self) -> None:
         self.probe.release_indexing()
-        self.finished = self._until_terminal(self.token, self.upload.body["id"])
+        document_id = self.upload.body["id"]
+        if getattr(self, "embedding_outcome", None) == "fails as a server error":
+            deadline = time.monotonic() + 10
+            seen = None
+            while time.monotonic() <= deadline:
+                seen = self.documents.read(self.token, document_id)
+                if (
+                    seen.status_code == 200
+                    and seen.body["status"] in {"waiting", "indexing"}
+                    and self.probe.embedding_attempts(document_id) >= 1
+                ):
+                    break
+                time.sleep(0.05)
+            self.finished = seen
+            return
+        self.finished = self._until_terminal(self.token, document_id)
 
     def then_the_document_is_failed_and_not_retried_for_that_refusal(self) -> None:
         document_id = self.upload.body["id"]

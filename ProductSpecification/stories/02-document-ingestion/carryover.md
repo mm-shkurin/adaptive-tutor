@@ -207,3 +207,17 @@
 **Why:** Search-store write succeeded; rewriting on retry would duplicate the piece set.
 **Where applied:** `IndexDocuments._store`; Fake/Probe `_hold_ready` for the partial-ready seam
 **From:** scenario 2.2 (2.2-a-retry-after-a-partial-index-does-not-write-the-pieces-twice)
+
+## Decision: Embedding refusal fails; server error pauses the try
+
+**Decision:** Embedding `refuses` / `unreadable` fail the document as `embedding refused`; `server_error` returns `PAUSE` so `IndexingBudget.begin` still counted the try and the document does not become ready.
+**Why:** A hard refusal must stop; a transient server error must spend a try without finishing.
+**Where applied:** `ProbeIndexDocuments._refusal`, `FakeIndexDocuments._refusal`; `IndexDocuments` PAUSE branch
+**From:** scenario 2.3 (2.3-an-embedding-refusal-stops-and-a-server-error-stays-inside-the-three-tries)
+
+## Quirk: Embedding outcomes live on the index double until a port exists
+
+**Quirk:** There is no Embedding port yet; acceptance and usecase arm outcomes on Probe/Fake `_refusal`.
+**Where:** `acceptance/clients/application/probe_index_documents.py`, `backend/usecase/tests/fake/document/fake_index_documents.py`
+**Implication:** A real freellmapi adapter must map the same three outcomes into `_refusal` / PAUSE semantics.
+**From:** scenario 2.3 (2.3-an-embedding-refusal-stops-and-a-server-error-stays-inside-the-three-tries)

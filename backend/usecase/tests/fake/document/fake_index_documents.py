@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from usecase.document.index_documents import RETRY, IndexDocuments
+from usecase.document.index_documents import PAUSE, RETRY, IndexDocuments
 
 
 class FakeIndexDocuments(IndexDocuments):
@@ -9,6 +9,8 @@ class FakeIndexDocuments(IndexDocuments):
         self._fail_table_after_text = False
         self._fail_ready_after_pieces_once = False
         self._always_fail: set[UUID] = set()
+        self._embedding_outcome: str | None = None
+        self._embedding_attempts: dict[UUID, int] = {}
 
     def fail_table_after_text_step(self) -> None:
         self._fail_table_after_text = True
@@ -19,7 +21,19 @@ class FakeIndexDocuments(IndexDocuments):
     def fail_indexing_always(self, document_id: UUID) -> None:
         self._always_fail.add(document_id)
 
+    def set_embedding_outcome(self, outcome: str | None) -> None:
+        self._embedding_outcome = outcome
+
+    def embedding_attempts(self, document_id: UUID) -> int:
+        return self._embedding_attempts.get(document_id, 0)
+
     async def _refusal(self, document, read) -> str | None:
+        if self._embedding_outcome == "server_error":
+            self._embedding_attempts[document.id] = self._embedding_attempts.get(document.id, 0) + 1
+            return PAUSE
+        if self._embedding_outcome in {"refuses", "unreadable"}:
+            self._embedding_attempts[document.id] = self._embedding_attempts.get(document.id, 0) + 1
+            return "embedding refused"
         if document.id in self._always_fail:
             return RETRY
         if not self._fail_table_after_text:

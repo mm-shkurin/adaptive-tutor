@@ -9,6 +9,7 @@ pytest.register_assert_rewrite(
     "usecase.tests.statements.indexing_claim_statements",
     "usecase.tests.statements.virus_check_statements",
     "usecase.tests.statements.partial_index_statements",
+    "usecase.tests.statements.embedding_statements",
 )
 
 from usecase.document.list_documents import ListDocuments

@@ -282,11 +282,12 @@
 
 ### 2.3 An embedding refusal stops, and a server error stays inside the three tries
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [x] design (embedding refuses/unreadable → fail "embedding refused"; server_error → PAUSE so the budget attempt counts without finishing ready; Fake/Probe `_refusal` seam until a real Embedding port)
+- [S] red-usecase (delivery without red/green; tests from test-spec with code)
+- [x] green-usecase
+- [S] adapters-discovery (no Embedding adapter yet; FakeIndexDocuments mirrors ProbeIndexDocuments outcomes)
+- [x] green-acceptance
+- [S] refactor (none: PAUSE/fail mapping already thin; acceptance when_indexing_runs waits for embedding attempt on server_error)
 
 ### 2.4 Many indexes that fail together do not retry on the same tick
 - [x] red-acceptance
