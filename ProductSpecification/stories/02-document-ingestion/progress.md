@@ -509,16 +509,18 @@
 
 ### 1.3 Repeated failed uploads return the store connections to baseline
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] design (already green: intake `_guard` live±1; pdf read enter/exit; StoreUnavailable→failed from Integration 2.1)
+- [S] red-usecase (delivery without red/green; covered by existing guards)
+- [S] green-usecase (no usecase change)
+- [S] adapters-discovery (MemoryDocumentIntake.live + IndexProbe handles/temps; ProbePieceIndex refuses)
+- [x] green-acceptance
+- [S] refactor (none: connection/handle baselines already transforming)
 
 ### 2.1 The app refuses to start when indexing settings are missing
 - [x] red-acceptance
-- [ ] design
-- [ ] red-usecase
-- [ ] green-usecase
-- [ ] adapters-discovery
-- [ ] green-acceptance
+- [S] design (already green: load_settings refuses unset DATABASE_URL / QDRANT_URL / CLAMAV_HOST)
+- [S] red-usecase (delivery without red/green; startup is settings gate)
+- [S] green-usecase (no usecase change)
+- [S] adapters-discovery (application/settings.py load_settings)
+- [x] green-acceptance
+- [S] refactor (none: unset checks already in load_settings)

@@ -3,7 +3,6 @@ import pytest
 from tests.backend.abstract_backend_test import AbstractBackendTest
 
 
-@pytest.mark.skip(reason="RED: assert 'indexing' == 'failed' — search store refusal leaves document indexing")
 @pytest.mark.backend
 class TestRepeatedFailedUploadsReturnTheStoreConnectionsToBaseline(AbstractBackendTest):
     """Repeated failed uploads return the store connections to baseline.

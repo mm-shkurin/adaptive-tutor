@@ -23,18 +23,8 @@ class TestTheAppRefusesToStartWhenIndexingSettingsAreMissing(AbstractBackendTest
     @pytest.mark.parametrize(
         "setting",
         [
-            pytest.param(
-                "the virus check",
-                marks=pytest.mark.skip(
-                    reason="RED: AssertionError startup accepted an upload — ClamAV settings not validated at boot"
-                ),
-            ),
-            pytest.param(
-                "the search store",
-                marks=pytest.mark.skip(
-                    reason="RED: AssertionError startup accepted an upload — Qdrant settings not validated at boot"
-                ),
-            ),
+            "the virus check",
+            "the search store",
             "the document store",
         ],
     )
