@@ -10,6 +10,7 @@ def _row(document_id):
     return DocumentRow(
         id=document_id,
         owner_id=uuid4(),
+        idempotency_key=str(uuid4()),
         name="test.pdf",
         size_bytes=1024,
         page_count=None,

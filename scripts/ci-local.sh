@@ -94,20 +94,25 @@ write_backend_env() {
     cp -f "$ROOT/backend/.env" "$ENV_BACKUP"
   fi
   ENV_WRITTEN=1
-  cp "$ROOT/infra/.env.example" "$ROOT/backend/.env"
-  {
-    echo "DATABASE_URL=postgresql+asyncpg://absolute:absolute@127.0.0.1:${PG_PORT}/adaptive_tutor"
-    echo "REDIS_URL=redis://127.0.0.1:${REDIS_PORT}/0"
-    echo "OAUTH_PROVIDER=fake"
-    echo "JWT_ACCESS_SECRET=ci-access-secret-not-used-elsewhere-000000"
-    echo "JWT_REFRESH_SECRET=ci-refresh-secret-not-used-elsewhere-0000"
-    echo "OAUTH_FRONTEND_CALLBACK_URL=http://localhost:5173/auth/callback"
-    echo "PUBLIC_BASE_URL=http://localhost:8000"
-    echo "CORS_ORIGINS=http://localhost:5173"
-    echo "QDRANT_URL=http://localhost:6333"
-    echo "FREE_LLM_API_URL=http://localhost:3001/v1"
-    echo "FREE_LLM_API_KEY=ci-placeholder"
-  } >> "$ROOT/backend/.env"
+  cat > "$ROOT/backend/.env" <<EOF
+DATABASE_URL=postgresql+asyncpg://absolute:absolute@127.0.0.1:${PG_PORT}/adaptive_tutor
+REDIS_URL=redis://127.0.0.1:${REDIS_PORT}/0
+OAUTH_PROVIDER=fake
+JWT_ACCESS_SECRET=ci-access-secret-not-used-elsewhere-000000
+JWT_REFRESH_SECRET=ci-refresh-secret-not-used-elsewhere-0000
+OAUTH_FRONTEND_CALLBACK_URL=http://localhost:5173/auth/callback
+PUBLIC_BASE_URL=http://localhost:8000
+CORS_ORIGINS=http://localhost:5173
+QDRANT_URL=http://localhost:6333
+CLAMAV_HOST=127.0.0.1
+CLAMAV_PORT=3310
+FREE_LLM_API_URL=http://localhost:3001/v1
+FREE_LLM_API_KEY=ci-placeholder
+EOF
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/backend/.env"
+  set +a
 }
 
 stack_is_up() {
@@ -167,30 +172,30 @@ backend() {
   start_services || return 1
   write_backend_env
 
-  (
-    cd "$ROOT/backend" || exit 1
-    if [ -d venv ]; then
-      # shellcheck disable=SC1091
-      source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
-    fi
-    export PYTHONPATH="$ROOT/backend${PYTHONPATH:+:$PYTHONPATH}"
-    step "backend: миграции" alembic upgrade head
-    if [ "$FAST" = 0 ]; then
-      step "backend: откат ревизии" bash -c "alembic downgrade -1 && alembic upgrade head"
-    fi
-    step "backend: pytest" python -m pytest ${SUITE:-} -q
-  )
+  local here="$PWD"
+  cd "$ROOT/backend" || return 1
+  if [ -d venv ]; then
+    # shellcheck disable=SC1091
+    source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
+  fi
+  export PYTHONPATH="$ROOT/backend${PYTHONPATH:+:$PYTHONPATH}"
+  step "backend: миграции" alembic upgrade head
+  if [ "$FAST" = 0 ]; then
+    step "backend: откат ревизии" bash -c "alembic downgrade -1 && alembic upgrade head"
+  fi
+  step "backend: pytest" python -m pytest ${SUITE:-} -q
+  cd "$here" || return 1
 }
 
 frontend() {
-  (
-    cd "$ROOT/frontend" || exit 1
-    if [ ! -d node_modules ]; then
-      step "frontend: npm ci" npm ci
-    fi
-    step "frontend: test" npm test
-    step "frontend: build" npm run build
-  )
+  local here="$PWD"
+  cd "$ROOT/frontend" || return 1
+  if [ ! -d node_modules ]; then
+    step "frontend: npm ci" npm ci
+  fi
+  step "frontend: test" npm test
+  step "frontend: build" npm run build
+  cd "$here" || return 1
 }
 
 echo "ci-local — AdaptiveTutor"
