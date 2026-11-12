@@ -8,7 +8,7 @@ AdaptiveTutor учит по загруженным лекциям: индекс�
 
 1. `ProductSpecification/stories.md` — истории 1–2 в Done; 3–8 в Backlog без спеки.
 2. Режим доставки по умолчанию: `/delivery-loop` → `/backend-delivery` или `/frontend-delivery` (код → тесты из test-spec → refactor). Полный red/green `/continue` — только по явной просьбе.
-3. История 2 закрыта: PDF intake/index/search-as-text pieces в Postgres. **Не сделано (BACKLOG):** SSE статусов документов (вместо poll); Embedding port + Qdrant. Дальше по спеке: история 3 — интервью «Презентации из слайдов».
+3. История 2 закрыта: PDF intake/index/search-as-text pieces в Postgres. SSE статусов документов закрыт (Task 1 → `tasks/done/`). **Не сделано (BACKLOG):** Embedding port + Qdrant. Дальше по спеке: история 3 — интервью «Презентации из слайдов».
 4. `ProductSpecification/stories/01-sign-in-profile/progress.md` — закрыта; браузерная проверка против стека пройдена 2026-11-07.
 5. Мокап целиком: `adaptive-tutor-mockup.html`.
 6. Локальный стек для проверки: Postgres/Redis в `infra/`, чистая БД `adaptive_tutor_local` (старая `adaptive_tutor` загрязнена `0005_shop_cart`), API fake-OAuth `:8010`, Vite `:5174` (`:8000`/`:5173` заняты чужими проектами).
