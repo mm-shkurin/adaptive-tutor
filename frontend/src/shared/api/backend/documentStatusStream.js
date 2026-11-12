@@ -5,7 +5,13 @@ import { SessionExpiredError } from '../../session/authorizedRequest'
 import { refreshTokens } from '../../session/refreshApi'
 import { isHttpError, toHttpError } from '../httpResponse'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+// Prefer the real API host for SSE. Vite's /api proxy can buffer event-stream
+// frames, so status pills never move until refresh.
+const STREAM_BASE =
+  import.meta.env.VITE_SSE_BASE_URL ??
+  import.meta.env.VITE_API_PROXY_TARGET ??
+  import.meta.env.VITE_API_BASE_URL ??
+  ''
 
 export async function openDocumentStatusStream({ signal, onEvent }) {
   const session = currentSession()
@@ -24,7 +30,7 @@ export async function openDocumentStatusStream({ signal, onEvent }) {
 }
 
 async function fetchStream(accessToken, signal) {
-  return fetch(`${API_BASE}${BACKEND.documents.statusEvents}`, {
+  return fetch(`${STREAM_BASE}${BACKEND.documents.statusEvents}`, {
     method: 'GET',
     signal,
     credentials: 'include',
@@ -85,6 +91,7 @@ function parseDocumentEvent(block) {
 
 export function isStreamOpenError(error) {
   if (error instanceof SessionExpiredError) return false
+  if (error?.name === 'AbortError') return false
   if (isHttpError(error)) return error.status >= 400
-  return error instanceof TypeError || error instanceof Error
+  return error instanceof TypeError
 }

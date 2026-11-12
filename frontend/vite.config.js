@@ -11,7 +11,30 @@ export default defineConfig(({ command, mode }) => {
       host: '127.0.0.1',
       port,
       strictPort: true,
-      proxy: serving ? { '/api': { target: proxyTarget(env), changeOrigin: true } } : undefined,
+      proxy: serving
+        ? {
+            '/api': {
+              target: proxyTarget(env),
+              changeOrigin: true,
+              // SSE status stream must not be buffered or given a short proxy idle timeout.
+              timeout: 0,
+              proxyTimeout: 0,
+              configure: (proxy) => {
+                proxy.on('proxyReq', (proxyReq, req) => {
+                  if (req.url?.includes('/documents/status-events')) {
+                    proxyReq.setHeader('Accept', 'text/event-stream')
+                  }
+                })
+                proxy.on('proxyRes', (proxyRes, req) => {
+                  if (req.url?.includes('/documents/status-events')) {
+                    proxyRes.headers['cache-control'] = 'no-cache'
+                    proxyRes.headers['x-accel-buffering'] = 'no'
+                  }
+                })
+              },
+            },
+          }
+        : undefined,
     },
     preview: {
       host: '127.0.0.1',

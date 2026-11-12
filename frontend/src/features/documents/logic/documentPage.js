@@ -26,8 +26,19 @@ export function pageWithStatusEvent(page, update) {
 export function fresherPage(current, incoming) {
   if (!current) return incoming
   const shown = new Map(current.documents.map((document) => [document.id, document]))
+  const incomingIds = new Set(incoming.documents.map((document) => document.id))
+  // A just-accepted upload can sit in current before the next list response includes it.
+  // Keep those in-flight rows; do not let a slightly older list wipe them.
+  const pending = current.documents.filter(
+    (document) =>
+      !incomingIds.has(document.id) &&
+      (document.status === 'waiting' || document.status === 'indexing')
+  )
   return {
-    documents: incoming.documents.map((document) => keepNewerStatus(shown.get(document.id), document)),
+    documents: [
+      ...pending,
+      ...incoming.documents.map((document) => keepNewerStatus(shown.get(document.id), document)),
+    ],
     has_next: incoming.has_next,
   }
 }

@@ -73,6 +73,15 @@ describe('documentPage', () => {
     expect(submission.begin('key-3')).toBe('key-3')
   })
 
+  it('fresherPage keeps a just-uploaded in-flight row missing from a late list', () => {
+    const page = { documents: [waiting, ready], has_next: false }
+    const lateList = { documents: [ready], has_next: false }
+    expect(fresherPage(page, lateList).documents.map((document) => document.id)).toEqual([
+      waiting.id,
+      ready.id,
+    ])
+  })
+
   it('An older status arriving late does not replace a newer one', () => {
     const epoch = createListEpoch()
     const older = epoch.start()
