@@ -6,7 +6,8 @@ import { REQUEST_TIMEOUT_MS, withTimeout } from './requestTimeout'
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export async function request(path, options = {}) {
-  return withTimeout((signal) => perform(path, options, signal), REQUEST_TIMEOUT_MS, options.signal)
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS
+  return withTimeout((signal) => perform(path, options, signal), timeoutMs, options.signal)
 }
 
 async function perform(path, options, signal) {

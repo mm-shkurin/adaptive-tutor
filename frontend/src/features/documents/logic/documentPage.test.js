@@ -55,6 +55,12 @@ describe('documentPage', () => {
     expect(stale.documents[0].status).toBe('ready')
   })
 
+  it('pageWithStatusEvent inserts a document that the page does not have yet', () => {
+    const page = { documents: [ready], has_next: false }
+    const next = pageWithStatusEvent(page, waiting)
+    expect(next.documents.map((document) => document.id)).toEqual([waiting.id, ready.id])
+  })
+
   it('A second press on one file adds one row', () => {
     const submission = createSubmission()
     expect(submission.begin('key-1')).toBe('key-1')

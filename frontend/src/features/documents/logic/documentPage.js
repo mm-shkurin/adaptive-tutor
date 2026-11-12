@@ -12,7 +12,9 @@ export function needsStatusStream(documents) {
 export function pageWithStatusEvent(page, update) {
   if (!page) return page
   const matched = page.documents.some((document) => document.id === update.id)
-  if (!matched) return page
+  if (!matched) {
+    return { documents: [update, ...page.documents], has_next: page.has_next }
+  }
   return {
     documents: page.documents.map((document) =>
       document.id === update.id ? keepNewerStatus(document, { ...document, ...update }) : document

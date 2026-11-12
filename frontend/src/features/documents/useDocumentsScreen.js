@@ -144,6 +144,16 @@ export function useDocumentsScreen() {
     }
   }, [])
 
+  async function reconcileList() {
+    const requestId = lists.current.start()
+    try {
+      const page = await listDocuments()
+      showPage(page, requestId)
+    } catch (error) {
+      if (leaveIfExpired(error, navigate)) return
+    }
+  }
+
   async function uploadPdf(file) {
     if (!file || screen.status !== 'ready') return
     const refused = uploadRefusal(file)
@@ -166,6 +176,8 @@ export function useDocumentsScreen() {
       if (!shouldApplyUpload(controller.signal.aborted)) return
       if (leaveIfExpired(error, navigate)) return
       setRefusal(uploadErrorMessage(error))
+      // Server may have accepted the PDF after the client gave up (virus scan / size).
+      await reconcileList()
     } finally {
       if (shouldApplyUpload(controller.signal.aborted)) {
         submission.current.finish()
