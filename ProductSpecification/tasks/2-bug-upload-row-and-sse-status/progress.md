@@ -6,6 +6,6 @@ Type: bug
 - [x] spec
 
 ## Fix: upload row missing until ready; SSE status not visible live
-- [ ] root cause analysis
-- [ ] design
+- [x] root cause analysis — see spec.md § RCA (2026-11-12)
+- [~] design
 - [ ] steps discovery
