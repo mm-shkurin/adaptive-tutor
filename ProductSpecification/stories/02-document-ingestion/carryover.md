@@ -32,6 +32,14 @@
 **Why:** Upload answers before indexing finishes; the list is the status source.
 **Where applied:** `frontend/src/features/documents/useDocumentsScreen.js`
 **From:** scenario 2.1 (2.1-an-accepted-pdf-appears-as-waiting-and-then-becomes-ready)
+**Superseded 2026-11-11:** see `decisions/sse-document-status-decision.md` — status updates move to SSE; list poll is not the lasting happy path.
+
+## Decision: Document status updates over SSE
+
+**Decision:** Push waiting/indexing/ready/failed over SSE; keep GET list for the initial page. Retire 250ms status polling once SSE ships.
+**Why:** Live poke showed polling + refresh is awkward; status progress is unclear.
+**Where applied:** backlog task (api-spec + back + front); decision file `decisions/sse-document-status-decision.md`
+**From:** post-story-2 live poke 2026-11-11
 
 ## Decision: Upload refusals stay before SubmitDocument
 
