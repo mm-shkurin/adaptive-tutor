@@ -5,8 +5,20 @@ export function pageWithUploaded(page, uploaded) {
   return { documents: [uploaded, ...rest], has_next: page.has_next }
 }
 
-export function needsStatusPoll(documents) {
+export function needsStatusStream(documents) {
   return documents.some((document) => document.status === 'waiting' || document.status === 'indexing')
+}
+
+export function pageWithStatusEvent(page, update) {
+  if (!page) return page
+  const matched = page.documents.some((document) => document.id === update.id)
+  if (!matched) return page
+  return {
+    documents: page.documents.map((document) =>
+      document.id === update.id ? keepNewerStatus(document, { ...document, ...update }) : document
+    ),
+    has_next: page.has_next,
+  }
 }
 
 export function fresherPage(current, incoming) {

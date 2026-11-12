@@ -107,6 +107,40 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /api/v1/documents/status-events:
+    get:
+      summary: Поток статусов своих документов (SSE)
+      operationId: documentStatusEvents
+      tags: [documents]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Session-scoped Server-Sent Events. Same auth as the list.
+        On connect the server first emits each document from the newest page
+        (catch-up), then pushes a document-status event whenever an owned
+        document's status row changes (waiting → indexing → ready|failed).
+        Event name: document-status. Data is a Document object.
+        Keepalive comments may appear while idle. The list GET stays for the
+        initial page only; clients must not poll the list for status once
+        this stream is available.
+      responses:
+        '200':
+          description: |
+            text/event-stream of document-status events.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  SSE frames. Each status event:
+                  event: document-status
+                  data: Document JSON
+        '404':
+          description: |
+            Сессии нет. code document_not_found и то же message, что у отсутствующего документа.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /api/v1/documents/{id}:
     get:
       summary: Один свой документ

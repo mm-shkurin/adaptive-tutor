@@ -1,3 +1,6 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,7 +15,19 @@ from application.context import AppContext, build_production_context
 
 def create_app(context: AppContext | None = None) -> FastAPI:
     ctx = context if context is not None else build_production_context()
-    app = FastAPI(title="AdaptiveTutor")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        ctx._indexing = asyncio.Event()
+        task = asyncio.create_task(_run_indexing(ctx))
+        ctx._indexing.set()
+        app.state.indexing_task = task
+        yield
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+    app = FastAPI(title="AdaptiveTutor", lifespan=lifespan)
     app.state.ctx = ctx
     app.add_middleware(
         CORSMiddleware,
@@ -33,6 +48,19 @@ def create_app(context: AppContext | None = None) -> FastAPI:
     app.include_router(documents_router, prefix="/api/v1/documents")
     app.include_router(chat_router, prefix="/api/v1/chat")
     return app
+
+
+async def _run_indexing(ctx: AppContext) -> None:
+    while True:
+        await ctx.index_documents.index_waiting()
+        if ctx._indexing is None:
+            await asyncio.sleep(0.5)
+            continue
+        try:
+            await asyncio.wait_for(ctx._indexing.wait(), timeout=0.5)
+        except TimeoutError:
+            continue
+        ctx._indexing.clear()
 
 
 def __getattr__(name: str):

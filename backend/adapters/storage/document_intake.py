@@ -62,6 +62,13 @@ class PostgresDocumentIntake(DocumentIntake):
 
         return await self._run(work)
 
+    async def owner_id_of(self, document_id: UUID) -> UUID | None:
+        async def work(session):
+            row = await session.get(DocumentRow, document_id)
+            return None if row is None else row.owner_id
+
+        return await self._run(work)
+
     async def save(self, document: Document) -> None:
         async def work(session):
             row = await session.scalar(

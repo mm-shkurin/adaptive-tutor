@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from adapters.cache.redis_oauth import RedisOAuthStore
 from adapters.cache.redis_revocations import RedisRevocations
 from adapters.cache.redis_upload_rate import RedisUploadRateLimit
+from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.filestore.file_store import PostgresFileStore
+from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.oauth.fake import FakeOAuthProvider
 from adapters.oauth.yandex import YandexOAuthProvider
 from adapters.pdfreader.pdf_reader import PyPdfReader
@@ -44,6 +46,7 @@ class AppContext:
     read_document: ReadDocument
     list_documents: ListDocuments
     index_documents: IndexDocuments
+    status_hub: DocumentStatusHub
     _indexing: asyncio.Event | None = None
 
     def schedule_indexing(self) -> None:
@@ -71,7 +74,8 @@ def _context(settings: Settings) -> AppContext:
         settings.refresh_ttl,
     )
     provider = _provider(settings)
-    intake = PostgresDocumentIntake(sessions)
+    hub = DocumentStatusHub()
+    intake = NotifyingDocumentIntake(PostgresDocumentIntake(sessions), hub)
     files = PostgresFileStore(sessions)
     pieces = PostgresPieceIndex(sessions)
     reader = PyPdfReader()
@@ -99,6 +103,7 @@ def _context(settings: Settings) -> AppContext:
         read_document=ReadDocument(intake),
         list_documents=ListDocuments(intake),
         index_documents=IndexDocuments(intake, files, reader, pieces),
+        status_hub=hub,
     )
 
 

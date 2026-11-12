@@ -59,6 +59,10 @@ class MemoryDocumentIntake:
 
         return await self._guard(action)
 
+    async def owner_id_of(self, document_id: UUID) -> UUID | None:
+        row = self.rows.get(document_id)
+        return None if row is None else row[0]
+
     async def save(self, document: Document) -> None:
         async def action():
             async with self._lock:

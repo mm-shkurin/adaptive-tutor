@@ -2,6 +2,11 @@
 
 > **Implementation Order**: Tests are numbered for sequential TDD implementation.
 > Start with the guest turned away, then the empty library, then a ready row, then what an upload does to that screen.
+>
+> **Status updates (Task 1):** While any row is `waiting` / `indexing`, the screen opens
+> `GET /api/v1/documents/status-events` (SSE) and applies `document-status` events to rows.
+> Polling `GET /api/v1/documents` is not the happy path (short-lived fallback only if the
+> stream cannot open). See `decisions/sse-document-status-decision.md`.
 
 ## 0. Prerequisite Guards
 

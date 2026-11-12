@@ -15,5 +15,6 @@ export const BACKEND = {
   documents: {
     list: `${V1}/documents`,
     item: (id) => `${V1}/documents/${id}`,
+    statusEvents: `${V1}/documents/status-events`,
   },
 }

@@ -1,8 +1,11 @@
+import asyncio
+import json
+from collections.abc import AsyncIterator
 from urllib.parse import unquote
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.datastructures import UploadFile as FormUpload
 
 from adapters.http.auth import _bearer
@@ -17,10 +20,16 @@ router = APIRouter()
 _MIN_BYTES = 1_048_576
 _MAX_BYTES = 52_428_800
 _CHUNK = 64 * 1024
+_KEEPALIVE_SECONDS = 15.0
 _NOT_FOUND = {"code": "document_not_found", "message": "Document was not found"}
 _NAME_MESSAGES = {
     "name_missing": "File name is missing",
     "name_too_long": "File name is too long",
+}
+_SSE_HEADERS = {
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no",
 }
 
 
@@ -55,6 +64,33 @@ async def upload_document(
         status_code=201 if accepted.created else 200,
         content=_json(accepted.document),
     )
+
+
+@router.get("/status-events")
+async def document_status_events(request: Request):
+    account = await _caller(request)
+    hub = request.app.state.ctx.status_hub
+    queue = hub.subscribe(account.id)
+    documents, _ = await request.app.state.ctx.list_documents.list(account.id, 1, None)
+
+    async def events() -> AsyncIterator[str]:
+        try:
+            yield ": connected\n\n"
+            for document in documents:
+                yield _sse_event(document)
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    document = await asyncio.wait_for(queue.get(), timeout=_KEEPALIVE_SECONDS)
+                except TimeoutError:
+                    yield ": keepalive\n\n"
+                    continue
+                yield _sse_event(document)
+        finally:
+            hub.unsubscribe(account.id, queue)
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers=_SSE_HEADERS)
 
 
 @router.get("/{document_id}")
@@ -127,3 +163,7 @@ def _json(document: Document) -> dict:
         "status": document.status,
         "error": document.error,
     }
+
+
+def _sse_event(document: Document) -> str:
+    return f"event: document-status\ndata: {json.dumps(_json(document))}\n\n"

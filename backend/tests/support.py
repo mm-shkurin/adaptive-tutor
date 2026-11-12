@@ -4,6 +4,8 @@ from urllib.parse import parse_qs, urlparse
 
 from fastapi.testclient import TestClient
 
+from adapters.document_status.notifying_intake import NotifyingDocumentIntake
+from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
@@ -88,7 +90,8 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         "http://localhost:5173/auth/callback",
     )
     bodies = {}
-    intake = MemoryDocumentIntake(bodies)
+    hub = DocumentStatusHub()
+    intake = NotifyingDocumentIntake(MemoryDocumentIntake(bodies), hub)
     files = MemoryFileStore(bodies)
     pieces = MemoryPieceIndex()
     reader = PyPdfReader()
@@ -102,6 +105,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         ReadDocument(intake),
         ListDocuments(intake),
         IndexDocuments(intake, files, reader, pieces),
+        hub,
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(client, store, clock, provider, rates)

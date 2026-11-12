@@ -10,6 +10,8 @@ import uvicorn
 from fastapi import Body, FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from adapters.document_status.notifying_intake import NotifyingDocumentIntake
+from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
@@ -83,10 +85,12 @@ class AcceptanceServer:
             DISCLOSURE_KNOWN_SECRET, "b" * 32, timedelta(minutes=60), timedelta(days=30)
         )
         bodies: dict[UUID, bytes] = {}
-        intake = MemoryDocumentIntake(bodies, self.probe, now=self.clock.now)
+        hub = DocumentStatusHub()
+        raw_intake = MemoryDocumentIntake(bodies, self.probe, now=self.clock.now)
+        intake = NotifyingDocumentIntake(raw_intake, hub)
         files = MemoryFileStore(bodies, self.probe)
         pieces = ProbePieceIndex(self.probe)
-        self.probe.attach_intake(intake)
+        self.probe.attach_intake(raw_intake)
         self.probe.attach_pieces(pieces)
         self._intake = intake
         self._pieces = pieces
@@ -101,6 +105,7 @@ class AcceptanceServer:
             ReadDocument(intake),
             ListDocuments(intake),
             ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock),
+            hub,
             self._indexing,
         )
 

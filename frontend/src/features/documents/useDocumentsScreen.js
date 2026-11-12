@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
+import {
+  isStreamOpenError,
+  openDocumentStatusStream,
+} from '../../shared/api/backend/documentStatusStream'
 import { endSession } from '../../shared/session/authSession'
 import { isSessionExpired } from '../../shared/session/authorizedRequest'
 import {
   createListEpoch,
   createSubmission,
   fresherPage,
-  needsStatusPoll,
+  needsStatusStream,
+  pageWithStatusEvent,
   pageWithUploaded,
   shouldApplyUpload,
 } from './logic/documentPage'
 import { libraryView } from './logic/libraryView'
 import { uploadErrorMessage, uploadRefusal } from './logic/uploadFile'
 
-const POLL_MS = 250
+const FALLBACK_POLL_MS = 1000
+const FALLBACK_POLL_LIMIT = 20
 
 export function useDocumentsScreen() {
   const navigate = useNavigate()
@@ -30,6 +36,16 @@ export function useDocumentsScreen() {
   function showPage(page, requestId) {
     if (!lists.current.accepts(requestId)) return
     const next = fresherPage(pageRef.current, page)
+    pageRef.current = next
+    setScreen({ status: 'ready', view: libraryView(next), page: next })
+  }
+
+  function applyStatusEvent(update) {
+    const current = pageRef.current
+    if (!current) return
+    const next = pageWithStatusEvent(current, update)
+    if (next === current) return
+    lists.current.start()
     pageRef.current = next
     setScreen({ status: 'ready', view: libraryView(next), page: next })
   }
@@ -51,11 +67,16 @@ export function useDocumentsScreen() {
     return () => controller.abort()
   }, [attempt, navigate])
 
+  const inFlight =
+    screen.status === 'ready' && needsStatusStream(screen.page?.documents ?? [])
+
   useEffect(() => {
-    if (screen.status !== 'ready') return undefined
-    if (!needsStatusPoll(screen.page.documents)) return undefined
+    if (!inFlight) return undefined
     const controller = new AbortController()
-    const timer = setInterval(() => {
+    let fallbackTimer = null
+    let fallbackLeft = FALLBACK_POLL_LIMIT
+
+    function pollOnce() {
       const requestId = lists.current.start()
       listDocuments(controller.signal)
         .then((page) => {
@@ -66,12 +87,53 @@ export function useDocumentsScreen() {
           if (controller.signal.aborted) return
           leaveIfExpired(error, navigate)
         })
-    }, POLL_MS)
+    }
+
+    function startFallbackPoll() {
+      if (fallbackTimer != null) return
+      pollOnce()
+      fallbackTimer = setInterval(() => {
+        fallbackLeft -= 1
+        if (fallbackLeft <= 0) {
+          clearInterval(fallbackTimer)
+          fallbackTimer = null
+          return
+        }
+        pollOnce()
+      }, FALLBACK_POLL_MS)
+    }
+
+    async function listen() {
+      while (!controller.signal.aborted) {
+        try {
+          await openDocumentStatusStream({
+            signal: controller.signal,
+            onEvent: (update) => {
+              if (controller.signal.aborted) return
+              applyStatusEvent(update)
+            },
+          })
+        } catch (error) {
+          if (controller.signal.aborted) return
+          if (leaveIfExpired(error, navigate)) return
+          if (isStreamOpenError(error)) {
+            startFallbackPoll()
+            return
+          }
+          return
+        }
+        if (controller.signal.aborted) return
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+    }
+
+    listen()
+
     return () => {
       controller.abort()
-      clearInterval(timer)
+      if (fallbackTimer != null) clearInterval(fallbackTimer)
     }
-  }, [screen, navigate])
+  }, [inFlight, navigate])
 
   useEffect(() => {
     const abort = uploadAbort
