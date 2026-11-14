@@ -17,10 +17,8 @@ import {
   shouldApplyUpload,
 } from './logic/documentPage'
 import { libraryView } from './logic/libraryView'
+import { FALLBACK_POLL_LIMIT, FALLBACK_POLL_MS } from './logic/statusStreamPolicy'
 import { uploadErrorMessage, uploadRefusal } from './logic/uploadFile'
-
-const FALLBACK_POLL_MS = 1000
-const FALLBACK_POLL_LIMIT = 20
 
 export function useDocumentsScreen() {
   const navigate = useNavigate()

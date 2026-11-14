@@ -7,11 +7,11 @@ import { isHttpError, toHttpError } from '../httpResponse'
 
 // Prefer the real API host for SSE. Vite's /api proxy can buffer event-stream
 // frames, so status pills never move until refresh.
-const STREAM_BASE =
-  import.meta.env.VITE_SSE_BASE_URL ??
-  import.meta.env.VITE_API_PROXY_TARGET ??
-  import.meta.env.VITE_API_BASE_URL ??
-  ''
+const STREAM_BASE = resolveDocumentStatusStreamBase(import.meta.env)
+
+export function resolveDocumentStatusStreamBase(env) {
+  return env.VITE_SSE_BASE_URL ?? env.VITE_API_PROXY_TARGET ?? env.VITE_API_BASE_URL ?? ''
+}
 
 export async function openDocumentStatusStream({ signal, onEvent }) {
   const session = currentSession()

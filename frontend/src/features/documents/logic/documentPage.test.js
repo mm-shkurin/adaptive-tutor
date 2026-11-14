@@ -101,4 +101,13 @@ describe('documentPage', () => {
     expect(shouldApplyUpload(false)).toBe(true)
     expect(fresherPage(null, page)).toEqual(page)
   })
+
+  it('Applying the same status event twice leaves the row status unchanged', () => {
+    const page = { documents: [waiting], has_next: false }
+    const indexing = { ...waiting, status: 'indexing' }
+    const once = pageWithStatusEvent(page, indexing)
+    const twice = pageWithStatusEvent(once, indexing)
+    expect(twice.documents[0].status).toBe('indexing')
+    expect(twice.documents).toHaveLength(1)
+  })
 })
