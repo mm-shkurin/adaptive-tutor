@@ -11,5 +11,5 @@ Type: bug
 - [x] steps discovery (scope: frontend; scanned all _index.md groups; GAPs: hz-02 folded as red-frontend (dup status apply + stream-open classification); hz-03 folded as red-frontend (status-rank / fresherPage already + reverse-order assert); hz-05 dismissed: no auth/HTML change in this fix; hz-06 folded as red-frontend (FALLBACK_POLL_LIMIT cap); hz-07 folded as red-frontend (UPLOAD_TIMEOUT_MS vs virus budget); hz-08 folded as red-frontend (createSubmission one-POST + stream helpers); hz-01/hz-04 none fired)
 - [x] red-frontend — lock Pass helpers: timeout budget, STREAM_BASE resolve, isStreamOpenError, status apply idempotency, fallback poll cap
 - [x] green-frontend
-- [~] green-selenium — verification only: TestUploadAppearsWaitingThenReady (hold indexing; existing Pass criteria)
-- [ ] demo — TestUploadAppearsWaitingThenReady
+- [x] green-selenium — verification only: TestUploadAppearsWaitingThenReady (hold indexing; existing Pass criteria)
+- [x] demo — TestUploadAppearsWaitingThenReady (verified via green-selenium run)
