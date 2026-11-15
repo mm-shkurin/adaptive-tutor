@@ -30,6 +30,22 @@
 - [x] implementation (`GET /api/v1/chats/{id}` векторизует сохранённые куски; сбой эмбеддинга оставляет ready и notice; следующий open дописывает векторы без повторной записи кусков)
 - [x] refactor (DocumentVectors в ports; GetChat короче лимита; отдельный рефактор-коммит не нужен)
 
+## Tier 1 — Frontend
+
+### 1.1 The chat screen shows the list, the thread, and the sources (02_UI_Tests.md)
+- [x] tests (vitest chatView; acceptance Selenium)
+- [x] implementation (экран чата по мокапу: список, лента, источники; цитата — страница, не слайд)
+- [x] refactor (типы/файлы по одному понятию; отдельный коммит не нужен)
+
+### 2.1 New chat opens an empty thread on the selected PDF (02_UI_Tests.md)
+- [x] tests (acceptance Selenium)
+- [x] implementation («Новый чат» создаёт пустую ленту на том же ready PDF)
+- [x] refactor (вместе с экраном 1.1; отдельный коммит не нужен)
+
+### 3.1 Send shows the whole tutor line with the page (02_UI_Tests.md)
+- [x] tests (acceptance Selenium; sanity fail на «Слайд» → страница)
+- [x] implementation (отправка целиком, model + страница на строке тьютора)
+- [x] refactor (вместе с экраном 1.1; отдельный коммит не нужен)
+
 ## Next
-- [ ] UI 1.1 / 2.1 / 3.1 — фронтовая полоса
-- [ ] Tier 2 API 6.x остаток / `/harvest` после закрытия UI Tier 1
+- [ ] Tier 2 API 6.x остаток / `/harvest` (UI Tier 1 закрыт)

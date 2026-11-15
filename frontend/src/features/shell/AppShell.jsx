@@ -10,6 +10,12 @@ const TABS = [
   ['/profile', 'Профиль', 'user'],
 ]
 
+function tabTestId(to) {
+  if (to === '/documents') return 'documents-tab'
+  if (to === '/chat') return 'chat-tab'
+  return undefined
+}
+
 export function AppShell() {
   return (
     <>
@@ -23,7 +29,7 @@ export function AppShell() {
             <NavLink
               key={to}
               to={to}
-              data-testid={to === '/documents' ? 'documents-tab' : undefined}
+              data-testid={tabTestId(to)}
               className={({ isActive }) => (isActive ? 'tab on' : 'tab')}
             >
               <StrokeIcon name={icon} />
@@ -39,7 +45,7 @@ export function AppShell() {
           <NavLink
             key={to}
             to={to}
-            data-testid={to === '/documents' ? 'documents-tab' : undefined}
+            data-testid={tabTestId(to)}
             className={({ isActive }) => (isActive ? 'on' : undefined)}
           >
             {label}

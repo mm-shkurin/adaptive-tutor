@@ -2,9 +2,17 @@ import json
 import time
 from pathlib import Path
 
+from clients.application.chat_client import ChatClient
 from clients.application.document_client import DocumentClient
 from clients.application.index_probe import IndexProbe
 from clients.application.session_client import ScriptedProvider, SessionClient
+from statements.chat_screen_statements import (
+    MODEL,
+    PAGE,
+    PERSON_QUESTION,
+    SOURCE_TEXT_VALUE,
+    TUTOR_ANSWER,
+)
 
 STORAGE_KEY = "adaptivetutor.session"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -24,15 +32,24 @@ class SignedInBrowserStatements:
         self.app_url = app_url
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
+        self.chats = ChatClient(base_url)
         self.probe = probe
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.ready_document = None
+        self.token = None
+        self.chat = None
+        self.person_line = PERSON_QUESTION
+        self.tutor_line = TUTOR_ANSWER
+        self.source_text = SOURCE_TEXT_VALUE
+        self.model = MODEL
+        self.page = PAGE
 
     def given_a_signed_in_person_with_no_documents(self) -> None:
         self._open_session("ada@example.test", "Ada")
 
     def given_a_signed_in_person_with_a_ready_pdf_named_matanaliz(self) -> None:
         token = self._open_session("ada@example.test", "Ada")
+        self.token = token
         uploaded = self.documents.submit_pdf(token, READY_NAME, self.lecture)
         assert uploaded.status_code == 201
         self.probe.release_indexing()
@@ -41,6 +58,50 @@ class SignedInBrowserStatements:
         assert self.ready_document.body["status"] == "ready"
         assert self.ready_document.body["name"] == READY_NAME
         self.probe.hold_indexing()
+
+    def given_a_signed_in_person_with_a_selected_ready_pdf(self) -> None:
+        self.given_a_signed_in_person_with_a_ready_pdf_named_matanaliz()
+
+    def given_a_signed_in_person_with_a_chat_that_has_a_person_line_and_a_tutor_line(self) -> None:
+        self.given_a_signed_in_person_with_a_ready_pdf_named_matanaliz()
+        document_id = self.ready_document.body["id"]
+        seeded = self.chats.seed_search(
+            self.token,
+            document_id,
+            ({"text": self.source_text, "page": self.page},),
+        )
+        assert seeded.status_code == 204
+        created = self.chats.create(self.token, document_id)
+        assert created.status_code == 201
+        scripted = self.chats.script_tutor(self.token, self.tutor_line)
+        assert scripted.status_code == 204
+        sent = self.chats.send(
+            self.token,
+            created.body["id"],
+            self.person_line,
+            self.model,
+            "professor",
+            "ui-seed-1",
+        )
+        assert sent.status_code == 200
+        opened = self.chats.get(self.token, created.body["id"])
+        assert opened.status_code == 200
+        self.chat = opened.body
+
+    def given_a_signed_in_person_with_an_askable_chat(self) -> None:
+        self.given_a_signed_in_person_with_a_ready_pdf_named_matanaliz()
+        document_id = self.ready_document.body["id"]
+        seeded = self.chats.seed_search(
+            self.token,
+            document_id,
+            ({"text": self.source_text, "page": self.page},),
+        )
+        assert seeded.status_code == 204
+        created = self.chats.create(self.token, document_id)
+        assert created.status_code == 201
+        scripted = self.chats.script_tutor(self.token, self.tutor_line)
+        assert scripted.status_code == 204
+        self.chat = created.body
 
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)
@@ -71,6 +132,7 @@ class SignedInBrowserStatements:
     def close(self) -> None:
         self.sessions.close()
         self.documents.close()
+        self.chats.close()
 
     def _open_session(self, email: str, name: str) -> str:
         opened = self.sessions.open_account(email, name)

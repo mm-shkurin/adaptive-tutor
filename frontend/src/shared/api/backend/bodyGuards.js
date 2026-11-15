@@ -40,3 +40,56 @@ export function isDocumentPageBody(value) {
     typeof value.has_next === 'boolean'
   )
 }
+
+export function isChatSummaryBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.document_id === 'string' &&
+    typeof value.document_name === 'string' &&
+    (value.preview === null || typeof value.preview === 'string')
+  )
+}
+
+export function isChatListBody(value) {
+  return isRecord(value) && Array.isArray(value.chats) && value.chats.every(isChatSummaryBody)
+}
+
+export function isSourceBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.text === 'string' &&
+    (value.page === null || value.page === undefined || typeof value.page === 'number')
+  )
+}
+
+export function isLineBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    (value.role === 'person' || value.role === 'tutor') &&
+    typeof value.text === 'string'
+  )
+}
+
+export function isChatBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.document_id === 'string' &&
+    typeof value.document_name === 'string' &&
+    typeof value.askable === 'boolean' &&
+    (value.notice === null || typeof value.notice === 'string') &&
+    Array.isArray(value.lines) &&
+    value.lines.every(isLineBody)
+  )
+}
+
+export function isSendResultBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.chat_id === 'string' &&
+    Array.isArray(value.lines) &&
+    value.lines.every(isLineBody)
+  )
+}

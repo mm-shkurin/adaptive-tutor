@@ -10,9 +10,11 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+pytest.register_assert_rewrite("statements.chat_screen_statements")
 pytest.register_assert_rewrite("statements.document_library_statements")
 pytest.register_assert_rewrite("statements.signed_in_browser_statements")
 
+from statements.chat_screen_statements import ChatScreenStatements
 from statements.document_library_statements import DocumentLibraryStatements
 from statements.signed_in_browser_statements import SignedInBrowserStatements
 from support.acceptance_server import AcceptanceServer
@@ -110,7 +112,8 @@ def ui():
             driver, app_url, server.base_url, server.provider, server.probe
         )
         library = DocumentLibraryStatements(driver, app_url)
-        yield signed_in, library
+        chat_screen = ChatScreenStatements(driver, app_url)
+        yield signed_in, library, chat_screen
     finally:
         if signed_in is not None:
             signed_in.close()
@@ -131,3 +134,8 @@ def signed_in_browser(ui):
 @pytest.fixture
 def document_library(ui):
     return ui[1]
+
+
+@pytest.fixture
+def chat_screen(ui):
+    return ui[2]

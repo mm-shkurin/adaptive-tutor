@@ -17,4 +17,10 @@ export const BACKEND = {
     item: (id) => `${V1}/documents/${id}`,
     statusEvents: `${V1}/documents/status-events`,
   },
+  chats: {
+    list: `${V1}/chats`,
+    open: `${V1}/chats/open`,
+    item: (id) => `${V1}/chats/${id}`,
+    messages: (id) => `${V1}/chats/${id}/messages`,
+  },
 }
