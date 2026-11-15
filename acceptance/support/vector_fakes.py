@@ -29,6 +29,7 @@ class ExternalFakes:
     def __init__(self):
         self.points: dict[str, dict] = {}
         self.models: list[str] = []
+        self.upserts: list[str] = []
         self._embed_fail: str | None = None
         self._lock = threading.Lock()
         port = _free_port()
@@ -81,6 +82,10 @@ class ExternalFakes:
             "texts": [point["payload"]["text"] for point in points],
         }
 
+    def upsert_count(self, document_id: str) -> int:
+        with self._lock:
+            return sum(1 for item in self.upserts if item == document_id)
+
 
 def _app(fakes: ExternalFakes) -> FastAPI:
     app = FastAPI()
@@ -125,6 +130,7 @@ def _app(fakes: ExternalFakes) -> FastAPI:
         with fakes._lock:
             for point in body["points"]:
                 fakes.points[str(point["id"])] = point
+                fakes.upserts.append(point["payload"]["document_id"])
         return {"result": {"status": "completed"}, "status": "ok", "time": 0}
 
     @app.post("/collections/{name}/points/count")

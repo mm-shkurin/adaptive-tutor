@@ -67,8 +67,9 @@
 - [ ] implementation
 
 ### 6.5 Opening a PDF that already has vectors does not write them again
-- [ ] tests
-- [ ] implementation (prod: GetChat early `ready`; acceptance assert missing)
+- [x] tests (acceptance; sanity fail by disabling GetChat ready short-circuit)
+- [x] implementation (already in GetChat.open early `ready`; upsert counter on fake)
+- [S] refactor (no new prod behavior; acceptance-only)
 
 ### 6.6 A failed reply keeps one person line for that attempt
 - [x] tests (acceptance; sanity fail on reply_failed message)
@@ -84,4 +85,4 @@
 - [ ] latency budget / pin / interleaved opens / empty-document vector write
 
 ## Next
-- [ ] Tier 2 API 6.4 / 6.5, then 6.8–6.11; полный `/harvest` остальных Tier 2
+- [ ] Tier 2 API 6.4, then 6.8–6.11; полный `/harvest` остальных Tier 2

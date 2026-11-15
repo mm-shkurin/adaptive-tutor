@@ -8,6 +8,7 @@ from clients.application.session_client import ScriptedProvider, SessionClient
 from statements.failed_reply_statements import FailedReplyStatements
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
 from statements.vector_open_statements import VectorOpenStatements
+from statements.vector_reuse_statements import VectorReuseStatements
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 OLDER_PDF = "older.pdf"
@@ -15,7 +16,7 @@ NEWER_PDF = "newer.pdf"
 CONTAINED = "w0001"
 
 
-class ChatStatements(VectorOpenStatements, ReplyStatements, FailedReplyStatements):
+class ChatStatements(VectorOpenStatements, ReplyStatements, FailedReplyStatements, VectorReuseStatements):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)

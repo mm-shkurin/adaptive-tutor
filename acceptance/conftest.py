@@ -13,6 +13,7 @@ pytest.register_assert_rewrite(
     "statements.reply_statements",
     "statements.failed_reply_statements",
     "statements.vector_open_statements",
+    "statements.vector_reuse_statements",
 )
 
 from statements.chat_statements import ChatStatements
