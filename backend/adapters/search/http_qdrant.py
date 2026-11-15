@@ -55,7 +55,7 @@ class HttpQdrant:
         headers = {"Content-Type": "application/json"}
         if self._api_key:
             headers["api-key"] = self._api_key
-        async with httpx.AsyncClient(timeout=10) as client:
+        async with httpx.AsyncClient(timeout=60) as client:
             return await client.request(method, self._base + path, headers=headers, json=payload)
 
 

@@ -35,6 +35,41 @@ services:
       timeout: 3s
       retries: 10
 
+  qdrant:
+    image: qdrant/qdrant:v1.13.2
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "127.0.0.1:${QDRANT_HOST_PORT:-6333}:6333"
+
+  # Real MiniLM embeddings for indexing/search (OpenAI /v1/embeddings, dim 384).
+  # Not freellmapi — that stays for future chat/tutor completions only.
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    restart: unless-stopped
+    environment:
+      MODEL_ID: sentence-transformers/all-MiniLM-L6-v2
+      HUGGINGFACE_HUB_CACHE: /data
+    command:
+      - --model-id
+      - sentence-transformers/all-MiniLM-L6-v2
+      # Pieces can exceed MiniLM's 256-token window → truncate (else 422 / search store refused).
+      - --auto-truncate
+      # IndexDocuments embeds all pieces in one request; PIECE_CAP is 2000.
+      - --max-client-batch-size
+      - "2000"
+    volumes:
+      - embeddings_data:/data
+    ports:
+      - "127.0.0.1:${EMBEDDINGS_HOST_PORT:-18081}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:80/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 120s
+
   backend:
     image: adaptive-tutor-backend:local
     build:
@@ -43,12 +78,18 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      embeddings:
         condition: service_healthy
 
   gateway:
@@ -66,3 +107,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  qdrant_data:
+  embeddings_data:

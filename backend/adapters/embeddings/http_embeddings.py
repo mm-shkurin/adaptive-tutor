@@ -7,7 +7,7 @@ DIMENSION = 384
 
 
 class HttpEmbeddings:
-    def __init__(self, base_url: str, api_key: str, timeout: float = 10):
+    def __init__(self, base_url: str, api_key: str, timeout: float = 60):
         self._url = base_url.rstrip("/") + "/embeddings"
         self._api_key = api_key
         self._timeout = timeout

@@ -6,12 +6,13 @@ AdaptiveTutor учит по загруженным лекциям: индекс�
 
 ## Where to resume
 
-1. `ProductSpecification/stories.md` — истории 1–2 в Done; 3–8 в Backlog без спеки.
+1. `ProductSpecification/stories.md` — истории 1–2 в Done. Очередь: 4 Чат (интервью), 7 Викторины, 3 Презентации, 8 Прогресс. Истории 5 и 6 входят в 4.
 2. Режим доставки по умолчанию: `/delivery-loop` → `/backend-delivery` или `/frontend-delivery` (код → тесты из test-spec → refactor). Полный red/green `/continue` — только по явной просьбе.
-3. История 2 закрыта: PDF intake/index/search-as-text pieces в Postgres. SSE контракт/wiring (Task 1 → `tasks/done/`). **Баг открыт:** после upload строка и статусы не видны, пока не ready — Task `2-bug-upload-row-and-sse-status` (+ `notes.md`). **Не сделано (BACKLOG):** Embedding port + Qdrant. Дальше по спеке: история 3 — интервью «Презентации из слайдов».
-4. `ProductSpecification/stories/01-sign-in-profile/progress.md` — закрыта; браузерная проверка против стека пройдена 2026-11-07.
-5. Мокап целиком: `adaptive-tutor-mockup.html`.
-6. Локальный стек для проверки: Postgres/Redis в `infra/`, чистая БД `adaptive_tutor_local` (старая `adaptive_tutor` загрязнена `0005_shop_cart`), API fake-OAuth `:8010`, Vite `:5174` (`:8000`/`:5173` заняты чужими проектами).
+3. История 2 закрыта: PDF intake/index, куски в Postgres, live embeddings через TEI (`infra` service `embeddings`, `all-MiniLM-L6-v2`, dim 384, `--auto-truncate`). `FREE_LLM_API_URL=http://embeddings:80/v1`. Freellmapi не для embed. Порядок сдачи: **4 Чат → 7 Викторины → 3 Презентации → 8 Прогресс**.
+4. История 4: Tier 1 закрыт; Tier 2 — дальше API 6.4 и 6.8–6.11, затем `/harvest`. Live send всё ещё `RefusingTutor`.
+5. `ProductSpecification/stories/01-sign-in-profile/progress.md` — закрыта; браузерная проверка против стека пройдена 2026-11-07.
+6. Мокап целиком: `adaptive-tutor-mockup.html`.
+7. Локальный стек: Postgres/Redis/Qdrant/TEI в `infra/`, БД `adaptive_tutor_local`, backend `:8010`, Vite `:5174`. HttpEmbeddings/HttpQdrant timeout 60s (реальные PDF ~100+ кусков иначе `search store refused`).
 
 Спеки API и тестов — по одной истории после интервью. Не выдумывать ответы интервью.
 
