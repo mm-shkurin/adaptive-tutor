@@ -9,14 +9,25 @@ from usecase.chat.errors import ChatNotFound, ReplyFailed
 from usecase.chat.outgoing import Outgoing
 from usecase.chat.ports import ChatStore, MaterialSearch, Tutor
 
-REPLY_FAILED = {"code": "reply_failed", "message": "The model could not answer"}
+
+@dataclass(frozen=True)
+class ReplyError:
+    code: str
+    message: str
+
+    @staticmethod
+    def failed() -> "ReplyError":
+        return ReplyError("reply_failed", "The model could not answer")
+
+    def json(self) -> dict:
+        return {"code": self.code, "message": self.message}
 
 
 @dataclass(frozen=True)
 class Attempt:
     chat_id: UUID
     lines: tuple[Line, ...]
-    error: dict | None = None
+    error: ReplyError | None = None
 
 
 class SendMessage:
@@ -45,7 +56,8 @@ class SendMessage:
         found = await self.chats.get(owner_id, chat_id)
         if found is None:
             raise ChatNotFound()
-        chat = found.with_vectors(await self.search.ready(found.document_id))
+        ready = await self.search.ready(found.document_id)
+        chat = found.with_vectors(ready)
         if not chat.askable():
             raise NotAskable()
         return chat
@@ -66,6 +78,6 @@ class SendMessage:
             text = await self.tutor.answer(model, mode, question, sources)
         except ReplyFailed:
             updated, lines = chat.record_failed(question)
-            return updated, Attempt(chat.id, lines, REPLY_FAILED)
+            return updated, Attempt(chat.id, lines, ReplyError.failed())
         updated, lines = chat.record_grounded(question, model, mode, sources, text)
         return updated, Attempt(chat.id, lines)

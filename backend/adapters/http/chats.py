@@ -36,7 +36,8 @@ async def create_chat(body: CreateChatBody, request: Request):
 @router.get("/{id}")
 async def get_chat(id: UUID, request: Request):
     account = await _caller(request)
-    return _chat(await request.app.state.ctx.get_chat.open(account.id, id))
+    chat = await request.app.state.ctx.get_chat.open(account.id, id)
+    return _chat(chat)
 
 
 @router.post("/{id}/messages")
@@ -46,8 +47,10 @@ async def send_message(
     idempotency_key: str = Header(min_length=1, max_length=255, alias="Idempotency-Key"),
 ):
     account = await _caller(request)
+    payload = await request.json()
+    outgoing = Outgoing.from_payload(payload)
     attempt = await request.app.state.ctx.send_message.send(
-        account.id, id, Outgoing.from_payload(await request.json()), idempotency_key
+        account.id, id, outgoing, idempotency_key
     )
     return _attempt(attempt)
 
@@ -59,28 +62,29 @@ async def _caller(request: Request):
         raise ChatNotFound() from error
 
 
-def _summary(chat: Chat) -> dict:
+def _identity(chat: Chat) -> dict:
     return {
         "id": str(chat.id),
         "document_id": str(chat.document_id),
         "document_name": chat.document_name,
-        "preview": chat.preview(),
     }
+
+
+def _summary(chat: Chat) -> dict:
+    return {**_identity(chat), "preview": chat.preview()}
 
 
 def _attempt(attempt: Attempt) -> dict:
     return {
         "chat_id": str(attempt.chat_id),
         "lines": [line.json() for line in attempt.lines],
-        "error": attempt.error,
+        "error": None if attempt.error is None else attempt.error.json(),
     }
 
 
 def _chat(chat: Chat) -> dict:
     return {
-        "id": str(chat.id),
-        "document_id": str(chat.document_id),
-        "document_name": chat.document_name,
+        **_identity(chat),
         "askable": chat.askable(),
         "notice": chat.notice(),
         "lines": [line.json() for line in chat.lines],

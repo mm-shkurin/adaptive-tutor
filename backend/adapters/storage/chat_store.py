@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from adapters.persistence.tables import ChatAttemptRow, ChatLineRow, ChatRow, DocumentRow
 from domain.chat.chat import Chat
 from usecase.chat.errors import ChatNotFound, StoreUnavailable
-from usecase.chat.send_message import Attempt
+from usecase.chat.send_message import Attempt, ReplyError
 
 
 class PostgresChatStore:
@@ -45,18 +45,7 @@ class PostgresChatStore:
 
     async def get(self, owner_id: UUID, chat_id: UUID) -> Chat | None:
         async def work(session):
-            found = (
-                await session.execute(
-                    select(ChatRow, DocumentRow.name)
-                    .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
-                    .where(ChatRow.id == chat_id, ChatRow.owner_id == owner_id)
-                    .options(selectinload(ChatRow.lines))
-                )
-            ).one_or_none()
-            if found is None:
-                return None
-            chat_row, name = found
-            return self._chat(chat_row, name)
+            return await self._owned(session, owner_id, chat_id)
 
         return await self._run(work)
 
@@ -88,7 +77,7 @@ class PostgresChatStore:
             lines = tuple(by_id[UUID(str(line_id))] for line_id in row.line_ids)
             error = None
             if row.error_code is not None:
-                error = {"code": row.error_code, "message": row.error_message}
+                error = ReplyError(row.error_code, row.error_message or "")
             return Attempt(chat_id, lines, error)
 
         return await self._run(work)
@@ -99,13 +88,14 @@ class PostgresChatStore:
         async def work(session):
             if await self._owned(session, owner_id, chat_id) is None:
                 raise ChatNotFound()
+            error = attempt.error
             session.add(
                 ChatAttemptRow(
                     chat_id=chat_id,
                     attempt_key=attempt_key,
                     line_ids=[str(line.id) for line in attempt.lines],
-                    error_code=None if attempt.error is None else attempt.error["code"],
-                    error_message=None if attempt.error is None else attempt.error["message"],
+                    error_code=None if error is None else error.code,
+                    error_message=None if error is None else error.message,
                 )
             )
 
@@ -135,8 +125,6 @@ class PostgresChatStore:
                 async with session.begin():
                     return await work(session)
         except IntegrityError:
-            raise
-        except ChatNotFound:
             raise
         except (OperationalError, InterfaceError, DBAPIError) as error:
             raise StoreUnavailable() from error

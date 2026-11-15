@@ -73,12 +73,12 @@
 ### 6.6 A failed reply keeps one person line for that attempt
 - [x] tests (acceptance; sanity fail on reply_failed message)
 - [x] implementation (ReplyFailed → person-only + error; Idempotency-Key replay)
-- [ ] refactor
+- [x] refactor (ReplyError; HTTP locals; Postgres get→_owned)
 
 ### 6.7 A new attempt after a failed reply is kept
 - [x] tests (acceptance)
 - [x] implementation (new key appends another person line)
-- [ ] refactor
+- [x] refactor (same pass as 6.6)
 
 ### 6.8–6.11
 - [ ] latency budget / pin / interleaved opens / empty-document vector write
