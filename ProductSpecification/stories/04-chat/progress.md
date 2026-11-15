@@ -49,7 +49,24 @@
 
 ## Harvest — Tier 1 → Tier 2
 
-- [ ] harvest (полный батч Tier 2 ещё не гоняли; ниже — точечная сдача API 6.x)
+- [ ] harvest (полный батч Tier 2 ещё не гоняли; ниже — точечная сдача)
+
+## Tier 2 — Backend (01_API_Tests.md §1–3 gates)
+
+### 1.3 A person with no ready PDF cannot start a chat
+- [x] tests (acceptance; already green)
+- [S] implementation (CreateChat._newest_ready → NoReadyDocument)
+- [S] refactor (no new prod code)
+
+### 2.2 A new chat with nothing selected binds the newest ready PDF
+- [x] tests (acceptance; already green)
+- [S] implementation (CreateChat without document_id)
+- [S] refactor (no new prod code)
+
+### 3.1 A blank line is refused and nothing is stored
+- [x] tests (acceptance; already green)
+- [S] implementation (EmptyQuestion before save)
+- [S] refactor (no new prod code)
 
 ## Tier 2 — Backend (01_API_Tests.md §6)
 

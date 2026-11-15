@@ -15,6 +15,14 @@ class ChatClient:
         )
         return read_result(response)
 
+    def create_without_document(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/api/v1/chats",
+            headers=self._bearer(token),
+            json={},
+        )
+        return read_result(response)
+
     def open(self, token: str, document_id: str) -> HttpResult:
         response = self.http.post(
             "/api/v1/chats/open",
