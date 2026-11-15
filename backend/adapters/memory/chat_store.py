@@ -3,11 +3,13 @@ from uuid import UUID
 
 from domain.chat.chat import Chat
 from usecase.chat.errors import ChatNotFound
+from usecase.chat.send_message import Attempt
 
 
 class MemoryChatStore:
     def __init__(self):
         self._rows: list[tuple[UUID, Chat, datetime]] = []
+        self._attempts: dict[tuple[UUID, UUID, str], Attempt] = {}
 
     async def add(self, owner_id: UUID, chat: Chat, created_at: datetime) -> None:
         self._rows.append((owner_id, chat, created_at))
@@ -29,3 +31,13 @@ class MemoryChatStore:
                 self._rows[index] = (owner, chat, created)
                 return
         raise ChatNotFound()
+
+    async def find_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str) -> Attempt | None:
+        return self._attempts.get((owner_id, chat_id, attempt_key))
+
+    async def save_attempt(
+        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    ) -> None:
+        if await self.get(owner_id, chat_id) is None:
+            raise ChatNotFound()
+        self._attempts[(owner_id, chat_id, attempt_key)] = attempt

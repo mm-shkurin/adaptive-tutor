@@ -29,6 +29,12 @@ def register_chat_probe(app: FastAPI, search, tutor, intake) -> None:
         tutor.script(body["text"])
         return Response(status_code=204)
 
+    @app.post("/acceptance/tutor/fail", status_code=204)
+    async def fail_tutor(request: Request):
+        await document_caller(request)
+        tutor.fail()
+        return Response(status_code=204)
+
     @app.get("/acceptance/tutor/calls")
     async def tutor_calls(request: Request):
         await document_caller(request)

@@ -47,6 +47,13 @@ class ChatClient:
         )
         return read_result(response)
 
+    def fail_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/fail",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def vectors(self, token: str, document_id: str) -> HttpResult:
         response = self.http.get(
             f"/acceptance/documents/{document_id}/vectors",

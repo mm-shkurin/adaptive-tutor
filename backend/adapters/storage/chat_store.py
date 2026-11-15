@@ -5,9 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, OperationalError
 from sqlalchemy.orm import selectinload
 
-from adapters.persistence.tables import ChatLineRow, ChatRow, DocumentRow
+from adapters.persistence.tables import ChatAttemptRow, ChatLineRow, ChatRow, DocumentRow
 from domain.chat.chat import Chat
 from usecase.chat.errors import ChatNotFound, StoreUnavailable
+from usecase.chat.send_message import Attempt
 
 
 class PostgresChatStore:
@@ -74,6 +75,55 @@ class PostgresChatStore:
             )
 
         await self._run(work)
+
+    async def find_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str) -> Attempt | None:
+        async def work(session):
+            chat = await self._owned(session, owner_id, chat_id)
+            if chat is None:
+                return None
+            row = await session.get(ChatAttemptRow, {"chat_id": chat_id, "attempt_key": attempt_key})
+            if row is None:
+                return None
+            by_id = {line.id: line for line in chat.lines}
+            lines = tuple(by_id[UUID(str(line_id))] for line_id in row.line_ids)
+            error = None
+            if row.error_code is not None:
+                error = {"code": row.error_code, "message": row.error_message}
+            return Attempt(chat_id, lines, error)
+
+        return await self._run(work)
+
+    async def save_attempt(
+        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    ) -> None:
+        async def work(session):
+            if await self._owned(session, owner_id, chat_id) is None:
+                raise ChatNotFound()
+            session.add(
+                ChatAttemptRow(
+                    chat_id=chat_id,
+                    attempt_key=attempt_key,
+                    line_ids=[str(line.id) for line in attempt.lines],
+                    error_code=None if attempt.error is None else attempt.error["code"],
+                    error_message=None if attempt.error is None else attempt.error["message"],
+                )
+            )
+
+        await self._run(work)
+
+    async def _owned(self, session, owner_id: UUID, chat_id: UUID) -> Chat | None:
+        found = (
+            await session.execute(
+                select(ChatRow, DocumentRow.name)
+                .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
+                .where(ChatRow.id == chat_id, ChatRow.owner_id == owner_id)
+                .options(selectinload(ChatRow.lines))
+            )
+        ).one_or_none()
+        if found is None:
+            return None
+        chat_row, name = found
+        return self._chat(chat_row, name)
 
     def _chat(self, chat_row: ChatRow, name: str) -> Chat:
         lines = tuple(line.to_domain() for line in chat_row.lines)

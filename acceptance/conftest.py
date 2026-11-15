@@ -11,6 +11,7 @@ pytest.register_assert_rewrite(
     "statements.document_statements",
     "statements.chat_statements",
     "statements.reply_statements",
+    "statements.failed_reply_statements",
     "statements.vector_open_statements",
 )
 

@@ -164,3 +164,13 @@ class ChatLineRow(Base):
             page=line.page,
             sources=[source.json() for source in line.sources],
         )
+
+
+class ChatAttemptRow(Base):
+    __tablename__ = "chat_attempts"
+
+    chat_id: Mapped[UUID] = mapped_column(ForeignKey("chats.id"), primary_key=True)
+    attempt_key: Mapped[str] = mapped_column(String(255), primary_key=True)
+    line_ids: Mapped[list] = mapped_column(JSON)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    error_message: Mapped[str | None] = mapped_column(Text)

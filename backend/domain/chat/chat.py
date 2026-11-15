@@ -77,3 +77,7 @@ class Chat:
         person = Line.person(question)
         tutor = Line.missing(mode)
         return replace(self, lines=self.lines + (person, tutor)), (person, tutor)
+
+    def record_failed(self, question: str) -> tuple["Chat", tuple[Line, ...]]:
+        person = Line.person(question)
+        return replace(self, lines=self.lines + (person,)), (person,)

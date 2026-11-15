@@ -43,11 +43,11 @@ async def get_chat(id: UUID, request: Request):
 async def send_message(
     id: UUID,
     request: Request,
-    _idempotency_key: str = Header(min_length=1, max_length=255, alias="Idempotency-Key"),
+    idempotency_key: str = Header(min_length=1, max_length=255, alias="Idempotency-Key"),
 ):
     account = await _caller(request)
     attempt = await request.app.state.ctx.send_message.send(
-        account.id, id, Outgoing.from_payload(await request.json())
+        account.id, id, Outgoing.from_payload(await request.json()), idempotency_key
     )
     return _attempt(attempt)
 
@@ -72,7 +72,7 @@ def _attempt(attempt: Attempt) -> dict:
     return {
         "chat_id": str(attempt.chat_id),
         "lines": [line.json() for line in attempt.lines],
-        "error": None,
+        "error": attempt.error,
     }
 
 

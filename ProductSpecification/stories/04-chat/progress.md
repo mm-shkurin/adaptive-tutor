@@ -47,5 +47,41 @@
 - [x] implementation (отправка целиком, model + страница на строке тьютора)
 - [x] refactor (вместе с экраном 1.1; отдельный коммит не нужен)
 
+## Harvest — Tier 1 → Tier 2
+
+- [ ] harvest (полный батч Tier 2 ещё не гоняли; ниже — точечная сдача API 6.x)
+
+## Tier 2 — Backend (01_API_Tests.md §6)
+
+### 6.1 Opening a ready PDF with no vectors makes it askable from the stored text
+- [S] covered by Integration 1.2 success reopen + GetChat.open vectorize path
+
+### 6.2 A failed vector run leaves the document ready and the chat not askable
+- [S] covered by Integration 1.2 (`test_a_vector_run_that_fails_leaves_the_document_ready`)
+
+### 6.3 The next open after a failed vector run tries again
+- [S] covered by Integration 1.2 retry half
+
+### 6.4 A vector run that stops midway does not store those pieces twice
+- [ ] tests
+- [ ] implementation
+
+### 6.5 Opening a PDF that already has vectors does not write them again
+- [ ] tests
+- [ ] implementation (prod: GetChat early `ready`; acceptance assert missing)
+
+### 6.6 A failed reply keeps one person line for that attempt
+- [x] tests (acceptance; sanity fail on reply_failed message)
+- [x] implementation (ReplyFailed → person-only + error; Idempotency-Key replay)
+- [ ] refactor
+
+### 6.7 A new attempt after a failed reply is kept
+- [x] tests (acceptance)
+- [x] implementation (new key appends another person line)
+- [ ] refactor
+
+### 6.8–6.11
+- [ ] latency budget / pin / interleaved opens / empty-document vector write
+
 ## Next
-- [ ] Tier 2 API 6.x остаток / `/harvest` (UI Tier 1 закрыт)
+- [ ] Tier 2 API 6.4 / 6.5, then 6.8–6.11; полный `/harvest` остальных Tier 2
