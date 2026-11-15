@@ -116,7 +116,7 @@ class AcceptanceServer:
             HttpQdrant(self.fakes.qdrant_url, ""),
             pieces,
         )
-        search = PreferSeededSearch(MemoryMaterialSearch(), vectors)
+        search = PreferSeededSearch(MemoryMaterialSearch(), vectors, self.clock)
         tutor = ScriptedTutor()
         self._search = search
         self._vectors = vectors
@@ -135,7 +135,7 @@ class AcceptanceServer:
             CreateChat(intake, chats, self.clock),
             ListChats(chats),
             GetChat(chats, pieces, vectors),
-            SendMessage(chats, search, tutor),
+            SendMessage(chats, search, tutor, self.clock, latency=timedelta(milliseconds=50)),
             self._indexing,
         )
 
@@ -164,7 +164,7 @@ class AcceptanceServer:
             task.cancel()
 
         app = create_app(ctx)
-        register_chat_probe(app, self._search, self._tutor, self._intake)
+        register_chat_probe(app, self._search, self._tutor, self._intake, self._vectors)
         app.router.lifespan_context = lifespan
         app.state.index_probe = self.probe
         app.state.peak_chat_hold = self.peak_chat_hold

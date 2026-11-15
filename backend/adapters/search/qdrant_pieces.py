@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from domain.chat.source import REPLY_SOURCE_LIMIT, Source
@@ -11,20 +12,29 @@ class QdrantPieces:
         self._qdrant = qdrant
         self._pieces = pieces
         self._last_failed: dict[UUID, int] = {}
+        self._interleave = None
+        self._write_lock = asyncio.Lock()
+
+    def arm_interleave(self, latch) -> None:
+        self._interleave = latch
 
     async def write(self, document_id: UUID, pieces: tuple[PlacedPiece, ...]) -> None:
         if not pieces:
             return
-        present = await self._qdrant.ordinals(document_id)
-        for ordinal, piece in enumerate(pieces):
-            if ordinal in present:
-                continue
-            try:
-                vectors = await self._embeddings.embed((piece.text,))
-                await self._qdrant.upsert(document_id, ((ordinal, piece),), vectors)
-            except StoreUnavailable:
-                self._last_failed[document_id] = ordinal
-                raise
+        await self._qdrant.ordinals(document_id)
+        if self._interleave is not None:
+            await self._interleave.after_read()
+        async with self._write_lock:
+            present = await self._qdrant.ordinals(document_id)
+            for ordinal, piece in enumerate(pieces):
+                if ordinal in present:
+                    continue
+                try:
+                    vectors = await self._embeddings.embed((piece.text,))
+                    await self._qdrant.upsert(document_id, ((ordinal, piece),), vectors)
+                except StoreUnavailable:
+                    self._last_failed[document_id] = ordinal
+                    raise
 
     async def ready(self, document_id: UUID) -> bool:
         expected = await self._expected(document_id)

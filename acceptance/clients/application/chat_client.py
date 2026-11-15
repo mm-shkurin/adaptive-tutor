@@ -54,6 +54,42 @@ class ChatClient:
         )
         return read_result(response)
 
+    def hang_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/hang",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def advance_on_match(self, token: str, offset_ms: int) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/search/advance-on-match",
+            headers=self._bearer(token),
+            json={"offset_ms": offset_ms},
+        )
+        return read_result(response)
+
+    def arm_vector_interleave(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/vectors/interleave",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def interleave_open(self, token: str, chat_id: str) -> HttpResult:
+        response = self.http.post(
+            f"/acceptance/chats/{chat_id}/interleave-open",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def write_empty_vectors(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/vectors/write-empty",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def vectors(self, token: str, document_id: str) -> HttpResult:
         response = self.http.get(
             f"/acceptance/documents/{document_id}/vectors",

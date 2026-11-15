@@ -82,8 +82,25 @@
 - [x] implementation (new key appends another person line)
 - [x] refactor (same pass as 6.6)
 
-### 6.8–6.11
-- [ ] latency budget / pin / interleaved opens / empty-document vector write
+### 6.8 A reply that misses the latency budget keeps one person line and no tutor line
+- [x] tests (acceptance; hang tutor cancelled by wait_for)
+- [x] implementation (SendMessage clock + CHAT_LATENCY 5s; acceptance 50ms)
+- [S] refactor (budget helpers already separate; no separate commit)
+
+### 6.9 The latency budget is pinned just before, at, and just after expiry
+- [x] tests (acceptance; clock advance on match)
+- [x] implementation (expire check before/after tutor)
+- [S] refactor (with 6.8)
+
+### 6.10 Two opens interleaved do not store a piece twice
+- [x] tests (acceptance; in-process gather + latch; ThreadPool hung the loop)
+- [x] implementation (latch after ordinals read; write lock; deterministic point ids)
+- [S] refactor (no separate commit)
+
+### 6.11 A vector write with no document leaves every neighbour untouched
+- [x] tests (acceptance)
+- [x] implementation (empty pieces short-circuit already; probe exercises it)
+- [S] refactor (no separate commit)
 
 ## Next
-- [ ] Tier 2 API 6.8–6.11; полный `/harvest` остальных Tier 2
+- [ ] полный `/harvest` остальных Tier 2

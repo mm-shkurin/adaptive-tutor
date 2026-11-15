@@ -126,7 +126,7 @@ def _context(settings: Settings) -> AppContext:
         create_chat=CreateChat(intake, chats, clock),
         list_chats=ListChats(chats),
         get_chat=GetChat(chats, pieces, vectors),
-        send_message=SendMessage(chats, vectors, RefusingTutor()),
+        send_message=SendMessage(chats, vectors, RefusingTutor(), clock),
     )
 
 
