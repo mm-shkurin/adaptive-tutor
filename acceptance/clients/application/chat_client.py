@@ -19,6 +19,34 @@ class ChatClient:
         response = self.http.get("/api/v1/chats", headers=self._bearer(token))
         return read_result(response)
 
+    def send(self, token: str, chat_id: str, text: str, model: str, mode: str, key: str) -> HttpResult:
+        response = self.http.post(
+            f"/api/v1/chats/{chat_id}/messages",
+            headers={**self._bearer(token), "Idempotency-Key": key},
+            json={"text": text, "model": model, "mode": mode},
+        )
+        return read_result(response)
+
+    def seed_search(self, token: str, document_id: str, pieces: tuple) -> HttpResult:
+        response = self.http.post(
+            f"/acceptance/documents/{document_id}/search-pieces",
+            headers=self._bearer(token),
+            json={"pieces": list(pieces)},
+        )
+        return read_result(response)
+
+    def script_tutor(self, token: str, text: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/script",
+            headers=self._bearer(token),
+            json={"text": text},
+        )
+        return read_result(response)
+
+    def tutor_calls(self, token: str) -> HttpResult:
+        response = self.http.get("/acceptance/tutor/calls", headers=self._bearer(token))
+        return read_result(response)
+
     def close(self) -> None:
         self.http.close()
 

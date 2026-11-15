@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from domain.chat.chat import Chat
+from usecase.chat.errors import ChatNotFound
 
 
 class MemoryChatStore:
@@ -15,3 +16,16 @@ class MemoryChatStore:
         owned = [row for row in self._rows if row[0] == owner_id]
         owned.sort(key=lambda row: (row[2], row[1].id), reverse=True)
         return tuple(row[1] for row in owned)
+
+    async def get(self, owner_id: UUID, chat_id: UUID) -> Chat | None:
+        for owner, chat, _created in self._rows:
+            if owner == owner_id and chat.id == chat_id:
+                return chat
+        return None
+
+    async def save(self, owner_id: UUID, chat: Chat) -> None:
+        for index, (owner, stored, created) in enumerate(self._rows):
+            if owner == owner_id and stored.id == chat.id:
+                self._rows[index] = (owner, chat, created)
+                return
+        raise ChatNotFound()

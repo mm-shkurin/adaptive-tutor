@@ -15,7 +15,11 @@
 - [x] implementation
 - [x] refactor (новые типы уже по одному понятию, короче лимита; отдельный коммит не нужен)
 
+### 4.1 A question is answered from this PDF with the model, the first page, and at most ten sources (01_API_Tests.md)
+- [x] tests (acceptance: посев поиска 404, затем 200)
+- [x] implementation (ответ профессора по кускам этого PDF, не больше 10; страница — старт первого. Сократический и Экзаменатор пока `invalid_mode`. `Idempotency-Key` обязателен, повтор попытки — сценарий 4.6. Боевой поиск пуст, пока нет векторов из 1.1, поэтому отправка без них — 409)
+- [ ] refactor
+
 ## Next
-- [ ] 4.1 A question is answered from this PDF with the model, the first page, and at most ten sources (01_API_Tests.md)
 - [ ] 1.1 A newly indexed PDF is answered from its vectors and the stored starting page (06_Integration_Tests.md)
 - [ ] UI 1.1 / 2.1 / 3.1 — фронтовая полоса

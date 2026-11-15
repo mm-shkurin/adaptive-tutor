@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
@@ -8,6 +8,8 @@ from adapters.http.auth import _bearer
 from domain.chat.chat import Chat
 from usecase.account.errors import Unauthorized
 from usecase.chat.errors import ChatNotFound
+from usecase.chat.outgoing import Outgoing
+from usecase.chat.send_message import Attempt
 
 router = APIRouter()
 
@@ -31,6 +33,19 @@ async def create_chat(body: CreateChatBody, request: Request):
     return JSONResponse(status_code=201, content=_chat(chat))
 
 
+@router.post("/{id}/messages")
+async def send_message(
+    id: UUID,
+    request: Request,
+    _idempotency_key: str = Header(min_length=1, max_length=255, alias="Idempotency-Key"),
+):
+    account = await _caller(request)
+    attempt = await request.app.state.ctx.send_message.send(
+        account.id, id, Outgoing.from_payload(await request.json())
+    )
+    return _attempt(attempt)
+
+
 async def _caller(request: Request):
     try:
         return await request.app.state.ctx.session.caller(_bearer(request))
@@ -44,6 +59,14 @@ def _summary(chat: Chat) -> dict:
         "document_id": str(chat.document_id),
         "document_name": chat.document_name,
         "preview": chat.preview(),
+    }
+
+
+def _attempt(attempt: Attempt) -> dict:
+    return {
+        "chat_id": str(attempt.chat_id),
+        "lines": [line.json() for line in attempt.lines],
+        "error": None,
     }
 
 

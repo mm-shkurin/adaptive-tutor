@@ -1,8 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, Integer, LargeBinary, String, Text, UniqueConstraint, Uuid
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, Uuid
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -114,3 +114,52 @@ class ChatRow(Base):
     owner_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     document_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    lines: Mapped[list["ChatLineRow"]] = relationship(
+        order_by="ChatLineRow.position",
+        cascade="all, delete-orphan",
+    )
+
+
+class ChatLineRow(Base):
+    __tablename__ = "chat_lines"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    chat_id: Mapped[UUID] = mapped_column(ForeignKey("chats.id"), index=True)
+    position: Mapped[int] = mapped_column(Integer)
+    role: Mapped[str] = mapped_column(String(16))
+    body: Mapped[str] = mapped_column(Text)
+    model: Mapped[str | None] = mapped_column(Text)
+    mode: Mapped[str | None] = mapped_column(String(32))
+    kind: Mapped[str | None] = mapped_column(String(16))
+    page: Mapped[int | None] = mapped_column(Integer)
+    sources: Mapped[list] = mapped_column(JSON)
+
+    def to_domain(self):
+        from domain.chat.line import Line
+        from domain.chat.source import Source
+
+        return Line(
+            id=self.id,
+            role=self.role,
+            text=self.body,
+            model=self.model,
+            mode=self.mode,
+            kind=self.kind,
+            page=self.page,
+            sources=tuple(Source(page=item["page"], text=item["text"]) for item in self.sources),
+        )
+
+    @staticmethod
+    def from_line(chat_id: UUID, position: int, line) -> "ChatLineRow":
+        return ChatLineRow(
+            id=line.id,
+            chat_id=chat_id,
+            position=position,
+            role=line.role,
+            body=line.text,
+            model=line.model,
+            mode=line.mode,
+            kind=line.kind,
+            page=line.page,
+            sources=[source.json() for source in line.sources],
+        )

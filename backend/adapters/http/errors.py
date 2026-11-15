@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse
 
 from domain.account.name import NameNotAllowed
 from domain.account.photo import PhotoNotAllowed, PhotoTooLarge
-from domain.chat.chat import DocumentNotReady
+from domain.chat.chat import DocumentNotReady, NotAskable
+from domain.chat.learning import EmptyQuestion, ModeNotListed, ModelNotListed
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
 from usecase.chat.errors import ChatNotFound
@@ -25,6 +26,10 @@ _CHAT_MISSING = {"code": "chat_not_found", "message": "Chat was not found"}
 _NOT_READY = {"code": "document_not_ready", "message": "Document is not ready"}
 _NO_READY = {"code": "no_ready_document", "message": "No ready document"}
 _CHAT_STORE = {"code": "unavailable", "message": "The chat store is unreachable"}
+_EMPTY = {"code": "empty_message", "message": "Message is empty"}
+_MODEL = {"code": "invalid_model", "message": "Model is not allowed"}
+_MODE = {"code": "invalid_mode", "message": "Mode is not allowed"}
+_NOT_ASKABLE = {"code": "not_askable", "message": "Material cannot be asked yet"}
 
 
 def register_errors(app: FastAPI) -> None:
@@ -34,6 +39,10 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(DocumentNotReady, _status(400, _NOT_READY))
     app.add_exception_handler(NoReadyDocument, _status(400, _NO_READY))
     app.add_exception_handler(ChatStoreUnavailable, _status(503, _CHAT_STORE))
+    app.add_exception_handler(EmptyQuestion, _status(400, _EMPTY))
+    app.add_exception_handler(ModelNotListed, _status(400, _MODEL))
+    app.add_exception_handler(ModeNotListed, _status(400, _MODE))
+    app.add_exception_handler(NotAskable, _status(409, _NOT_ASKABLE))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)
     app.add_exception_handler(RateUnavailable, _rate_refusal)

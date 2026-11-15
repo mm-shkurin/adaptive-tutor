@@ -16,8 +16,10 @@ from adapters.oauth.yandex import YandexOAuthProvider
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.persistence.account_store import PostgresAccountStore
 from adapters.pieceindex.piece_index import PostgresPieceIndex
+from adapters.search.unready_material_search import UnreadyMaterialSearch
 from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
+from adapters.tutor.refusing_tutor import RefusingTutor
 from adapters.tokens.jwt_tokens import JwtTokens
 from adapters.virus.clamav import ClamavVirusCheck
 from application.settings import Settings, load_settings
@@ -26,6 +28,7 @@ from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.list_chats import ListChats
+from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -52,6 +55,7 @@ class AppContext:
     status_hub: DocumentStatusHub
     create_chat: CreateChat
     list_chats: ListChats
+    send_message: SendMessage
     _indexing: asyncio.Event | None = None
 
     def schedule_indexing(self) -> None:
@@ -112,6 +116,7 @@ def _context(settings: Settings) -> AppContext:
         status_hub=hub,
         create_chat=CreateChat(intake, chats, clock),
         list_chats=ListChats(chats),
+        send_message=SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
     )
 
 

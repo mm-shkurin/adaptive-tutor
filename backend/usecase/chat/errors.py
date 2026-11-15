@@ -8,3 +8,7 @@ class NoReadyDocument(Exception):
 
 class StoreUnavailable(Exception):
     """The chat store could not answer."""
+
+
+class ReplyFailed(Exception):
+    """The model could not answer a material that already has vectors."""

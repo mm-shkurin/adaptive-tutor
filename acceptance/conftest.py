@@ -10,6 +10,7 @@ import pytest
 pytest.register_assert_rewrite(
     "statements.document_statements",
     "statements.chat_statements",
+    "statements.reply_statements",
 )
 
 from statements.chat_statements import ChatStatements

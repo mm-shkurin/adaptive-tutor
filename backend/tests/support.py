@@ -8,6 +8,8 @@ from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.chat_store import MemoryChatStore
+from adapters.search.unready_material_search import UnreadyMaterialSearch
+from adapters.tutor.refusing_tutor import RefusingTutor
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
@@ -24,6 +26,7 @@ from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.list_chats import ListChats
+from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -112,6 +115,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         hub,
         CreateChat(intake, chats, clock),
         ListChats(chats),
+        SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(client, store, clock, provider, rates)

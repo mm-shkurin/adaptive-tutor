@@ -4,13 +4,14 @@ from clients.application.chat_client import ChatClient
 from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.session_client import ScriptedProvider, SessionClient
+from statements.reply_statements import ReplyStatements
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 OLDER_PDF = "older.pdf"
 NEWER_PDF = "newer.pdf"
 
 
-class ChatStatements:
+class ChatStatements(ReplyStatements):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
@@ -71,14 +72,15 @@ class ChatStatements:
         self.documents.close()
         self.chats.close()
 
-    def _ready_pdf(self, name: str) -> str:
-        uploaded = self.documents.submit_pdf(self.token, name, self.lecture)
+    def _ready_pdf(self, name: str, token: str | None = None) -> str:
+        auth = self.token if token is None else token
+        uploaded = self.documents.submit_pdf(auth, name, self.lecture)
         assert uploaded.status_code == 201
         assert uploaded.body is not None
         document_id = uploaded.body["id"]
-        indexing = self.documents.move_indexing_status(self.token, document_id, "indexing")
+        indexing = self.documents.move_indexing_status(auth, document_id, "indexing")
         assert indexing.status_code == 200
-        ready = self.documents.move_indexing_status(self.token, document_id, "ready")
+        ready = self.documents.move_indexing_status(auth, document_id, "ready")
         assert ready.status_code == 200
         assert ready.body is not None
         assert ready.body["status"] == "ready"
