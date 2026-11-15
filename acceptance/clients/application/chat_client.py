@@ -61,6 +61,13 @@ class ChatClient:
         )
         return read_result(response)
 
+    def vector_failure(self, token: str, document_id: str) -> HttpResult:
+        response = self.http.get(
+            f"/acceptance/documents/{document_id}/vector-failure",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def tutor_calls(self, token: str) -> HttpResult:
         response = self.http.get("/acceptance/tutor/calls", headers=self._bearer(token))
         return read_result(response)

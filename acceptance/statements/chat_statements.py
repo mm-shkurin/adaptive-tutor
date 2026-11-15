@@ -6,6 +6,7 @@ from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.session_client import ScriptedProvider, SessionClient
 from statements.failed_reply_statements import FailedReplyStatements
+from statements.partial_vector_statements import PartialVectorStatements
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
 from statements.vector_open_statements import VectorOpenStatements
 from statements.vector_reuse_statements import VectorReuseStatements
@@ -16,7 +17,13 @@ NEWER_PDF = "newer.pdf"
 CONTAINED = "w0001"
 
 
-class ChatStatements(VectorOpenStatements, ReplyStatements, FailedReplyStatements, VectorReuseStatements):
+class ChatStatements(
+    VectorOpenStatements,
+    ReplyStatements,
+    FailedReplyStatements,
+    VectorReuseStatements,
+    PartialVectorStatements,
+):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)

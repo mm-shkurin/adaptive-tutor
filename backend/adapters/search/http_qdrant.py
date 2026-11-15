@@ -14,20 +14,51 @@ class HttpQdrant:
         self._api_key = api_key
         self._ensured = False
 
-    async def upsert(self, document_id: UUID, pieces: tuple[PlacedPiece, ...], vectors: tuple[tuple[float, ...], ...]) -> None:
+    async def upsert(
+        self,
+        document_id: UUID,
+        pieces: tuple[tuple[int, PlacedPiece], ...],
+        vectors: tuple[tuple[float, ...], ...],
+    ) -> None:
         await self._ensure()
         await self._ok(
             "PUT",
             f"/collections/{COLLECTION}/points?wait=true",
-            {"points": [_point(document_id, ordinal, piece, vector) for ordinal, (piece, vector) in enumerate(zip(pieces, vectors))]},
+            {
+                "points": [
+                    _point(document_id, ordinal, piece, vector)
+                    for (ordinal, piece), vector in zip(pieces, vectors)
+                ]
+            },
         )
 
     async def count(self, document_id: UUID) -> int:
         try:
-            body = await self._ok("POST", f"/collections/{COLLECTION}/points/count", {"exact": True, "filter": _filter(document_id)})
+            body = await self._ok(
+                "POST",
+                f"/collections/{COLLECTION}/points/count",
+                {"exact": True, "filter": _filter(document_id)},
+            )
         except StoreUnavailable:
             return 0
         return int(body["result"]["count"])
+
+    async def ordinals(self, document_id: UUID) -> frozenset[int]:
+        try:
+            body = await self._ok(
+                "POST",
+                f"/collections/{COLLECTION}/points/scroll",
+                {
+                    "filter": _filter(document_id),
+                    "limit": 10000,
+                    "with_payload": True,
+                    "with_vector": False,
+                },
+            )
+        except StoreUnavailable:
+            return frozenset()
+        points = body["result"]["points"]
+        return frozenset(int(point["payload"]["ordinal"]) for point in points)
 
     async def search(self, document_id: UUID, vector: tuple[float, ...], limit: int) -> list:
         body = await self._ok(

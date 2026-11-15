@@ -63,8 +63,9 @@
 - [S] covered by Integration 1.2 retry half
 
 ### 6.4 A vector run that stops midway does not store those pieces twice
-- [ ] tests
-- [ ] implementation
+- [x] tests (acceptance; sanity fail on upsert count including indexing writes)
+- [x] implementation (per-piece embed+upsert, skip present ordinals, ready=count==expected, last failed ordinal)
+- [S] refactor (write/ready already one concept each; files under limit; no separate commit)
 
 ### 6.5 Opening a PDF that already has vectors does not write them again
 - [x] tests (acceptance; sanity fail by disabling GetChat ready short-circuit)
@@ -85,4 +86,4 @@
 - [ ] latency budget / pin / interleaved opens / empty-document vector write
 
 ## Next
-- [ ] Tier 2 API 6.4, then 6.8–6.11; полный `/harvest` остальных Tier 2
+- [ ] Tier 2 API 6.8–6.11; полный `/harvest` остальных Tier 2

@@ -31,6 +31,7 @@ class ExternalFakes:
         self.models: list[str] = []
         self.upserts: list[str] = []
         self._embed_fail: str | None = None
+        self._embed_successes_left: int | None = None
         self._lock = threading.Lock()
         port = _free_port()
         self.base_url = f"http://127.0.0.1:{port}"
@@ -61,6 +62,12 @@ class ExternalFakes:
     def fail_embeddings(self, mode: str | None) -> None:
         with self._lock:
             self._embed_fail = mode
+            self._embed_successes_left = None
+
+    def fail_embeddings_after(self, successes: int) -> None:
+        with self._lock:
+            self._embed_fail = None
+            self._embed_successes_left = successes
 
     def clear_vectors(self, document_id: str) -> None:
         with self._lock:
@@ -98,6 +105,11 @@ def _app(fakes: ExternalFakes) -> FastAPI:
     async def embeddings(request: Request):
         with fakes._lock:
             failure = fakes._embed_fail
+            left = fakes._embed_successes_left
+            if left is not None and left <= 0:
+                failure = "returns a 5xx status"
+            elif left is not None:
+                fakes._embed_successes_left = left - 1
         if failure == "times out":
             await asyncio.sleep(1.0)
             return Response(status_code=200)
@@ -140,6 +152,18 @@ def _app(fakes: ExternalFakes) -> FastAPI:
         with fakes._lock:
             found = sum(1 for point in fakes.points.values() if point["payload"]["document_id"] == document_id)
         return {"result": {"count": found}, "status": "ok", "time": 0}
+
+    @app.post("/collections/{name}/points/scroll")
+    async def scroll(name: str, request: Request):
+        body = await request.json()
+        document_id = body["filter"]["must"][0]["match"]["value"]
+        with fakes._lock:
+            points = [
+                {"id": point_id, "payload": point["payload"]}
+                for point_id, point in fakes.points.items()
+                if point["payload"]["document_id"] == document_id
+            ]
+        return {"result": {"points": points, "next_page_offset": None}, "status": "ok", "time": 0}
 
     @app.post("/collections/{name}/points/search")
     async def search(name: str, request: Request):

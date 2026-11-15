@@ -114,6 +114,7 @@ class AcceptanceServer:
         vectors = QdrantPieces(
             HttpEmbeddings(self.fakes.embeddings_url, "", timeout=0.4),
             HttpQdrant(self.fakes.qdrant_url, ""),
+            pieces,
         )
         search = PreferSeededSearch(MemoryMaterialSearch(), vectors)
         tutor = ScriptedTutor()
@@ -186,6 +187,16 @@ class AcceptanceServer:
 
                 raise DocumentNotFound()
             return self.fakes.vectors_for(str(document_id))
+
+        @app.get("/acceptance/documents/{document_id}/vector-failure")
+        async def vector_failure(document_id: UUID, request: Request):
+            account = await document_caller(request)
+            row = self._intake.rows.get(document_id)
+            if row is None or row[0] != account.id:
+                from usecase.document.errors import DocumentNotFound
+
+                raise DocumentNotFound()
+            return {"ordinal": self._vectors.failed_ordinal(document_id)}
 
         @app.post("/acceptance/documents/{document_id}/move")
         async def move_indexing_status(

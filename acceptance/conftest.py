@@ -14,6 +14,7 @@ pytest.register_assert_rewrite(
     "statements.failed_reply_statements",
     "statements.vector_open_statements",
     "statements.vector_reuse_statements",
+    "statements.partial_vector_statements",
 )
 
 from statements.chat_statements import ChatStatements

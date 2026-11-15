@@ -97,6 +97,7 @@ def _context(settings: Settings) -> AppContext:
     vectors = QdrantPieces(
         HttpEmbeddings(settings.free_llm_api_url, settings.free_llm_api_key),
         HttpQdrant(settings.qdrant_url, settings.qdrant_api_key),
+        pieces,
     )
     return AppContext(
         config=RuntimeConfig(settings.state_ttl, settings.cors_origins),
