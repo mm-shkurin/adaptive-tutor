@@ -11,3 +11,10 @@
 **Where:** `acceptance/support/vector_fakes.py` (`clear_vectors`), `acceptance/statements/vector_open_statements.py`
 **Implication:** Open-time vector scenarios must clear post-index vectors; do not reuse the indexing embedding-refusal probe path.
 **From:** scenario 1.2 (1.2-a-vector-run-that-fails-leaves-the-document-ready-and-the-next-open-can-finish)
+
+## Quirk: production send still uses RefusingTutor
+
+**Quirk:** `application/context.py` wires `RefusingTutor` into `SendMessage`, so every non-acceptance send stores a person line with `reply_failed` and no tutor line.
+**Where:** `backend/application/context.py`, `adapters/tutor/refusing_tutor.py`
+**Implication:** Happy-path tutor answers need a real HTTP tutor adapter; until then failed-reply is the live path.
+**From:** scenario 6.6 (6.6-a-failed-reply-keeps-one-person-line)
