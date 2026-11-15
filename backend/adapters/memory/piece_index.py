@@ -11,7 +11,9 @@ class MemoryPieceIndex:
         self._probe = probe
         self.dead = False
 
-    async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None:
+    async def replace(
+        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+    ) -> None:
         if self.dead:
             raise StoreUnavailable()
         if self._probe is not None:
@@ -26,7 +28,7 @@ class MemoryPieceIndex:
         self.stored[document_id] = pieces
         self.extracted_text[document_id] = extracted
         if self._probe is not None:
-            self._probe.replace_pieces(str(document_id), pieces, extracted)
+            self._probe.replace_pieces(str(document_id), pieces, extracted, pages)
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
         if self.dead:

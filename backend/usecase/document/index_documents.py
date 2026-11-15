@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from domain.document.document import Document
 from domain.document.extracted_text import ExtractedText
+from domain.document.placed_text import PlacedPiece, place
 from usecase.document.errors import StoreUnavailable
 from usecase.document.indexing_budget import ATTEMPT_LIMIT, IndexingBudget, over_piece_cap
 from usecase.document.ports import DocumentIntake, FileStore, PdfReader, PieceIndex
@@ -17,11 +18,20 @@ class RetryIndex(Exception):
 
 
 class IndexDocuments:
-    def __init__(self, intake: DocumentIntake, files: FileStore, reader: PdfReader, pieces: PieceIndex, clock=None):
+    def __init__(
+        self,
+        intake: DocumentIntake,
+        files: FileStore,
+        reader: PdfReader,
+        pieces: PieceIndex,
+        clock=None,
+        vectors=None,
+    ):
         self.intake = intake
         self.files = files
         self.reader = reader
         self.pieces = pieces
+        self._vectors = vectors
         self._clock = clock or _WallClock()
         self._budget = IndexingBudget()
 
@@ -63,11 +73,12 @@ class IndexDocuments:
             await self._fail(document, "too many pieces")
             return
         parts = extracted.pieces()
+        pages = _starting_pages(read.spans, parts)
         if over_piece_cap(len(parts), extracted.value):
             await self._fail(document, "too many pieces")
             return
         try:
-            await self._store(document, parts, extracted.value)
+            await self._store(document, parts, extracted.value, pages)
         except RetryIndex:
             await self._retry(document)
             return
@@ -125,14 +136,28 @@ class IndexDocuments:
     async def _refusal(self, document: Document, read) -> str | None:
         return None
 
-    async def _store(self, document: Document, parts: tuple[str, ...], extracted: str) -> None:
+    async def _store(
+        self, document: Document, parts: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+    ) -> None:
         existing = await self.pieces.pieces(document.id)
         if existing:
             return
-        await self.pieces.replace(document.id, parts, extracted)
+        await self.pieces.replace(document.id, parts, extracted, pages)
+        if self._vectors is None or not parts:
+            return
+        await self._vectors.write(document.id, tuple(PlacedPiece(text, pages[index]) for index, text in enumerate(parts)))
 
     async def _hold_ready(self, document: Document) -> bool:
         return False
+
+
+def _starting_pages(spans, parts: tuple[str, ...]) -> tuple[int | None, ...]:
+    if not spans:
+        return tuple(None for _ in parts)
+    placed = place(spans)
+    if len(placed) != len(parts):
+        return tuple(None for _ in parts)
+    return tuple(piece.page for piece in placed)
 
 
 class _WallClock:

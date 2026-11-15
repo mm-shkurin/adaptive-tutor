@@ -11,7 +11,9 @@ class ProbePieceIndex:
         self.extracted_text: dict[UUID, str] = {}
         self.dead = False
 
-    async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None:
+    async def replace(
+        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+    ) -> None:
         if self.dead:
             raise StoreUnavailable()
         delay = self._probe.search_store_call_delay_seconds()
@@ -25,7 +27,7 @@ class ProbePieceIndex:
             raise StoreUnavailable()
         self.stored[document_id] = pieces
         self.extracted_text[document_id] = extracted
-        self._probe.replace_pieces(str(document_id), pieces, extracted)
+        self._probe.replace_pieces(str(document_id), pieces, extracted, pages)
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
         if self.dead:

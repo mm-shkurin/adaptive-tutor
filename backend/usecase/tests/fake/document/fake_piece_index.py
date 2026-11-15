@@ -8,6 +8,7 @@ _EXTERNAL_CALL_DEADLINE_SECONDS = 0.12
 class FakePieceIndex:
     def __init__(self):
         self.stored: dict[UUID, tuple[str, ...]] = {}
+        self.pages: dict[UUID, tuple[int | None, ...]] = {}
         self.extracted_text: dict[UUID, str] = {}
         self._replace_counts: dict[UUID, int] = {}
         self.outcome: str | None = None
@@ -29,7 +30,9 @@ class FakePieceIndex:
         self._call_delay = self._deadline + 0.02
         self.outcome = "times out"
 
-    async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None:
+    async def replace(
+        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+    ) -> None:
         delay = 0.0 if self._call_delay is None else self._call_delay
         if delay >= self._deadline:
             raise StoreUnavailable()
@@ -37,6 +40,7 @@ class FakePieceIndex:
             raise StoreUnavailable()
         self._replace_counts[document_id] = self._replace_counts.get(document_id, 0) + 1
         self.stored[document_id] = pieces
+        self.pages[document_id] = pages
         self.extracted_text[document_id] = extracted
 
     def replace_count(self, document_id: UUID) -> int:

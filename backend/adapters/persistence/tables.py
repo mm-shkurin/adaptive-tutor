@@ -98,6 +98,7 @@ class DocumentPieceRow(Base):
     document_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
     body: Mapped[str] = mapped_column(Text)
+    page: Mapped[int | None] = mapped_column(Integer)
 
 
 class DocumentExtractionRow(Base):

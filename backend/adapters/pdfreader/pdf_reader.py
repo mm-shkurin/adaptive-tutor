@@ -3,6 +3,7 @@ import unicodedata
 
 import pymupdf
 
+from domain.document.placed_text import TextSpan
 from usecase.document.ports import PdfRead, PdfReader
 
 
@@ -22,14 +23,22 @@ def _parse_pdf(content: bytes) -> PdfRead:
 def _read_document(document) -> PdfRead:
     paragraphs: list[str] = []
     tables: list[str] = []
+    paragraph_spans: list[TextSpan] = []
+    table_spans: list[TextSpan] = []
     for page in document:
-        paragraphs.extend(_paragraphs_outside_tables(page))
-        tables.extend(_markdown_tables(page))
+        number = page.number + 1
+        page_paragraphs = _paragraphs_outside_tables(page)
+        paragraphs.extend(page_paragraphs)
+        paragraph_spans.extend(TextSpan(number, paragraph) for paragraph in page_paragraphs)
+        page_tables = _markdown_tables(page)
+        tables.extend(page_tables)
+        table_spans.extend(TextSpan(number, table) for table in page_tables)
     body = unicodedata.normalize("NFC", "\n\n".join(paragraphs + tables))
     if tables:
         body = f"{body}\n"
     table = "".join(f"{piece}\n" for piece in tables)
-    return PdfRead(body, table, document.page_count)
+    spans = tuple(TextSpan(span.page, unicodedata.normalize("NFC", span.text)) for span in paragraph_spans + table_spans)
+    return PdfRead(body, table, document.page_count, spans)
 
 
 def _paragraphs_outside_tables(page) -> list[str]:

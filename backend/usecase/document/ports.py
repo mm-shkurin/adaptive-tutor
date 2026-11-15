@@ -3,6 +3,7 @@ from typing import Protocol
 from uuid import UUID
 
 from domain.document.document import Document
+from domain.document.placed_text import TextSpan
 
 
 @dataclass(frozen=True)
@@ -10,6 +11,7 @@ class PdfRead:
     text: str
     table: str
     page_count: int
+    spans: tuple[TextSpan, ...] = ()
 
 
 class DocumentIntake(Protocol):
@@ -43,7 +45,13 @@ class PdfReader(Protocol):
 
 
 class PieceIndex(Protocol):
-    async def replace(self, document_id: UUID, pieces: tuple[str, ...], extracted: str) -> None: ...
+    async def replace(
+        self,
+        document_id: UUID,
+        pieces: tuple[str, ...],
+        extracted: str,
+        pages: tuple[int | None, ...] = (),
+    ) -> None: ...
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]: ...
 

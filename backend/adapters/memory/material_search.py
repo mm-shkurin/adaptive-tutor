@@ -12,6 +12,9 @@ class MemoryMaterialSearch:
         self._pieces[document_id] = pieces
         self._ready.add(document_id)
 
+    def has(self, document_id: UUID) -> bool:
+        return document_id in self._ready
+
     async def ready(self, document_id: UUID) -> bool:
         return document_id in self._ready
 

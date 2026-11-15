@@ -28,7 +28,7 @@ def startup():
 def chats():
     server = AcceptanceServer()
     server.start()
-    statements = ChatStatements(server.base_url, server.provider, server.clock)
+    statements = ChatStatements(server.base_url, server.provider, server.clock, server.probe)
     try:
         yield statements
     finally:

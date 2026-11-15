@@ -2,8 +2,8 @@ from usecase.document.index_documents import PAUSE, RETRY, IndexDocuments, Retry
 
 
 class ProbeIndexDocuments(IndexDocuments):
-    def __init__(self, intake, files, reader, pieces, probe, clock=None):
-        super().__init__(intake, files, reader, pieces, clock)
+    def __init__(self, intake, files, reader, pieces, probe, clock=None, vectors=None):
+        super().__init__(intake, files, reader, pieces, clock, vectors)
         self._probe = probe
         self._failed_once: set[str] = set()
 
@@ -35,12 +35,12 @@ class ProbeIndexDocuments(IndexDocuments):
             return f"{markup}\n|Topic|Mark|\n|---|---|\n|Limits|91|"
         return "table"
 
-    async def _store(self, document, parts, extracted) -> None:
+    async def _store(self, document, parts, extracted, pages=()) -> None:
         document_id = str(document.id)
         if self._probe.search_store_should_fail_once() and document_id not in self._failed_once:
             self._failed_once.add(document_id)
             raise RetryIndex()
-        await super()._store(document, parts, extracted)
+        await super()._store(document, parts, extracted, pages)
 
     async def _hold_ready(self, document) -> bool:
         return self._probe.consume_fail_ready_after_pieces()

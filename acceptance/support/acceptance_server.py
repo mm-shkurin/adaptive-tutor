@@ -14,7 +14,11 @@ from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.chat_store import MemoryChatStore
+from adapters.embeddings.http_embeddings import HttpEmbeddings
 from adapters.memory.material_search import MemoryMaterialSearch
+from adapters.search.http_qdrant import HttpQdrant
+from adapters.search.prefer_seeded_search import PreferSeededSearch
+from adapters.search.qdrant_pieces import QdrantPieces
 from adapters.memory.scripted_tutor import ScriptedTutor
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
@@ -36,6 +40,7 @@ from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
 from support.chat_probe import register_chat_probe
+from support.vector_fakes import ExternalFakes
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.send_message import SendMessage
@@ -77,6 +82,8 @@ class AcceptanceServer:
         self.clock = _Clock()
         self.rates = MemoryUploadRateLimit(self.clock)
         self.logs = LogCapture()
+        self.fakes = ExternalFakes()
+        self.fakes.start()
         port = _free_port()
         self.base_url = f"http://127.0.0.1:{port}"
         self._indexing = asyncio.Event()
@@ -103,7 +110,11 @@ class AcceptanceServer:
         self._pieces = pieces
         reader = ProbeGatedPdfReader(PyPdfReader(), self.probe)
         chats = MemoryChatStore()
-        search = MemoryMaterialSearch()
+        vectors = QdrantPieces(
+            HttpEmbeddings(self.fakes.embeddings_url, ""),
+            HttpQdrant(self.fakes.qdrant_url, ""),
+        )
+        search = PreferSeededSearch(MemoryMaterialSearch(), vectors)
         tutor = ScriptedTutor()
         self._search = search
         self._tutor = tutor
@@ -116,7 +127,7 @@ class AcceptanceServer:
             SubmitDocument(intake, self.rates, ProbeVirusCheck(self.probe)),
             ReadDocument(intake),
             ListDocuments(intake),
-            ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock),
+            ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock, vectors),
             hub,
             CreateChat(intake, chats, self.clock),
             ListChats(chats),
@@ -162,6 +173,16 @@ class AcceptanceServer:
             account = await document_caller(request)
             found = await search.pieces_for(account.id, document_id)
             return {"pieces": list(found)}
+
+        @app.get("/acceptance/documents/{document_id}/vectors")
+        async def stored_vectors(document_id: UUID, request: Request):
+            account = await document_caller(request)
+            row = self._intake.rows.get(document_id)
+            if row is None or row[0] != account.id:
+                from usecase.document.errors import DocumentNotFound
+
+                raise DocumentNotFound()
+            return self.fakes.vectors_for(str(document_id))
 
         @app.post("/acceptance/documents/{document_id}/move")
         async def move_indexing_status(
@@ -246,6 +267,7 @@ class AcceptanceServer:
     def stop(self) -> None:
         self._server.should_exit = True
         self._thread.join(timeout=5)
+        self.fakes.stop()
         self.logs.detach()
 
     def _run_on_loop(self, coro):

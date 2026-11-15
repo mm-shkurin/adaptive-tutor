@@ -13,10 +13,12 @@ from adapters.filestore.file_store import PostgresFileStore
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.oauth.fake import FakeOAuthProvider
 from adapters.oauth.yandex import YandexOAuthProvider
+from adapters.embeddings.http_embeddings import HttpEmbeddings
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.persistence.account_store import PostgresAccountStore
 from adapters.pieceindex.piece_index import PostgresPieceIndex
-from adapters.search.unready_material_search import UnreadyMaterialSearch
+from adapters.search.http_qdrant import HttpQdrant
+from adapters.search.qdrant_pieces import QdrantPieces
 from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
 from adapters.tutor.refusing_tutor import RefusingTutor
@@ -90,6 +92,10 @@ def _context(settings: Settings) -> AppContext:
     reader = PyPdfReader()
     clock = _WallClock()
     chats = PostgresChatStore(sessions)
+    vectors = QdrantPieces(
+        HttpEmbeddings(settings.free_llm_api_url, settings.free_llm_api_key),
+        HttpQdrant(settings.qdrant_url, settings.qdrant_api_key),
+    )
     return AppContext(
         config=RuntimeConfig(settings.state_ttl, settings.cors_origins),
         sign_in=SignIn(
@@ -112,11 +118,11 @@ def _context(settings: Settings) -> AppContext:
         ),
         read_document=ReadDocument(intake),
         list_documents=ListDocuments(intake),
-        index_documents=IndexDocuments(intake, files, reader, pieces),
+        index_documents=IndexDocuments(intake, files, reader, pieces, vectors=vectors),
         status_hub=hub,
         create_chat=CreateChat(intake, chats, clock),
         list_chats=ListChats(chats),
-        send_message=SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
+        send_message=SendMessage(chats, vectors, RefusingTutor()),
     )
 
 

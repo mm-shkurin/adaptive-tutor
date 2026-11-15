@@ -28,6 +28,10 @@ class Settings:
     yandex_info_url: str
     clamav_host: str
     clamav_port: int
+    qdrant_url: str
+    qdrant_api_key: str
+    free_llm_api_url: str
+    free_llm_api_key: str
 
 
 def load_settings(env) -> Settings:
@@ -38,7 +42,8 @@ def load_settings(env) -> Settings:
     client_secret = _text(env, "YANDEX_CLIENT_SECRET")
     if provider == "yandex" and (not client_id or not client_secret):
         raise StartupError("Yandex client settings are unset")
-    if not _text(env, "QDRANT_URL"):
+    qdrant_url = _text(env, "QDRANT_URL")
+    if not qdrant_url:
         raise StartupError("Qdrant settings are unset")
     clamav_host = _text(env, "CLAMAV_HOST")
     if not clamav_host:
@@ -64,6 +69,10 @@ def load_settings(env) -> Settings:
         yandex_info_url=_text(env, "YANDEX_INFO_URL", "https://login.yandex.ru/info"),
         clamav_host=clamav_host,
         clamav_port=_int(env, "CLAMAV_PORT", 3310),
+        qdrant_url=qdrant_url,
+        qdrant_api_key=_text(env, "QDRANT_API_KEY"),
+        free_llm_api_url=_text(env, "FREE_LLM_API_URL", "http://localhost:3001/v1"),
+        free_llm_api_key=_text(env, "FREE_LLM_API_KEY"),
     )
 
 

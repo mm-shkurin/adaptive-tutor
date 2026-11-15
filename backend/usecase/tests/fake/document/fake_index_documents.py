@@ -73,11 +73,11 @@ class FakeIndexDocuments(IndexDocuments):
             return f"{markup}\n|Topic|Mark|\n|---|---|\n|Limits|91|"
         return "table"
 
-    async def _store(self, document, parts, extracted) -> None:
+    async def _store(self, document, parts, extracted, pages=()) -> None:
         if self._search_store_fail_once and document.id not in self._failed_once:
             self._failed_once.add(document.id)
             raise RetryIndex()
-        await super()._store(document, parts, extracted)
+        await super()._store(document, parts, extracted, pages)
 
     async def _hold_ready(self, document) -> bool:
         if not self._fail_ready_after_pieces_once:

@@ -1,22 +1,25 @@
+import time
 from pathlib import Path
 
 from clients.application.chat_client import ChatClient
 from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.session_client import ScriptedProvider, SessionClient
-from statements.reply_statements import ReplyStatements
+from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 OLDER_PDF = "older.pdf"
 NEWER_PDF = "newer.pdf"
+CONTAINED = "w0001"
 
 
 class ChatStatements(ReplyStatements):
-    def __init__(self, base_url: str, provider: ScriptedProvider, clock):
+    def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
         self.chats = ChatClient(base_url)
         self.clock = clock
+        self.probe = probe
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.token = ""
         self.older_id = ""
@@ -67,6 +70,70 @@ class ChatStatements(ReplyStatements):
             ]
         }
 
+    def and_a_new_pdf_that_finishes_indexing(self) -> None:
+        uploaded = self.documents.submit_pdf(self.token, LECTURE, self.lecture)
+        assert uploaded.status_code == 201
+        assert uploaded.body is not None
+        self.document_id = uploaded.body["id"]
+        opened = self.sessions.open_account("neil@example.test", "Neil")
+        assert opened.status_code == 200
+        assert opened.body is not None
+        neighbour = self.documents.submit_pdf(
+            opened.body["access_token"],
+            "neighbour.pdf",
+            (FIXTURES / "neighbour.pdf").read_bytes(),
+        )
+        assert neighbour.status_code == 201
+        assert neighbour.body is not None
+        self.neighbour_id = neighbour.body["id"]
+        self.probe.release_indexing()
+        finished = self._until_terminal(self.token, self.document_id)
+        neighbour_finished = self._until_terminal(opened.body["access_token"], self.neighbour_id)
+        assert finished.body["status"] == "ready"
+        assert neighbour_finished.body["status"] == "ready"
+        assert self.probe.file_for(self.document_id) is None
+        self.stored_pieces = self.probe.pieces_for(self.document_id)
+        self.stored_pages = self.probe.pages_for(self.document_id)
+        self.neighbour_pieces = self.probe.pieces_for(self.neighbour_id)
+
+    def when_the_person_asks_a_question_that_the_pdf_contains(self) -> None:
+        self.created = self.chats.create(self.token, self.document_id)
+        assert self.created.status_code == 201
+        assert self.created.body is not None
+        self.chat_id = self.created.body["id"]
+        scripted = self.chats.script_tutor(self.token, SCRIPT)
+        assert scripted.status_code == 204
+        self.sent = self.chats.send(self.token, self.chat_id, CONTAINED, MODEL, "professor", "attempt-indexed")
+
+    def then_the_vectors_are_384_dimensional(self) -> None:
+        found = self.chats.vectors(self.token, self.document_id)
+        assert found.status_code == 200
+        assert found.body == {
+            "model": "all-MiniLM-L6-v2",
+            "dimensions": [384] * len(self.stored_pieces),
+            "pages": list(self.stored_pages),
+            "texts": list(self.stored_pieces),
+        }
+        assert found.body["dimensions"]
+        assert set(found.body["dimensions"]) == {384}
+
+    def then_the_reply_uses_only_pieces_of_this_pdf(self) -> None:
+        sources = self._sent().body["lines"][1]["sources"]
+        texts = [source["text"] for source in sources]
+        assert texts
+        assert set(texts) <= set(self.stored_pieces)
+        assert self.neighbour_pieces
+        assert not set(texts) & set(self.neighbour_pieces)
+
+    def then_the_page_is_the_starting_page_stored_while_the_file_was_in_hand(self) -> None:
+        tutor = self._sent().body["lines"][1]
+        first = tutor["sources"][0]
+        stored = self.stored_pages[self.stored_pieces.index(first["text"])]
+        assert self.probe.file_for(self.document_id) is None
+        assert isinstance(stored, int) and stored >= 1
+        assert tutor["page"] == stored
+        assert first["page"] == stored
+
     def close(self) -> None:
         self.sessions.close()
         self.documents.close()
@@ -86,6 +153,17 @@ class ChatStatements(ReplyStatements):
         assert ready.body["status"] == "ready"
         assert ready.body["name"] == name
         return document_id
+
+    def _until_terminal(self, token: str, document_id: str):
+        deadline = time.monotonic() + 30
+        seen = None
+        while time.monotonic() <= deadline:
+            seen = self.documents.read(token, document_id)
+            if seen.status_code == 200 and seen.body is not None and seen.body["status"] in {"ready", "failed"}:
+                return seen
+            time.sleep(0.05)
+        assert seen is not None
+        return seen
 
     def _created(self) -> HttpResult:
         assert self.created is not None
