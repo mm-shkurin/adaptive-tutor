@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from domain.document.placed_text import PlacedPiece
 from usecase.document.errors import StoreUnavailable
 
 _EXTERNAL_CALL_DEADLINE_SECONDS = 0.12
@@ -48,6 +49,13 @@ class FakePieceIndex:
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
         return self.stored.get(document_id, ())
+
+    async def placed(self, document_id: UUID) -> tuple[PlacedPiece, ...]:
+        texts = self.stored.get(document_id, ())
+        pages = self.pages.get(document_id, ())
+        return tuple(
+            PlacedPiece(text, pages[index] if index < len(pages) else None) for index, text in enumerate(texts)
+        )
 
     async def extracted(self, document_id: UUID) -> str:
         return self.extracted_text.get(document_id, "")

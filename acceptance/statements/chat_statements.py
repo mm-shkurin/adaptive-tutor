@@ -6,6 +6,7 @@ from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.session_client import ScriptedProvider, SessionClient
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
+from statements.vector_open_statements import VectorOpenStatements
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 OLDER_PDF = "older.pdf"
@@ -13,19 +14,22 @@ NEWER_PDF = "newer.pdf"
 CONTAINED = "w0001"
 
 
-class ChatStatements(ReplyStatements):
-    def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None):
+class ChatStatements(VectorOpenStatements, ReplyStatements):
+    def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
         self.chats = ChatClient(base_url)
         self.clock = clock
         self.probe = probe
+        self.fakes = fakes
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.token = ""
         self.older_id = ""
         self.newer_id = ""
         self.created: HttpResult | None = None
+        self.opened: HttpResult | None = None
         self.listed: HttpResult | None = None
+        self.piece_writes_before = 0
 
     def given_a_signed_in_person(self) -> None:
         opened = self.sessions.open_account("ada@example.test", "Ada")

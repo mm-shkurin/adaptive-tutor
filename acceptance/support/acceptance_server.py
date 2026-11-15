@@ -42,6 +42,7 @@ from usecase.account.sign_in import SignIn
 from support.chat_probe import register_chat_probe
 from support.vector_fakes import ExternalFakes
 from usecase.chat.create_chat import CreateChat
+from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.send_message import SendMessage
 from clients.application.probe_index_documents import ProbeIndexDocuments
@@ -111,12 +112,13 @@ class AcceptanceServer:
         reader = ProbeGatedPdfReader(PyPdfReader(), self.probe)
         chats = MemoryChatStore()
         vectors = QdrantPieces(
-            HttpEmbeddings(self.fakes.embeddings_url, ""),
+            HttpEmbeddings(self.fakes.embeddings_url, "", timeout=0.4),
             HttpQdrant(self.fakes.qdrant_url, ""),
         )
         search = PreferSeededSearch(MemoryMaterialSearch(), vectors)
         tutor = ScriptedTutor()
         self._search = search
+        self._vectors = vectors
         self._tutor = tutor
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
@@ -131,6 +133,7 @@ class AcceptanceServer:
             hub,
             CreateChat(intake, chats, self.clock),
             ListChats(chats),
+            GetChat(chats, pieces, vectors),
             SendMessage(chats, search, tutor),
             self._indexing,
         )

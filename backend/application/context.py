@@ -29,6 +29,7 @@ from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
+from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
@@ -57,6 +58,7 @@ class AppContext:
     status_hub: DocumentStatusHub
     create_chat: CreateChat
     list_chats: ListChats
+    get_chat: GetChat
     send_message: SendMessage
     _indexing: asyncio.Event | None = None
 
@@ -122,6 +124,7 @@ def _context(settings: Settings) -> AppContext:
         status_hub=hub,
         create_chat=CreateChat(intake, chats, clock),
         list_chats=ListChats(chats),
+        get_chat=GetChat(chats, pieces, vectors),
         send_message=SendMessage(chats, vectors, RefusingTutor()),
     )
 

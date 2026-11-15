@@ -4,6 +4,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, OperationalError
 
 from adapters.persistence.tables import DocumentExtractionRow, DocumentPieceRow
+from domain.document.placed_text import PlacedPiece
 from usecase.document.ports import PieceIndex
 
 
@@ -27,13 +28,16 @@ class PostgresPieceIndex(PieceIndex):
         await self._run(work)
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
+        return tuple(piece.text for piece in await self.placed(document_id))
+
+    async def placed(self, document_id: UUID) -> tuple[PlacedPiece, ...]:
         async def work(session):
             rows = await session.scalars(
                 select(DocumentPieceRow)
                 .where(DocumentPieceRow.document_id == document_id)
                 .order_by(DocumentPieceRow.ordinal)
             )
-            return tuple(row.body for row in rows)
+            return tuple(PlacedPiece(row.body, row.page) for row in rows)
 
         return await self._run(work)
 

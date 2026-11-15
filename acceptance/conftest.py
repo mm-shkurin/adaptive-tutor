@@ -11,6 +11,7 @@ pytest.register_assert_rewrite(
     "statements.document_statements",
     "statements.chat_statements",
     "statements.reply_statements",
+    "statements.vector_open_statements",
 )
 
 from statements.chat_statements import ChatStatements
@@ -28,7 +29,9 @@ def startup():
 def chats():
     server = AcceptanceServer()
     server.start()
-    statements = ChatStatements(server.base_url, server.provider, server.clock, server.probe)
+    statements = ChatStatements(
+        server.base_url, server.provider, server.clock, server.probe, server.fakes
+    )
     try:
         yield statements
     finally:

@@ -3,7 +3,7 @@ from typing import Protocol
 from uuid import UUID
 
 from domain.document.document import Document
-from domain.document.placed_text import TextSpan
+from domain.document.placed_text import PlacedPiece, TextSpan
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,8 @@ class PieceIndex(Protocol):
     ) -> None: ...
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]: ...
+
+    async def placed(self, document_id: UUID) -> tuple[PlacedPiece, ...]: ...
 
     async def extracted(self, document_id: UUID) -> str: ...
 

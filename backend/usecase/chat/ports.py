@@ -4,6 +4,7 @@ from uuid import UUID
 
 from domain.chat.chat import Chat
 from domain.chat.source import Source
+from domain.document.placed_text import PlacedPiece
 
 
 class ChatStore(Protocol):
@@ -20,6 +21,12 @@ class MaterialSearch(Protocol):
     async def ready(self, document_id: UUID) -> bool: ...
 
     async def matching(self, document_id: UUID, question: str) -> tuple[Source, ...]: ...
+
+
+class DocumentVectors(Protocol):
+    async def ready(self, document_id: UUID) -> bool: ...
+
+    async def write(self, document_id: UUID, pieces: tuple[PlacedPiece, ...]) -> None: ...
 
 
 class Tutor(Protocol):

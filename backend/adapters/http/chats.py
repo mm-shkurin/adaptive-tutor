@@ -33,6 +33,12 @@ async def create_chat(body: CreateChatBody, request: Request):
     return JSONResponse(status_code=201, content=_chat(chat))
 
 
+@router.get("/{id}")
+async def get_chat(id: UUID, request: Request):
+    account = await _caller(request)
+    return _chat(await request.app.state.ctx.get_chat.open(account.id, id))
+
+
 @router.post("/{id}/messages")
 async def send_message(
     id: UUID,
@@ -77,5 +83,5 @@ def _chat(chat: Chat) -> dict:
         "document_name": chat.document_name,
         "askable": chat.askable(),
         "notice": chat.notice(),
-        "lines": list(chat.lines),
+        "lines": [line.json() for line in chat.lines],
     }

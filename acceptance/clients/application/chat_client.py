@@ -15,6 +15,10 @@ class ChatClient:
         )
         return read_result(response)
 
+    def get(self, token: str, chat_id: str) -> HttpResult:
+        response = self.http.get(f"/api/v1/chats/{chat_id}", headers=self._bearer(token))
+        return read_result(response)
+
     def list(self, token: str) -> HttpResult:
         response = self.http.get("/api/v1/chats", headers=self._bearer(token))
         return read_result(response)

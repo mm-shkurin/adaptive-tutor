@@ -1,6 +1,7 @@
 import asyncio
 from uuid import UUID
 
+from domain.document.placed_text import PlacedPiece
 from usecase.document.errors import StoreUnavailable
 
 
@@ -8,6 +9,7 @@ class ProbePieceIndex:
     def __init__(self, probe):
         self._probe = probe
         self.stored: dict[UUID, tuple[str, ...]] = {}
+        self.pages: dict[UUID, tuple[int | None, ...]] = {}
         self.extracted_text: dict[UUID, str] = {}
         self.dead = False
 
@@ -26,6 +28,7 @@ class ProbePieceIndex:
         if outcome in {"refuses", "answers unreadable", "times out"}:
             raise StoreUnavailable()
         self.stored[document_id] = pieces
+        self.pages[document_id] = pages
         self.extracted_text[document_id] = extracted
         self._probe.replace_pieces(str(document_id), pieces, extracted, pages)
 
@@ -33,6 +36,15 @@ class ProbePieceIndex:
         if self.dead:
             raise StoreUnavailable()
         return self.stored.get(document_id, ())
+
+    async def placed(self, document_id: UUID) -> tuple[PlacedPiece, ...]:
+        if self.dead:
+            raise StoreUnavailable()
+        texts = self.stored.get(document_id, ())
+        pages = self.pages.get(document_id, ())
+        return tuple(
+            PlacedPiece(text, pages[index] if index < len(pages) else None) for index, text in enumerate(texts)
+        )
 
     async def extracted(self, document_id: UUID) -> str:
         if self.dead:

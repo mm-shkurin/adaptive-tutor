@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import math
 import socket
@@ -7,7 +8,7 @@ import time
 import httpx
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 DIMENSION = 384
 MODEL = "all-MiniLM-L6-v2"
@@ -28,6 +29,7 @@ class ExternalFakes:
     def __init__(self):
         self.points: dict[str, dict] = {}
         self.models: list[str] = []
+        self._embed_fail: str | None = None
         self._lock = threading.Lock()
         port = _free_port()
         self.base_url = f"http://127.0.0.1:{port}"
@@ -55,6 +57,18 @@ class ExternalFakes:
         self._server.should_exit = True
         self._thread.join(timeout=5)
 
+    def fail_embeddings(self, mode: str | None) -> None:
+        with self._lock:
+            self._embed_fail = mode
+
+    def clear_vectors(self, document_id: str) -> None:
+        with self._lock:
+            self.points = {
+                key: point
+                for key, point in self.points.items()
+                if point["payload"]["document_id"] != document_id
+            }
+
     def vectors_for(self, document_id: str) -> dict:
         with self._lock:
             points = [point for point in self.points.values() if point["payload"]["document_id"] == document_id]
@@ -77,6 +91,17 @@ def _app(fakes: ExternalFakes) -> FastAPI:
 
     @app.post("/v1/embeddings")
     async def embeddings(request: Request):
+        with fakes._lock:
+            failure = fakes._embed_fail
+        if failure == "times out":
+            await asyncio.sleep(1.0)
+            return Response(status_code=200)
+        if failure == "returns a 4xx status":
+            return JSONResponse(status_code=400, content={"error": "bad request"})
+        if failure == "returns a 5xx status":
+            return JSONResponse(status_code=500, content={"error": "server"})
+        if failure == "returns a malformed body":
+            return JSONResponse(status_code=200, content={"object": "list", "data": [{"index": 0}]})
         body = await request.json()
         if body.get("model") != MODEL:
             return JSONResponse(status_code=400, content={"error": "model"})

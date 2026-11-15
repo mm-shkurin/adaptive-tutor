@@ -25,6 +25,7 @@ from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
+from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
@@ -115,6 +116,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         hub,
         CreateChat(intake, chats, clock),
         ListChats(chats),
+        GetChat(chats, pieces, UnreadyMaterialSearch()),
         SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)

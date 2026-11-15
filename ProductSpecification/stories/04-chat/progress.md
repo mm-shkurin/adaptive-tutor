@@ -25,6 +25,11 @@
 - [x] implementation (индексация пишет страницу куска и 384-вектор all-MiniLM-L6-v2 в фейк Qdrant до удаления файла; ответ берёт только куски этого PDF)
 - [x] refactor (типы по одному понятию, файлы короче лимита; правок нет, отдельный рефактор кода не нужен)
 
+### 1.2 A vector run that fails leaves the document ready and the next open can finish (06_Integration_Tests.md)
+- [x] tests (acceptance: timeout / 4xx / 5xx / malformed → not askable; повторный open после успеха → askable)
+- [x] implementation (`GET /api/v1/chats/{id}` векторизует сохранённые куски; сбой эмбеддинга оставляет ready и notice; следующий open дописывает векторы без повторной записи кусков)
+- [x] refactor (DocumentVectors в ports; GetChat короче лимита; отдельный рефактор-коммит не нужен)
+
 ## Next
-- [ ] 1.2 A vector run that fails leaves the document ready and the next open can finish (06_Integration_Tests.md)
 - [ ] UI 1.1 / 2.1 / 3.1 — фронтовая полоса
+- [ ] Tier 2 API 6.x остаток / `/harvest` после закрытия UI Tier 1
