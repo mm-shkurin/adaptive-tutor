@@ -4,8 +4,12 @@ from fastapi.responses import JSONResponse
 
 from domain.account.name import NameNotAllowed
 from domain.account.photo import PhotoNotAllowed, PhotoTooLarge
+from domain.chat.chat import DocumentNotReady
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
+from usecase.chat.errors import ChatNotFound
+from usecase.chat.errors import NoReadyDocument
+from usecase.chat.errors import StoreUnavailable as ChatStoreUnavailable
 from usecase.document.errors import DocumentNotFound, InvalidDocument, RateLimited, RateUnavailable
 from usecase.document.errors import StoreUnavailable as DocumentStoreUnavailable
 
@@ -17,11 +21,19 @@ _LARGE = {"code": "photo_too_large", "message": "Photo is too large"}
 _STORE = {"code": "unavailable", "message": "The account store is unreachable"}
 _FINISHED = {"code": "unavailable", "message": "The request could not be finished"}
 _DOCUMENT_MISSING = {"code": "document_not_found", "message": "Document was not found"}
+_CHAT_MISSING = {"code": "chat_not_found", "message": "Chat was not found"}
+_NOT_READY = {"code": "document_not_ready", "message": "Document is not ready"}
+_NO_READY = {"code": "no_ready_document", "message": "No ready document"}
+_CHAT_STORE = {"code": "unavailable", "message": "The chat store is unreachable"}
 
 
 def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(Unauthorized, _status(401, _UNAUTHORIZED))
     app.add_exception_handler(DocumentNotFound, _status(404, _DOCUMENT_MISSING))
+    app.add_exception_handler(ChatNotFound, _status(404, _CHAT_MISSING))
+    app.add_exception_handler(DocumentNotReady, _status(400, _NOT_READY))
+    app.add_exception_handler(NoReadyDocument, _status(400, _NO_READY))
+    app.add_exception_handler(ChatStoreUnavailable, _status(503, _CHAT_STORE))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)
     app.add_exception_handler(RateUnavailable, _rate_refusal)

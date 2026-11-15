@@ -105,3 +105,12 @@ class DocumentExtractionRow(Base):
 
     document_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     text: Mapped[str] = mapped_column(Text)
+
+
+class ChatRow(Base):
+    __tablename__ = "chats"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    owner_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    document_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
+from adapters.memory.chat_store import MemoryChatStore
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
@@ -32,6 +33,8 @@ from clients.application.session_client import ScriptedProvider
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
+from usecase.chat.create_chat import CreateChat
+from usecase.chat.list_chats import ListChats
 from clients.application.probe_index_documents import ProbeIndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -95,6 +98,7 @@ class AcceptanceServer:
         self._intake = intake
         self._pieces = pieces
         reader = ProbeGatedPdfReader(PyPdfReader(), self.probe)
+        chats = MemoryChatStore()
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
@@ -106,6 +110,8 @@ class AcceptanceServer:
             ListDocuments(intake),
             ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock),
             hub,
+            CreateChat(intake, chats, self.clock),
+            ListChats(chats),
             self._indexing,
         )
 

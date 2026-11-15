@@ -1,0 +1,405 @@
+openapi: 3.0.3
+info:
+  title: Chats of the signed-in person
+  version: 1.0.0
+  description: |
+    Диалог по одному готовому PDF. Ответ собирается не больше чем из 10 кусков
+    этого документа. Строка тьютора приходит целиком.
+    POST /api/v1/chat/messages в этот контракт не входит: это удержание
+    приёмки истории 2, не реплика студента.
+
+paths:
+  /api/v1/chats:
+    get:
+      summary: Список своих чатов
+      operationId: listChats
+      tags: [chats]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: |
+            Свои чаты, сначала новые. При равном времени создания выше тот,
+            чей id больше. Размер страницы не задан. Чужой чат в список не входит.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatList' }
+        '404':
+          description: |
+            Сессии нет. code chat_not_found и то же message, что у отсутствующего чата.
+            Список не отдаётся.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    post:
+      summary: Новый пустой чат
+      operationId: createChat
+      tags: [chats]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateChat' }
+      responses:
+        '201':
+          description: |
+            Пустой чат привязан к готовому PDF. Если document_id не передан —
+            к самому новому готовому PDF этого человека. Открытие запускает
+            векторизацию, если векторов ещё нет.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chat' }
+        '400':
+          description: |
+            code no_ready_document — готового PDF нет, чат не создаётся.
+            code document_not_ready — свой документ ещё не ready (waiting,
+            indexing, failed), чат не создаётся.
+            message без текста файла, чужих данных, секрета, стека и пути.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: |
+            Сессии нет, документа нет или документ чужой.
+            code chat_not_found и одно и то же message во всех этих случаях.
+            Чат не создаётся.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/chats/open:
+    post:
+      summary: Открыть чат выбранного документа
+      operationId: openChatForDocument
+      tags: [chats]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OpenChat' }
+      responses:
+        '200':
+          description: |
+            У этого человека уже есть чат на этом PDF. Возвращается самый новый.
+            Остальные чаты, включая тот, что был на экране, не меняются.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chat' }
+        '201':
+          description: |
+            Чата на этом PDF ещё не было. Создан пустой. Остальные чаты не меняются.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chat' }
+        '400':
+          description: |
+            code document_not_ready — свой документ не ready. Чат не создаётся.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: |
+            Сессии нет, документа нет или документ чужой.
+            code chat_not_found и одно и то же message.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/chats/{id}:
+    get:
+      summary: Лента своего чата
+      operationId: getChat
+      tags: [chats]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      responses:
+        '200':
+          description: |
+            Лента. Если у PDF ещё нет векторов, это открытие векторизует
+            сохранённый текст кусков. Пока прогон не удался, askable=false,
+            notice задан, строки тьютора нет, статус документа остаётся ready.
+            Следующее открытие пробует снова и не пишет уже сохранённые куски второй раз.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chat' }
+        '404':
+          description: |
+            Нет сессии, нет такого id или чат чужой.
+            code chat_not_found и одно и то же message во всех трёх случаях.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/chats/{id}/messages:
+    post:
+      summary: Одна попытка в своём чате
+      operationId: sendChatMessage
+      tags: [chats]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+          description: |
+            Один ключ — одна попытка. Повтор возвращает те же строки и не добавляет реплику.
+            Новый ключ — новая попытка, даже если текст тот же.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendMessage' }
+      responses:
+        '200':
+          description: |
+            Попытка принята. Тело — строки, которые эта попытка хранит
+            (при повторе ключа — те же строки, в ленте они один раз).
+            Пустой поиск: kind=reply, текст «Этого нет в материале.», sources пустой,
+            model=null.
+            Сбой модели, поиска или ключа модели при уже готовых векторах:
+            реплика человека есть, строки тьютора нет, error.code=reply_failed.
+            Оценка Экзаменатора повторно не пишется: возвращается прежняя оценка.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SendResult' }
+        '400':
+          description: |
+            Ничего не сохраняется. code один из: empty_message, invalid_model,
+            invalid_mode, choice_required, choice_unknown, tell_unavailable.
+            empty_message — пустой или пробельный text там, где нужна реплика.
+            invalid_model и invalid_mode — null или значение вне списка.
+            choice_required — открыт вопрос Экзаменатора, а choice_id нет.
+            choice_unknown — choice_id не из четырёх вариантов.
+            tell_unavailable — tell=true, когда тьютор не держит вопрос.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: |
+            Нет сессии, нет такого id или чат чужой.
+            code chat_not_found и одно и то же message. Ничего не сохраняется.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: |
+            askable=false. code not_askable. Ничего не сохраняется.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: |
+            Хранилище чатов недоступно. code unavailable.
+            Реплика не сохраняется. message без стека и пути.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  parameters:
+    ChatId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message:
+          type: string
+          description: Без текста документа, чужого чата, секрета, стека и пути.
+    CreateChat:
+      type: object
+      description: |
+        Поля id, owner, page, sources, askable и lines из тела не читаются.
+      properties:
+        document_id:
+          type: string
+          format: uuid
+          description: |
+            Не передан — самый новый готовый PDF этого человека.
+            Передан — этот готовый PDF, даже если есть новее.
+    OpenChat:
+      type: object
+      required: [document_id]
+      description: Поля id, owner, page, sources, askable и lines из тела не читаются.
+      properties:
+        document_id: { type: string, format: uuid }
+    SendMessage:
+      type: object
+      description: |
+        Неперечисленные поля игнорируются, в том числе id, owner, page,
+        sources, role, correct. Опущенный model означает auto.
+        Опущенный mode означает professor.
+        null у model или mode — отказ, это не «опущен».
+      properties:
+        text:
+          type: string
+          description: |
+            Реплика человека. Нужна, когда нет choice_id, tell не true
+            и это не старт Экзаменатора. Пробельная строка — empty_message.
+            Потолок длины не задан.
+        model:
+          type: string
+          nullable: true
+          enum:
+            - auto
+            - auto:smart
+            - auto:fast
+            - qwen/qwen3-32b
+            - meta-llama/llama-3.3-70b
+            - google/gemini-2.0-flash
+            - mistralai/mistral-small
+            - deepseek/deepseek-chat
+            - fusion
+        mode:
+          type: string
+          nullable: true
+          enum: [professor, five_year_old, socratic, examiner]
+        tell:
+          type: boolean
+          description: |
+            Просьба сказать ответ на удержанный сократический вопрос.
+            Не совпадение фразы в text. true без удержанного вопроса — tell_unavailable.
+        choice_id:
+          type: string
+          description: Один из четырёх id открытого вопроса Экзаменатора.
+    ChatList:
+      type: object
+      required: [chats]
+      properties:
+        chats:
+          type: array
+          items: { $ref: '#/components/schemas/ChatSummary' }
+    ChatSummary:
+      type: object
+      required: [id, document_id, document_name, preview]
+      properties:
+        id: { type: string, format: uuid }
+        document_id: { type: string, format: uuid }
+        document_name:
+          type: string
+          description: Имя PDF как текст, не как разметка.
+        preview:
+          type: string
+          nullable: true
+          description: |
+            Последняя реплика человека целиком. null, пока человек ничего не писал.
+            Показана как текст.
+    Chat:
+      type: object
+      required: [id, document_id, document_name, askable, notice, lines]
+      properties:
+        id: { type: string, format: uuid }
+        document_id: { type: string, format: uuid }
+        document_name: { type: string }
+        askable:
+          type: boolean
+          description: |
+            false, пока векторизация этого PDF не удалась. Документ при этом остаётся ready.
+        notice:
+          type: string
+          nullable: true
+          description: |
+            «Материал пока нельзя спросить.», когда askable=false. Иначе null.
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/Line' }
+    SendResult:
+      type: object
+      required: [chat_id, lines]
+      properties:
+        chat_id: { type: string, format: uuid }
+        lines:
+          type: array
+          description: Строки этой попытки. В ленте каждая встречается один раз.
+          items: { $ref: '#/components/schemas/Line' }
+        error:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Error'
+          description: Задан только при reply_failed. Иначе null.
+    Line:
+      type: object
+      required: [id, role, text]
+      properties:
+        id: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [person, tutor]
+        text:
+          type: string
+          description: Текст как текст. Разметка в PDF или в ответе не исполняется.
+        model:
+          type: string
+          nullable: true
+          description: |
+            Id модели, которую просили, если строку тьютора написала модель.
+            null у реплики человека, у «Этого нет в материале.» и у оценки.
+        mode:
+          type: string
+          nullable: true
+          enum: [professor, five_year_old, socratic, examiner]
+          description: Ход, который породил строку тьютора. У реплики человека null.
+        kind:
+          type: string
+          nullable: true
+          enum: [reply, withheld, question, grade]
+          description: |
+            Только у тьютора. reply — ответ. withheld — вопрос без страницы.
+            question — четыре варианта, без страницы. grade — верно или нет и страница.
+        page:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: |
+            Стартовая страница первого из найденных кусков. null, если у куска
+            страницы нет, поиск пуст, вопрос ещё без оценки или ответ удержан.
+            Слайда здесь нет.
+        sources:
+          type: array
+          maxItems: 10
+          items: { $ref: '#/components/schemas/Source' }
+          description: Найденные куски этого PDF, не больше 10. Пусто, когда опираться не на что.
+        choices:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { $ref: '#/components/schemas/Choice' }
+          description: Только у kind=question. Какой вариант верный, в вопрос не входит.
+        choice_id:
+          type: string
+          nullable: true
+          description: Выбранный вариант. Только у kind=grade.
+        correct:
+          type: boolean
+          nullable: true
+          description: |
+            Только у kind=grade. true, если выбран вариант, который поддерживает кусок.
+    Source:
+      type: object
+      required: [text]
+      properties:
+        page:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: Стартовая страница куска. null, если индексация её не сохранила.
+        text:
+          type: string
+          description: Текст куска как текст. Карточка PDF не открывает.
+    Choice:
+      type: object
+      required: [id, text]
+      properties:
+        id: { type: string }
+        text: { type: string }

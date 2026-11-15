@@ -16,6 +16,7 @@ from adapters.oauth.yandex import YandexOAuthProvider
 from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.persistence.account_store import PostgresAccountStore
 from adapters.pieceindex.piece_index import PostgresPieceIndex
+from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
 from adapters.tokens.jwt_tokens import JwtTokens
 from adapters.virus.clamav import ClamavVirusCheck
@@ -23,6 +24,8 @@ from application.settings import Settings, load_settings
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
+from usecase.chat.create_chat import CreateChat
+from usecase.chat.list_chats import ListChats
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -47,6 +50,8 @@ class AppContext:
     list_documents: ListDocuments
     index_documents: IndexDocuments
     status_hub: DocumentStatusHub
+    create_chat: CreateChat
+    list_chats: ListChats
     _indexing: asyncio.Event | None = None
 
     def schedule_indexing(self) -> None:
@@ -80,6 +85,7 @@ def _context(settings: Settings) -> AppContext:
     pieces = PostgresPieceIndex(sessions)
     reader = PyPdfReader()
     clock = _WallClock()
+    chats = PostgresChatStore(sessions)
     return AppContext(
         config=RuntimeConfig(settings.state_ttl, settings.cors_origins),
         sign_in=SignIn(
@@ -104,6 +110,8 @@ def _context(settings: Settings) -> AppContext:
         list_documents=ListDocuments(intake),
         index_documents=IndexDocuments(intake, files, reader, pieces),
         status_hub=hub,
+        create_chat=CreateChat(intake, chats, clock),
+        list_chats=ListChats(chats),
     )
 
 

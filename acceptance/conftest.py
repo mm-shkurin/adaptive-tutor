@@ -7,8 +7,12 @@ sys.path.insert(0, str(ROOT / "acceptance"))
 
 import pytest
 
-pytest.register_assert_rewrite("statements.document_statements")
+pytest.register_assert_rewrite(
+    "statements.document_statements",
+    "statements.chat_statements",
+)
 
+from statements.chat_statements import ChatStatements
 from statements.document_statements import DocumentStatements
 from statements.startup_statements import StartupStatements
 from support.acceptance_server import AcceptanceServer
@@ -17,6 +21,18 @@ from support.acceptance_server import AcceptanceServer
 @pytest.fixture
 def startup():
     yield StartupStatements()
+
+
+@pytest.fixture
+def chats():
+    server = AcceptanceServer()
+    server.start()
+    statements = ChatStatements(server.base_url, server.provider, server.clock)
+    try:
+        yield statements
+    finally:
+        statements.close()
+        server.stop()
 
 
 @pytest.fixture
