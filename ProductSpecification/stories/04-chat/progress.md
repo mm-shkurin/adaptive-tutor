@@ -23,7 +23,7 @@
 ### 1.1 A newly indexed PDF is answered from its vectors and the stored starting page (06_Integration_Tests.md)
 - [x] tests (acceptance: без записи векторов тело пустое, затем 384 и страница куска)
 - [x] implementation (индексация пишет страницу куска и 384-вектор all-MiniLM-L6-v2 в фейк Qdrant до удаления файла; ответ берёт только куски этого PDF)
-- [ ] refactor
+- [x] refactor (типы по одному понятию, файлы короче лимита; правок нет, отдельный рефактор кода не нужен)
 
 ## Next
 - [ ] 1.2 A vector run that fails leaves the document ready and the next open can finish (06_Integration_Tests.md)
