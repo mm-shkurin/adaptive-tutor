@@ -18,3 +18,10 @@
 **Where:** `backend/application/context.py`, `adapters/tutor/refusing_tutor.py`
 **Implication:** Happy-path tutor answers need a real HTTP tutor adapter; until then failed-reply is the live path.
 **From:** scenario 6.6 (6.6-a-failed-reply-keeps-one-person-line)
+
+## Quirk: interleave opens must gather on the server
+
+**Quirk:** Two sync HTTP clients racing a vector latch deadlock the single uvicorn loop.
+**Where:** `acceptance/support/chat_probe.py` (`/acceptance/chats/{id}/interleave-open`)
+**Implication:** Concurrent open races use in-process `asyncio.gather`, not ThreadPool HTTP.
+**From:** scenario 6.10 (6.10-two-opens-interleaved-do-not-store-a-piece-twice)
