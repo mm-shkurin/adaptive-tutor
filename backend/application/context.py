@@ -31,6 +31,7 @@ from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
+from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
@@ -57,6 +58,7 @@ class AppContext:
     index_documents: IndexDocuments
     status_hub: DocumentStatusHub
     create_chat: CreateChat
+    open_chat: OpenChat
     list_chats: ListChats
     get_chat: GetChat
     send_message: SendMessage
@@ -123,7 +125,8 @@ def _context(settings: Settings) -> AppContext:
         list_documents=ListDocuments(intake),
         index_documents=IndexDocuments(intake, files, reader, pieces, vectors=vectors),
         status_hub=hub,
-        create_chat=CreateChat(intake, chats, clock),
+        create_chat=(create := CreateChat(intake, chats, clock)),
+        open_chat=OpenChat(create, chats),
         list_chats=ListChats(chats),
         get_chat=GetChat(chats, pieces, vectors),
         send_message=SendMessage(chats, vectors, RefusingTutor(), clock),

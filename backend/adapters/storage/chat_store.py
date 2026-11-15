@@ -49,6 +49,25 @@ class PostgresChatStore:
 
         return await self._run(work)
 
+    async def newest_for_document(self, owner_id: UUID, document_id: UUID) -> Chat | None:
+        async def work(session):
+            found = (
+                await session.execute(
+                    select(ChatRow, DocumentRow.name)
+                    .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
+                    .where(ChatRow.owner_id == owner_id, ChatRow.document_id == document_id)
+                    .options(selectinload(ChatRow.lines))
+                    .order_by(ChatRow.created_at.desc(), ChatRow.id.desc())
+                    .limit(1)
+                )
+            ).one_or_none()
+            if found is None:
+                return None
+            chat_row, name = found
+            return self._chat(chat_row, name)
+
+        return await self._run(work)
+
     async def save(self, owner_id: UUID, chat: Chat) -> None:
         async def work(session):
             row = await session.scalar(

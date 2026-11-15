@@ -27,6 +27,7 @@ from usecase.account.sign_in import SignIn
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
+from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
@@ -114,7 +115,8 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         ListDocuments(intake),
         IndexDocuments(intake, files, reader, pieces),
         hub,
-        CreateChat(intake, chats, clock),
+        (create := CreateChat(intake, chats, clock)),
+        OpenChat(create, chats),
         ListChats(chats),
         GetChat(chats, pieces, UnreadyMaterialSearch()),
         SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),

@@ -102,5 +102,11 @@
 - [x] implementation (empty pieces short-circuit already; probe exercises it)
 - [S] refactor (no separate commit)
 
+### 7.1 Switching document keeps the previous chat and opens the chosen PDF
+- [x] tests (acceptance; sanity fail on open status)
+- [x] implementation (POST /api/v1/chats/open + OpenChat + ChatStore.newest_for_document)
+- [S] refactor (OpenChat already one concept; files under limit; no separate commit)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2
+- [ ] полный `/harvest` остальных Tier 2 (гейты 1.x–3.x, режимы 5.x, UI/Sec/Load/Infra)
+- [ ] 7.2 reply to the chat just left stays on that chat

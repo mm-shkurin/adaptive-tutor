@@ -25,3 +25,31 @@
 **Where:** `acceptance/support/chat_probe.py` (`/acceptance/chats/{id}/interleave-open`)
 **Implication:** Concurrent open races use in-process `asyncio.gather`, not ThreadPool HTTP.
 **From:** scenario 6.10 (6.10-two-opens-interleaved-do-not-store-a-piece-twice)
+
+## Quirk: vector ready is full piece-set equality
+
+**Quirk:** `QdrantPieces.ready` is true only when Qdrant count equals `PieceIndex` length — `count > 0` would mark a mid-fail run askable.
+**Where:** `backend/adapters/search/qdrant_pieces.py`
+**Implication:** Open-time and send paths must treat partial vector sets as not askable; writes skip ordinals already present.
+**From:** scenario 6.4 (6.4-a-vector-run-that-stops-midway)
+
+## Quirk: clear_vectors leaves upsert log
+
+**Quirk:** `clear_vectors` removes points but leaves the fake upsert log, so absolute `upsert_count` still includes indexing.
+**Where:** `acceptance/support/vector_fakes.py`, partial-vector statements
+**Implication:** Assert upsert deltas around the open under test, not the absolute total.
+**From:** scenario 6.4 (6.4-a-vector-run-that-stops-midway)
+
+## Decision: acceptance chat latency is 50ms
+
+**Decision:** Acceptance pins `SendMessage` latency at 50ms; production stays at ExpectedLoad P99 5s.
+**Why:** Wall-clock 5s hangs do not change the expire/cancel contract under test.
+**Where applied:** `SendMessage(latency=...)` in `AcceptanceServer`; `CHAT_LATENCY` in `reply_budget.py`
+**From:** scenario 6.8 (6.8-a-reply-that-misses-the-latency-budget)
+
+## Quirk: POST /chats/open does not vectorize
+
+**Quirk:** `OpenChat` returns the store chat (or a newly created one) without running `GetChat.open`, so `askable` may stay false until a later GET.
+**Where:** `backend/usecase/chat/open_chat.py`, `adapters/http/chats.py` `POST /open`
+**Implication:** Switch/open is identity only; vectorization stays on GET, same as create.
+**From:** scenario 7.1 (7.1-switching-document-keeps-the-previous-chat)

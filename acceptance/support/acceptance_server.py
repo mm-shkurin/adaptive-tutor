@@ -44,6 +44,7 @@ from support.vector_fakes import ExternalFakes
 from usecase.chat.create_chat import CreateChat
 from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
+from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
 from clients.application.probe_index_documents import ProbeIndexDocuments
 from usecase.document.list_documents import ListDocuments
@@ -132,7 +133,8 @@ class AcceptanceServer:
             ListDocuments(intake),
             ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock, vectors),
             hub,
-            CreateChat(intake, chats, self.clock),
+            (create := CreateChat(intake, chats, self.clock)),
+            OpenChat(create, chats),
             ListChats(chats),
             GetChat(chats, pieces, vectors),
             SendMessage(chats, search, tutor, self.clock, latency=timedelta(milliseconds=50)),

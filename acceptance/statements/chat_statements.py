@@ -11,6 +11,7 @@ from statements.interleave_vector_statements import InterleaveVectorStatements
 from statements.latency_statements import LatencyStatements
 from statements.partial_vector_statements import PartialVectorStatements
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
+from statements.switch_chat_statements import SwitchChatStatements
 from statements.vector_open_statements import VectorOpenStatements
 from statements.vector_reuse_statements import VectorReuseStatements
 
@@ -29,6 +30,7 @@ class ChatStatements(
     LatencyStatements,
     InterleaveVectorStatements,
     EmptyVectorStatements,
+    SwitchChatStatements,
 ):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)

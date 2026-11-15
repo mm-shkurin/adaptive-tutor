@@ -15,6 +15,14 @@ class ChatClient:
         )
         return read_result(response)
 
+    def open(self, token: str, document_id: str) -> HttpResult:
+        response = self.http.post(
+            "/api/v1/chats/open",
+            headers=self._bearer(token),
+            json={"document_id": document_id},
+        )
+        return read_result(response)
+
     def get(self, token: str, chat_id: str) -> HttpResult:
         response = self.http.get(f"/api/v1/chats/{chat_id}", headers=self._bearer(token))
         return read_result(response)

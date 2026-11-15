@@ -19,6 +19,11 @@ class CreateChatBody(BaseModel):
     document_id: UUID | None = None
 
 
+class OpenChatBody(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    document_id: UUID
+
+
 @router.get("")
 async def list_chats(request: Request):
     account = await _caller(request)
@@ -31,6 +36,16 @@ async def create_chat(body: CreateChatBody, request: Request):
     account = await _caller(request)
     chat = await request.app.state.ctx.create_chat.start(account.id, body.document_id)
     return JSONResponse(status_code=201, content=_chat(chat))
+
+
+@router.post("/open")
+async def open_chat(body: OpenChatBody, request: Request):
+    account = await _caller(request)
+    opened = await request.app.state.ctx.open_chat.open(account.id, body.document_id)
+    return JSONResponse(
+        status_code=201 if opened.created else 200,
+        content=_chat(opened.chat),
+    )
 
 
 @router.get("/{id}")
