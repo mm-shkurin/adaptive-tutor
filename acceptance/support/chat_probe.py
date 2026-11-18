@@ -41,6 +41,45 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         tutor.hang()
         return Response(status_code=204)
 
+    @app.post("/acceptance/tutor/hold", status_code=204)
+    async def hold_tutor(request: Request):
+        await document_caller(request)
+        from support.tutor_hold import TutorHold
+
+        tutor.hold(TutorHold())
+        return Response(status_code=204)
+
+    @app.post("/acceptance/chats/{chat_id}/reply-after-switch")
+    async def reply_after_switch(chat_id: UUID, request: Request, body: dict = Body(...)):
+        import asyncio
+
+        from adapters.http.chats import _attempt, _chat
+        from usecase.chat.outgoing import Outgoing
+
+        account = await document_caller(request)
+        hold = tutor._hold
+        assert hold is not None
+        outgoing = Outgoing.from_payload(
+            {"text": body["text"], "model": body["model"], "mode": body["mode"]}
+        )
+        send = request.app.state.ctx.send_message
+        open_chat = request.app.state.ctx.open_chat
+        get_chat = request.app.state.ctx.get_chat
+
+        task = asyncio.create_task(
+            send.send(account.id, chat_id, outgoing, body["key"])
+        )
+        await hold.until_entered()
+        opened = await open_chat.open(account.id, UUID(body["document_id"]))
+        hold.release()
+        attempt = await task
+        left = await get_chat.open(account.id, chat_id)
+        return {
+            "sent": _attempt(attempt),
+            "opened": _chat(opened.chat),
+            "left": _chat(left),
+        }
+
     @app.post("/acceptance/search/advance-on-match", status_code=204)
     async def advance_on_match(request: Request, body: dict = Body(...)):
         await document_caller(request)

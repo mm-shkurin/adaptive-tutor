@@ -27,6 +27,7 @@ class ScriptedTutor:
         self.calls: list[TutorCall] = []
         self._fail = False
         self._hang = False
+        self._hold = None
         self.finished = False
         self._clock = None
         self._moment = None
@@ -34,6 +35,7 @@ class ScriptedTutor:
     def script(self, text: str) -> None:
         self._fail = False
         self._hang = False
+        self._hold = None
         self.finished = False
         self._clock = None
         self._moment = None
@@ -42,10 +44,18 @@ class ScriptedTutor:
     def fail(self) -> None:
         self._fail = True
         self._hang = False
+        self._hold = None
 
     def hang(self) -> None:
         self._fail = False
         self._hang = True
+        self._hold = None
+        self.finished = False
+
+    def hold(self, latch) -> None:
+        self._fail = False
+        self._hang = False
+        self._hold = latch
         self.finished = False
 
     def set_clock_on_answer(self, clock, moment) -> None:
@@ -58,6 +68,10 @@ class ScriptedTutor:
             self._clock.moment = self._moment
         if self._fail:
             raise ReplyFailed()
+        if self._hold is not None:
+            await self._hold.wait()
+            self.finished = True
+            return self.text
         if self._hang:
             try:
                 await asyncio.sleep(30)

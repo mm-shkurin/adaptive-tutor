@@ -1,5 +1,7 @@
 from statements.reply_statements import MODEL, QUESTION, SCRIPT
 
+SWITCH_REPLY_KEY = "switch-late-reply"
+
 
 class SwitchChatStatements:
     def given_a_signed_in_person_with_a_chat_that_already_has_a_person_line(self) -> None:
@@ -72,6 +74,54 @@ class SwitchChatStatements:
         assert opened.body["lines"] == []
         assert opened.body["id"] != self.previous_chat_id
 
+    def given_a_signed_in_person_who_sent_a_line_to_one_chat(self) -> None:
+        self.given_a_signed_in_person_with_a_chat_that_already_has_a_person_line()
+        self.sent_chat_id = self.previous_chat_id
+        self.switch_result = None
+
+    def when_the_person_switches_to_another_chat_before_that_reply_is_stored(self) -> None:
+        scripted = self.chats.script_tutor(self.token, SCRIPT)
+        assert scripted.status_code == 204
+        held = self.chats.hold_tutor(self.token)
+        assert held.status_code == 204
+        self.switch_result = self.chats.reply_after_switch(
+            self.token,
+            self.sent_chat_id,
+            self.second_document_id,
+            QUESTION,
+            MODEL,
+            "professor",
+            SWITCH_REPLY_KEY,
+        )
+
+    def then_the_reply_is_stored_on_the_chat_that_was_sent(self) -> None:
+        result = self._switch_result()
+        assert result.status_code == 200
+        assert result.body is not None
+        sent = result.body["sent"]
+        left = result.body["left"]
+        assert sent["chat_id"] == self.sent_chat_id
+        assert sent["error"] is None
+        roles = [line["role"] for line in sent["lines"]]
+        assert roles[-2:] == ["person", "tutor"]
+        assert sent["lines"][-1]["text"] == SCRIPT
+        assert left["id"] == self.sent_chat_id
+        assert [line["role"] for line in left["lines"]][-2:] == ["person", "tutor"]
+        assert left["lines"][-1]["text"] == SCRIPT
+
+    def then_the_chat_now_open_does_not_gain_that_reply(self) -> None:
+        result = self._switch_result()
+        assert result.body is not None
+        opened = result.body["opened"]
+        assert opened["id"] != self.sent_chat_id
+        assert opened["document_id"] == self.second_document_id
+        assert opened["lines"] == []
+        assert SCRIPT not in [line.get("text") for line in opened["lines"]]
+
     def _opened(self):
         assert self.opened is not None
         return self.opened
+
+    def _switch_result(self):
+        assert self.switch_result is not None
+        return self.switch_result

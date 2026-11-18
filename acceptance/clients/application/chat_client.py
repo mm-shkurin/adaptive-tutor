@@ -77,6 +77,36 @@ class ChatClient:
         )
         return read_result(response)
 
+    def hold_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/hold",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def reply_after_switch(
+        self,
+        token: str,
+        chat_id: str,
+        document_id: str,
+        text: str,
+        model: str,
+        mode: str,
+        key: str,
+    ) -> HttpResult:
+        response = self.http.post(
+            f"/acceptance/chats/{chat_id}/reply-after-switch",
+            headers=self._bearer(token),
+            json={
+                "document_id": document_id,
+                "text": text,
+                "model": model,
+                "mode": mode,
+                "key": key,
+            },
+        )
+        return read_result(response)
+
     def advance_on_match(self, token: str, offset_ms: int) -> HttpResult:
         response = self.http.post(
             "/acceptance/search/advance-on-match",

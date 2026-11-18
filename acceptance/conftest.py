@@ -18,6 +18,7 @@ pytest.register_assert_rewrite(
     "statements.latency_statements",
     "statements.interleave_vector_statements",
     "statements.empty_vector_statements",
+    "statements.switch_chat_statements",
 )
 
 from statements.chat_statements import ChatStatements

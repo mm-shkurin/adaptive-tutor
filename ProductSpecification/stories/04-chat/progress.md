@@ -124,6 +124,10 @@
 - [x] implementation (POST /api/v1/chats/open + OpenChat + ChatStore.newest_for_document)
 - [S] refactor (OpenChat already one concept; files under limit; no separate commit)
 
+### 7.2 A reply to the chat just left stays on that chat
+- [x] tests (acceptance; hold+switch probe; sanity fail on opened gaining SCRIPT)
+- [S] implementation (SendMessage already binds reply to request chat_id)
+- [S] refactor (no new prod code)
+
 ## Next
 - [ ] полный `/harvest` остальных Tier 2 (гейты 1.x–3.x, режимы 5.x, UI/Sec/Load/Infra)
-- [ ] 7.2 reply to the chat just left stays on that chat
