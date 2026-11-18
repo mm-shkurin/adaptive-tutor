@@ -1,9 +1,13 @@
+from uuid import uuid4
+
 LECTURE = "lecture.pdf"
 NEIGHBOUR_PDF = "neighbour.pdf"
 QUESTION = "What does the lecture say about photosynthesis?"
 MODEL = "qwen/qwen3-32b"
 SCRIPT = "Academic answer drawn from the retrieved pages."
 NEIGHBOUR_TEXT = "neighbour-only-piece"
+NOT_IN_MATERIAL = "Этого нет в материале."
+MISSING_QUESTION = "What does the lecture say about unicorn agriculture?"
 
 
 class ReplyStatements:
@@ -100,6 +104,70 @@ class ReplyStatements:
         assert isinstance(tutor["page"], int)
         assert "slide" not in tutor
         assert all("slide" not in source for source in tutor["sources"])
+
+    def and_the_question_matches_nothing_in_this_pdf(self) -> None:
+        seeded = self.chats.seed_search(self.token, self.document_id, ())
+        assert seeded.status_code == 204
+
+    def when_the_person_sends_the_missing_question(self) -> None:
+        self.sent = self.chats.send(
+            self.token, self.chat_id, MISSING_QUESTION, MODEL, "professor", str(uuid4())
+        )
+
+    def then_the_tutor_says_it_is_not_in_the_material(self) -> None:
+        tutor = self._tutor()
+        assert tutor["text"] == NOT_IN_MATERIAL
+        assert tutor["kind"] == "reply"
+        assert tutor["mode"] == "professor"
+
+    def then_the_sources_are_empty(self) -> None:
+        assert self._tutor()["sources"] == []
+        assert self._tutor()["page"] is None
+
+    def then_the_model_did_not_answer(self) -> None:
+        assert self._tutor()["model"] is None
+        calls = self.chats.tutor_calls(self.token)
+        assert calls.status_code == 200
+        assert calls.body["calls"] == []
+
+    def when_the_person_delivers_the_same_attempt_twice(self) -> None:
+        scripted = self.chats.script_tutor(self.token, SCRIPT)
+        assert scripted.status_code == 204
+        key = "attempt-same-twice"
+        first = self.chats.send(self.token, self.chat_id, QUESTION, MODEL, "professor", key)
+        second = self.chats.send(self.token, self.chat_id, QUESTION, MODEL, "professor", key)
+        assert first.status_code == 200
+        assert second.status_code == 200
+        self.sent = second
+        self.first_sent = first
+
+    def then_the_thread_contains_one_person_line_and_one_tutor_line(self) -> None:
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        assert opened.body is not None
+        roles = [line["role"] for line in opened.body["lines"]]
+        assert roles == ["person", "tutor"]
+        assert self.sent.body["lines"] == self.first_sent.body["lines"]
+
+    def then_the_model_is_called_once(self) -> None:
+        calls = self.chats.tutor_calls(self.token)
+        assert calls.status_code == 200
+        assert len(calls.body["calls"]) == 1
+
+    def when_the_person_sends_a_line_and_omits_the_model_and_the_mode(self) -> None:
+        scripted = self.chats.script_tutor(self.token, SCRIPT)
+        assert scripted.status_code == 204
+        self.sent = self.chats.send_payload(
+            self.token, self.chat_id, {"text": QUESTION}, str(uuid4())
+        )
+
+    def then_the_tutor_lines_model_is_auto(self) -> None:
+        assert self._tutor()["model"] == "auto"
+
+    def then_the_turn_is_professor(self) -> None:
+        tutor = self._tutor()
+        assert tutor["mode"] == "professor"
+        assert tutor["kind"] == "reply"
 
     def _sent(self):
         assert self.sent is not None

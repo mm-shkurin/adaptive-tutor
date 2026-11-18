@@ -88,6 +88,23 @@
 - [S] implementation (SendMessage._askable → NotAskable)
 - [S] refactor (no new prod code)
 
+## Tier 2 — Backend (01_API_Tests.md §4 reply)
+
+### 4.2 Nothing in the material stores that sentence and no sources
+- [x] tests (acceptance; sanity fail on model null)
+- [S] implementation (Chat.record_missing / Line.missing)
+- [S] refactor (no new prod code)
+
+### 4.6 The same attempt stores one person line and one tutor line
+- [x] tests (acceptance; already green)
+- [S] implementation (ChatStore find_attempt / save_attempt)
+- [S] refactor (no new prod code)
+
+### 4.7 An omitted model is auto and an omitted mode is Professor
+- [x] tests (acceptance; already green)
+- [S] implementation (ListedModel/LearningMode omitted defaults)
+- [S] refactor (no new prod code)
+
 ## Tier 2 — Backend (01_API_Tests.md §6)
 
 ### 6.1 Opening a ready PDF with no vectors makes it askable from the stored text
@@ -150,5 +167,5 @@
 - [S] refactor (no new prod code)
 
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4 session-store fail; 3.4/3.6 examiner+tell; §4 reply; §5 modes; UI/Sec/Load/Infra)
-- [ ] 3.4 / 3.6 need prod (examiner series, tell) — not acceptance-only
+- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.3–4.5/4.8–4.11; §5 modes; UI/Sec/Load/Infra)
+- [ ] 3.4 / 3.6 / §5 need prod (examiner, tell, socratic) — not acceptance-only
