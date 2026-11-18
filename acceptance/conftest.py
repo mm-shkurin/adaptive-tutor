@@ -19,6 +19,7 @@ pytest.register_assert_rewrite(
     "statements.interleave_vector_statements",
     "statements.empty_vector_statements",
     "statements.switch_chat_statements",
+    "statements.chat_security_statements",
 )
 
 from statements.chat_statements import ChatStatements

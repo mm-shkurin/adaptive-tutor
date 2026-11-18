@@ -6,6 +6,7 @@ from clients.application.document_client import DocumentClient
 from clients.application.http_result import HttpResult
 from clients.application.session_client import ScriptedProvider, SessionClient
 from statements.chat_gate_statements import ChatGateStatements
+from statements.chat_security_statements import ChatSecurityStatements
 from statements.empty_vector_statements import EmptyVectorStatements
 from statements.failed_reply_statements import FailedReplyStatements
 from statements.interleave_vector_statements import InterleaveVectorStatements
@@ -33,6 +34,7 @@ class ChatStatements(
     EmptyVectorStatements,
     SwitchChatStatements,
     ChatGateStatements,
+    ChatSecurityStatements,
 ):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)

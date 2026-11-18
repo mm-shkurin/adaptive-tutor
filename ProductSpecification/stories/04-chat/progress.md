@@ -105,6 +105,23 @@
 - [S] implementation (ListedModel/LearningMode omitted defaults)
 - [S] refactor (no new prod code)
 
+## Tier 2 — Backend (05_Security_Tests.md)
+
+### 1.1 Another person's chat or document is refused like a missing chat
+- [x] tests (acceptance; sanity fail on 403 vs 404)
+- [S] implementation (owner-scoped get/create → ChatNotFound)
+- [S] refactor (no new prod code)
+
+### 2.1 A script and a SQL fragment round-trip as the person's own text
+- [x] tests (acceptance; already green)
+- [S] implementation (text stored/returned verbatim)
+- [S] refactor (no new prod code)
+
+### 3.1 Server-owned fields on a send are ignored
+- [x] tests (acceptance; already green)
+- [S] implementation (Outgoing.from_payload ignores extras)
+- [S] refactor (no new prod code)
+
 ## Tier 2 — Backend (01_API_Tests.md §6)
 
 ### 6.1 Opening a ready PDF with no vectors makes it askable from the stored text
@@ -167,5 +184,5 @@
 - [S] refactor (no new prod code)
 
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.3–4.5/4.8–4.11; §5 modes; UI/Sec/Load/Infra)
+- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.3–4.5/4.8–4.11; §5 modes; Sec 3.2; UI/Load/Infra)
 - [ ] 3.4 / 3.6 / §5 need prod (examiner, tell, socratic) — not acceptance-only
