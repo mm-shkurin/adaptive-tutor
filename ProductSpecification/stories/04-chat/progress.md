@@ -53,6 +53,16 @@
 
 ## Tier 2 — Backend (01_API_Tests.md §1–3 gates)
 
+### 1.1 A call with no session is refused like a missing chat
+- [x] tests (acceptance; sanity fail on 401 vs 404)
+- [S] implementation (chats._caller Unauthorized → ChatNotFound)
+- [S] refactor (no new prod code)
+
+### 1.2 A document that is not ready cannot be bound
+- [x] tests (acceptance; waiting/indexing/failed/unknown × start/open)
+- [S] implementation (Chat.bound_to → DocumentNotReady)
+- [S] refactor (no new prod code)
+
 ### 1.3 A person with no ready PDF cannot start a chat
 - [x] tests (acceptance; already green)
 - [S] implementation (CreateChat._newest_ready → NoReadyDocument)
@@ -66,6 +76,16 @@
 ### 3.1 A blank line is refused and nothing is stored
 - [x] tests (acceptance; already green)
 - [S] implementation (EmptyQuestion before save)
+- [S] refactor (no new prod code)
+
+### 3.2 An unknown or null model or mode is refused and nothing is stored
+- [x] tests (acceptance; already green)
+- [S] implementation (ListedModel/LearningMode.parse)
+- [S] refactor (no new prod code)
+
+### 3.3 A send before the material can be asked stores nothing
+- [x] tests (acceptance; already green)
+- [S] implementation (SendMessage._askable → NotAskable)
 - [S] refactor (no new prod code)
 
 ## Tier 2 — Backend (01_API_Tests.md §6)
@@ -130,4 +150,5 @@
 - [S] refactor (no new prod code)
 
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (гейты 1.x–3.x, режимы 5.x, UI/Sec/Load/Infra)
+- [ ] полный `/harvest` остальных Tier 2 (1.4 session-store fail; 3.4/3.6 examiner+tell; §4 reply; §5 modes; UI/Sec/Load/Infra)
+- [ ] 3.4 / 3.6 need prod (examiner series, tell) — not acceptance-only

@@ -40,12 +40,35 @@ class ChatClient:
         return read_result(response)
 
     def send(self, token: str, chat_id: str, text: str, model: str, mode: str, key: str) -> HttpResult:
+        return self.send_payload(
+            token, chat_id, {"text": text, "model": model, "mode": mode}, key
+        )
+
+    def send_payload(self, token: str | None, chat_id: str, payload: dict, key: str) -> HttpResult:
+        headers = {"Idempotency-Key": key}
+        if token is not None:
+            headers = {**self._bearer(token), **headers}
         response = self.http.post(
             f"/api/v1/chats/{chat_id}/messages",
-            headers={**self._bearer(token), "Idempotency-Key": key},
-            json={"text": text, "model": model, "mode": mode},
+            headers=headers,
+            json=payload,
         )
         return read_result(response)
+
+    def list_without_session(self) -> HttpResult:
+        return read_result(self.http.get("/api/v1/chats"))
+
+    def get_without_session(self, chat_id: str) -> HttpResult:
+        return read_result(self.http.get(f"/api/v1/chats/{chat_id}"))
+
+    def create_without_session(self, document_id: str | None = None) -> HttpResult:
+        body = {} if document_id is None else {"document_id": document_id}
+        return read_result(self.http.post("/api/v1/chats", json=body))
+
+    def open_without_session(self, document_id: str) -> HttpResult:
+        return read_result(
+            self.http.post("/api/v1/chats/open", json={"document_id": document_id})
+        )
 
     def seed_search(self, token: str, document_id: str, pieces: tuple) -> HttpResult:
         response = self.http.post(
