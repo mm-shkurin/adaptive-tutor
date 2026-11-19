@@ -161,6 +161,18 @@ class Chat:
                 return line
         return None
 
+    def last_release(self) -> Line | None:
+        for line in reversed(self.lines):
+            if line.role == "tutor" and line.kind == "reply" and line.mode == "socratic":
+                return line
+            if line.role == "tutor" and line.kind == "withheld":
+                return None
+        return None
+
+    def open_question_id(self) -> UUID | None:
+        question = self.open_examiner_question()
+        return None if question is None else question.id
+
     def require_examiner_choice(self, choice_id: object) -> str:
         question = self.open_examiner_question()
         if question is None:

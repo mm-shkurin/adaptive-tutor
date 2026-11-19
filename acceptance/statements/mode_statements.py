@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from statements.reply_statements import MODEL
+from statements.reply_statements import MODEL, QUESTION
 
 SOCRATIC_QUESTION = "What would you say photosynthesis needs?"
 TELL_UNAVAILABLE = {"code": "tell_unavailable", "message": "Nothing is withheld"}

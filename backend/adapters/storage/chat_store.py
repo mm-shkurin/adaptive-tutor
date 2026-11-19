@@ -17,6 +17,7 @@ class PostgresChatStore:
     def __init__(self, sessions):
         self._sessions = sessions
         self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
+        self._chat_locks: dict[UUID, asyncio.Lock] = {}
         self._write_lock = asyncio.Lock()
 
     async def add(self, owner_id: UUID, chat: Chat, created_at: datetime) -> None:
@@ -131,6 +132,11 @@ class PostgresChatStore:
             if remembered is not None:
                 return remembered
             return await build()
+
+    async def with_chat(self, chat_id: UUID, work):
+        lock = self._chat_locks.setdefault(chat_id, asyncio.Lock())
+        async with lock:
+            return await work()
 
     async def commit_attempt(
         self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt

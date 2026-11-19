@@ -109,3 +109,10 @@
 **Where:** `examiner_grade.py`, `examiner_turn.py`, `Chat.record_examiner_grade`, `Attempt.persist`
 **Implication:** Do not append a second grade line for a closed question; UI re-click must replay the stored grade.
 **From:** scenarios 3.4, 5.6–5.8, 5.10, 5.15, 5.17
+
+## Quirk: concurrent send latches then exclusive re-check
+
+**Quirk:** Thread latch on first `get` (snapshot), then `with_chat` re-gets; if withhold/open-question id changed, return prior release/grade with `persist=False` instead of double-append.
+**Where:** `send_build.py`, `SendSnapshot`, `MemoryChatStore.with_chat`
+**Implication:** Interleave try+tell and two choices with `interleave-sends` + `payload`; do not rely on attempt-key lock alone for cross-intent races.
+**From:** scenarios 5.11–5.14

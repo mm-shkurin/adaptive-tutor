@@ -305,6 +305,28 @@
 - [x] implementation (no-op examiner/choice/tell when stopped)
 - [x] refactor (with 3.4)
 
+## Tier 2 — Backend (01_API_Tests.md §5.11–5.14 concurrent)
+
+### 5.11 A try and the tell control interleaved release once
+- [x] tests (acceptance; sanity fail on release count 1→2)
+- [x] implementation (SendSnapshot + with_chat after latch)
+- [ ] refactor
+
+### 5.12 Two stale copies of a withhold do not lose the release
+- [x] tests (acceptance)
+- [x] implementation (same miss path as 5.11)
+- [ ] refactor
+
+### 5.13 Two answers to one open question interleaved grade once
+- [x] tests (acceptance)
+- [x] implementation (open_question_id snapshot miss → last grade)
+- [ ] refactor
+
+### 5.14 Two stale copies of a grade do not double it
+- [x] tests (acceptance)
+- [x] implementation (with 5.13)
+- [ ] refactor
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (5.11–5.14 interleave; UI/Load/Infra)
-- [ ] 5.11–5.14 need interleave probes — not acceptance-only smoke
+- [ ] refactor 5.11–5.14 chunk
+- [ ] полный `/harvest` остальных Tier 2 (UI/Load/Infra)

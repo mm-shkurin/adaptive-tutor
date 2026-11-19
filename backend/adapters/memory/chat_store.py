@@ -13,6 +13,7 @@ class MemoryChatStore:
         self._attempts: dict[tuple[UUID, UUID, str], Attempt] = {}
         self._write_lock = asyncio.Lock()
         self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
+        self._chat_locks: dict[UUID, asyncio.Lock] = {}
         self._thread_interleave = None
         self._attempt_interleave = None
 
@@ -74,6 +75,11 @@ class MemoryChatStore:
             if remembered is not None:
                 return remembered
             return await build()
+
+    async def with_chat(self, chat_id: UUID, work):
+        lock = self._chat_locks.setdefault(chat_id, asyncio.Lock())
+        async with lock:
+            return await work()
 
     async def commit_attempt(
         self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt

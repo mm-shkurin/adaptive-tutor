@@ -4,7 +4,7 @@ from datetime import timedelta
 from uuid import UUID
 
 from domain.chat.chat import Chat, NotAskable, TellUnavailable
-from domain.chat.learning import LearningMode, ListedModel, Question
+from domain.chat.learning import LearningMode, Question
 from domain.chat.line import Line
 from domain.chat.source import Source
 from usecase.chat.errors import ChatNotFound, ReplyFailed
@@ -12,6 +12,7 @@ from usecase.chat.examiner_turn import examiner_or_choice
 from usecase.chat.outgoing import Outgoing
 from usecase.chat.ports import ChatStore, MaterialSearch, Tutor
 from usecase.chat.reply_budget import CHAT_LATENCY, expired, remaining_seconds
+from usecase.chat.send_build import build_attempt
 
 
 @dataclass(frozen=True)
@@ -58,16 +59,12 @@ class SendMessage:
             return remembered
         started = self._now()
 
-        async def build() -> Attempt:
-            chat = await self._askable(owner_id, chat_id)
-            model = ListedModel.parse(outgoing.model, outgoing.model_present)
-            if outgoing.tell:
-                attempt = await self._tell(chat, model.value, started)
-            else:
-                attempt = await self._spoken(chat, outgoing, model.value, started)
-            return await self.chats.commit_attempt(owner_id, chat_id, attempt_key, attempt)
-
-        return await self.chats.with_attempt(owner_id, chat_id, attempt_key, build)
+        return await self.chats.with_attempt(
+            owner_id,
+            chat_id,
+            attempt_key,
+            lambda: build_attempt(self, owner_id, chat_id, outgoing, attempt_key, started),
+        )
 
     async def _spoken(self, chat: Chat, outgoing: Outgoing, model: str, started) -> Attempt:
         answer = lambda m, mode, q, sources: self._answer(m, mode, q, sources, started)

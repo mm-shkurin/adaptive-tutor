@@ -177,9 +177,12 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         get_chat = request.app.state.ctx.get_chat
 
         async def once(item: dict):
-            outgoing = Outgoing.from_payload(
-                {"text": item["text"], "model": item["model"], "mode": item["mode"]}
-            )
+            if "payload" in item:
+                outgoing = Outgoing.from_payload(item["payload"])
+            else:
+                outgoing = Outgoing.from_payload(
+                    {"text": item["text"], "model": item["model"], "mode": item["mode"]}
+                )
             return await send.send(account.id, chat_id, outgoing, item["key"])
 
         results = await asyncio.gather(*(once(item) for item in body["attempts"]))

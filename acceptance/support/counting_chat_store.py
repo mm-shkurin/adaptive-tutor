@@ -43,6 +43,9 @@ class CountingChatStore:
     async def with_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str, build):
         return await self._inner.with_attempt(owner_id, chat_id, attempt_key, build)
 
+    async def with_chat(self, chat_id: UUID, work):
+        return await self._inner.with_chat(chat_id, work)
+
     async def commit_attempt(
         self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
     ) -> Attempt:
