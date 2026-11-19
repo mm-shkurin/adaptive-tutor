@@ -468,7 +468,12 @@
 - [S] implementation (chatPrefs localStorage already)
 - [S] refactor (no new prod code)
 
+### 1.2 Nothing in the material shows an empty sources panel
+- [x] tests (acceptance Selenium)
+- [S] implementation (missing reply + empty sources already)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.5–2.6, Load 1.1)
+- [ ] remaining UI/Load (0.x empty states, 1.3–1.5, 2.5–2.6, Load 1.1)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

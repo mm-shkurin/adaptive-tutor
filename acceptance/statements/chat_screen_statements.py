@@ -206,6 +206,12 @@ class ChatScreenStatements:
         ]
         assert reply_text not in tutor_texts
 
+    def then_the_sources_panel_is_empty(self) -> None:
+        panel = self.wait.until(
+            lambda driver: driver.find_element(By.CSS_SELECTOR, "[data-testid='chat-sources']")
+        )
+        assert panel.find_elements(*SOURCE_CARD) == []
+
     def then_the_tutor_shows_text(self, text: str) -> None:
         self.wait.until(
             lambda driver: any(

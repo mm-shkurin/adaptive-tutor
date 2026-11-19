@@ -214,6 +214,24 @@ class SignedInBrowserStatements:
         self.first_document = self.ready_document.body
         self.left_chat_id = self.chat_id
 
+    def given_a_signed_in_person_whose_last_reply_is_not_in_the_material(self) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        document_id = self.ready_document.body["id"]
+        seeded = self.chats.seed_search(self.token, document_id, ())
+        assert seeded.status_code == 204
+        sent = self.chats.send(
+            self.token,
+            self.chat_id,
+            self.person_line,
+            self.model,
+            "professor",
+            str(uuid4()),
+        )
+        assert sent.status_code == 200
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        self.chat = opened.body
+
     def then_one_person_and_one_tutor_line_are_stored(self) -> None:
         opened = self.chats.get(self.token, self.chat_id)
         assert opened.status_code == 200
