@@ -116,3 +116,24 @@
 **Where:** `send_build.py`, `SendSnapshot`, `MemoryChatStore.with_chat`
 **Implication:** Interleave try+tell and two choices with `interleave-sends` + `payload`; do not rely on attempt-key lock alone for cross-intent races.
 **From:** scenarios 5.11–5.14
+
+## Quirk: chat line body guard must accept reply
+
+**Quirk:** `isLineBody` must allow `kind: "reply"` alongside question/grade/withheld; rejecting reply drops tell/try release lines from the UI even when the API succeeds.
+**Where:** `frontend/src/shared/api/backend/bodyGuards.js`
+**Implication:** Keep `reply` in the allowed kinds whenever send returns grounded or release lines.
+**From:** scenario 3.4–3.10 (3.4-3.10-socratic-examiner-ui)
+
+## Quirk: chat send merges lines by id
+
+**Quirk:** `persist=False` re-emits an existing grade id; appending `result.lines` duplicates the grade row in the thread.
+**Where:** `frontend/src/features/chat/useChatScreen.js` (`mergeLines`)
+**Implication:** Chat send updates must merge incoming lines by id, not only concat.
+**From:** scenario 3.4–3.10 (3.4-3.10-socratic-examiner-ui)
+
+## Decision: show choices on last graded examiner question
+
+**Decision:** when no examiner question is open, still render choices on the last graded question.
+**Why:** UI 3.10 needs a second click target after the series stops; the API returns the prior grade unchanged.
+**Where applied:** `activeExaminerQuestion` in `frontend/src/features/chat/logic/chatView.js`
+**From:** scenario 3.4–3.10 (3.4-3.10-socratic-examiner-ui)
