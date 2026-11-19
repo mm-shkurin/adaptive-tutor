@@ -168,6 +168,12 @@ class SignedInBrowserStatements:
         assert len(self.examiner_question_texts) == 3
         self.script_tutor(self.tutor_line)
 
+    def given_a_signed_in_person_whose_reply_will_fail(self) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        failed = self.chats.fail_tutor(self.token)
+        assert failed.status_code == 204
+        self.failure_message = "The model could not answer"
+
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)
         self.driver.execute_script(

@@ -46,7 +46,11 @@ export function ChatScreen({ screen }) {
               </p>
             ) : null}
             {screen.refusal ? (
-              <p className="chat-refusal" data-testid="chat-refusal" role="alert">
+              <p
+                className="chat-refusal"
+                data-testid="chat-reply-failed"
+                role="alert"
+              >
                 {screen.refusal}
               </p>
             ) : null}

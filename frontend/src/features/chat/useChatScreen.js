@@ -162,6 +162,9 @@ export function useChatScreen() {
         ...current,
         lines: mergeLines(current?.lines ?? [], result.lines),
       }))
+      if (result.error) {
+        setRefusal(result.error.message)
+      }
       if (previewText) {
         setSummaries((prev) =>
           prev.map((row) => (row.id === chatId ? { ...row, preview: previewText } : row)),

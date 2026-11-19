@@ -118,10 +118,20 @@ export function isChatBody(value) {
 }
 
 export function isSendResultBody(value) {
+  if (
+    !(
+      isRecord(value) &&
+      typeof value.chat_id === 'string' &&
+      Array.isArray(value.lines) &&
+      value.lines.every(isLineBody)
+    )
+  ) {
+    return false
+  }
+  if (value.error === undefined || value.error === null) return true
   return (
-    isRecord(value) &&
-    typeof value.chat_id === 'string' &&
-    Array.isArray(value.lines) &&
-    value.lines.every(isLineBody)
+    isRecord(value.error) &&
+    typeof value.error.code === 'string' &&
+    typeof value.error.message === 'string'
   )
 }

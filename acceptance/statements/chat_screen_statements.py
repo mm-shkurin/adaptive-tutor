@@ -24,6 +24,7 @@ CHAT_MODE_SOCRATIC = (By.CSS_SELECTOR, "[data-testid='chat-mode-socratic']")
 CHAT_MODE_EXAMINER = (By.CSS_SELECTOR, "[data-testid='chat-mode-examiner']")
 CHAT_CHOICES = (By.CSS_SELECTOR, "[data-testid='chat-choices']")
 CHAT_GRADE = (By.CSS_SELECTOR, "[data-testid='chat-grade-label']")
+CHAT_REPLY_FAILED = (By.CSS_SELECTOR, "[data-testid='chat-reply-failed']")
 BOUND_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-bound-document']")
 WAIT_SECONDS = 20
 
@@ -59,6 +60,16 @@ class ChatScreenStatements:
         field.send_keys(text)
         self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
         self.wait.until(self._tutor_visible, "no tutor line after send")
+
+    def when_the_person_sends_a_question_that_fails(self, text: str = PERSON_QUESTION) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_REPLY_FAILED),
+            "no failure message after failed send",
+        )
 
     def then_the_list_row_shows_the_document_name_and_the_last_person_line(
         self, document_name: str, preview: str
@@ -205,6 +216,46 @@ class ChatScreenStatements:
         assert tutor_el.get_attribute("data-kind") in (None, "reply", "")
         assert tutor_el.find_element(*LINE_PAGE).text == f"страница {page}"
         assert tutor_el.find_elements(*CHAT_CHOICES) == []
+
+    def then_the_new_person_line_is_shown(self, text: str) -> None:
+        self.wait.until(
+            lambda driver: any(
+                el.find_element(*LINE_TEXT).text == text for el in driver.find_elements(*PERSON_LINE)
+            ),
+            "new person line missing",
+        )
+        texts = [el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*PERSON_LINE)]
+        assert text in texts
+
+    def then_the_persons_line_is_shown_without_a_tutor_line(self, text: str) -> None:
+        self.wait.until(
+            lambda driver: any(
+                el.find_element(*LINE_TEXT).text == text for el in driver.find_elements(*PERSON_LINE)
+            ),
+            "person line missing after failed reply",
+        )
+        person_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*PERSON_LINE)
+        ]
+        assert text in person_texts
+        tutor_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*TUTOR_LINE)
+        ]
+        assert text not in tutor_texts or all(
+            el.get_attribute("data-kind") != "reply" for el in self.driver.find_elements(*TUTOR_LINE)
+        )
+        assert not any(
+            el.find_elements(*LINE_PAGE) for el in self.driver.find_elements(*TUTOR_LINE)
+        )
+
+    def then_the_failure_message_is_shown(self, message: str) -> None:
+        alert = self.wait.until(lambda driver: driver.find_element(*CHAT_REPLY_FAILED))
+        assert alert.text == message
+
+    def then_the_screen_is_not_left_spinning(self) -> None:
+        assert self.driver.find_elements(By.CSS_SELECTOR, ".spinner") == []
+        send = self.wait.until(lambda driver: driver.find_element(*CHAT_SEND))
+        assert send.is_enabled()
 
     def then_the_quiz_list_does_not_contain_those_questions(self, texts: list[str]) -> None:
         link = self.wait.until(

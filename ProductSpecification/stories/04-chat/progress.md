@@ -408,7 +408,17 @@
 - [S] implementation (send after stopped examiner already grounded professor)
 - [S] refactor (no new prod code)
 
+### 3.11 A failed reply is shown on the chat
+- [x] tests (acceptance Selenium; sanity fail on message+"!")
+- [x] implementation (surface send result.error on chat-reply-failed; clear sending)
+- [S] refactor (refusal path already one alert)
+
+### 3.12 After a failed reply a new line can be sent
+- [x] tests (acceptance Selenium)
+- [S] implementation (composer stays enabled after 3.11)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] Selenium UI 3.11+ (+ remaining UI/Load)
+- [ ] Selenium UI 3.13+ (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load
