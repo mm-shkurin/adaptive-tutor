@@ -29,6 +29,7 @@ pytest.register_assert_rewrite(
     "statements.examiner_interleave_statements",
     "statements.chat_store_down_statements",
     "statements.model_key_statements",
+    "statements.redaction_statements",
 )
 
 from statements.chat_statements import ChatStatements

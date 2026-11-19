@@ -103,6 +103,14 @@ class ChatClient:
         )
         return read_result(response)
 
+    def set_model_key(self, token: str, key: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/model-key/set",
+            headers=self._bearer(token),
+            json={"key": key},
+        )
+        return read_result(response)
+
     def fail_tutor(self, token: str) -> HttpResult:
         response = self.http.post(
             "/acceptance/tutor/fail",

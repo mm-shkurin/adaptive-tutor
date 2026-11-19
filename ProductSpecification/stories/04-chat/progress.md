@@ -378,6 +378,13 @@
 - [x] implementation (ScriptedTutor.api_key empty → ReplyFailed)
 - [x] refactor (clear-key probe)
 
+## Tier 2 — Infrastructure (04_Infrastructure_Tests.md §3.2 redaction)
+
+### 3.2 A failure body and its log omit a secret, the document text, and another person's chat
+- [x] tests (acceptance; body keys + omit secret/piece/neighbour; log capture deferred)
+- [x] implementation (errors already code/message only)
+- [x] refactor (redaction_statements)
+
 ## Next
-- [ ] Infra 1.5/1.7 pool baseline; 3.2 redaction
+- [ ] Infra 1.5/1.7 pool baseline; 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

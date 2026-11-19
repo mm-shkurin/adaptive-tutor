@@ -19,6 +19,7 @@ from statements.examiner_statements import ExaminerStatements
 from statements.mode_interleave_statements import ModeInterleaveStatements
 from statements.mode_statements import ModeStatements
 from statements.model_key_statements import ModelKeyStatements
+from statements.redaction_statements import RedactionStatements
 from statements.partial_vector_statements import PartialVectorStatements
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
 from statements.session_store_fail_statements import SessionStoreFailStatements
@@ -53,6 +54,7 @@ class ChatStatements(
     ExaminerInterleaveStatements,
     ChatStoreDownStatements,
     ModelKeyStatements,
+    RedactionStatements,
 ):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)

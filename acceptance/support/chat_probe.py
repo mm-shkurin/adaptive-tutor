@@ -47,6 +47,12 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         tutor.api_key = ""
         return Response(status_code=204)
 
+    @app.post("/acceptance/model-key/set", status_code=204)
+    async def set_model_key(request: Request, body: dict = Body(...)):
+        await document_caller(request)
+        tutor.api_key = str(body.get("key") or "")
+        return Response(status_code=204)
+
     @app.post("/acceptance/tutor/hang", status_code=204)
     async def hang_tutor(request: Request):
         await document_caller(request)
