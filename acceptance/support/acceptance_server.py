@@ -98,6 +98,7 @@ class AcceptanceServer:
 
     def _context(self) -> AppContext:
         store = MemoryAccountStore()
+        self._accounts = store
         tokens = JwtTokens(
             DISCLOSURE_KNOWN_SECRET, "b" * 32, timedelta(minutes=60), timedelta(days=30)
         )
@@ -172,6 +173,7 @@ class AcceptanceServer:
         app.router.lifespan_context = lifespan
         app.state.index_probe = self.probe
         app.state.peak_chat_hold = self.peak_chat_hold
+        app.state.accounts = self._accounts
         search = SearchDocuments(self._intake, self._pieces)
 
         from adapters.http.documents import _caller as document_caller

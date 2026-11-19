@@ -67,3 +67,24 @@
 **Where:** `domain/document/document.py` (`transition`), `acceptance/clients/application/index_probe.py` (`force_document_status`)
 **Implication:** Gate setups for failed/unknown must follow those paths, not a single move call.
 **From:** scenario 1.2 (1.2-a-document-that-is-not-ready-cannot-be-bound)
+
+## Quirk: concurrent sends need latch + append commit
+
+**Quirk:** Interleaved sends use a VectorLatch on `get` (thread) or `find_attempt` (same key), then `with_attempt` before tutor and `commit_attempt` that appends lines under a write lock — replace-all `save` loses a sibling attempt.
+**Where:** `MemoryChatStore` / `PostgresChatStore.commit_attempt`, `acceptance/support/chat_probe.py` `interleave-sends`
+**Implication:** Arm the matching latch, gather two `SendMessage.send` on the server loop; do not ThreadPool two HTTP posts.
+**From:** scenario 4.8 (4.8-two-different-attempts-in-flight-both-remain)
+
+## Quirk: ChatClient.list shadows builtin list in annotations
+
+**Quirk:** A method named `list` makes bare `list[...]` annotations resolve to the method unless `from __future__ import annotations` is on.
+**Where:** `acceptance/clients/application/chat_client.py`
+**Implication:** Keep postponed annotations (or rename) before adding typed `list`/`dict` parameters.
+**From:** scenario 4.8 (4.8-two-different-attempts-in-flight-both-remain)
+
+## Quirk: session-store fail probe auths before killing the store
+
+**Quirk:** `MemoryAccountStore.dead` raises `StoreUnavailable` on the next `get`; chats map that to `ChatNotFound`. The fail probe must authenticate first, then set `dead`.
+**Where:** `adapters/memory/account_store.py`, `adapters/http/chats._caller`, `/acceptance/session-store/fail`
+**Implication:** Recover via `/acceptance/session-store/recover` (no auth) before asserting the thread is unchanged.
+**From:** scenario 1.4 (1.4-a-session-store-failure-is-refused-like-a-missing-chat)

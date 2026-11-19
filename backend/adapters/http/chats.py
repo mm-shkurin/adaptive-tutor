@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from adapters.http.auth import _bearer
 from domain.chat.chat import Chat
+from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
 from usecase.chat.errors import ChatNotFound
 from usecase.chat.outgoing import Outgoing
@@ -73,7 +74,7 @@ async def send_message(
 async def _caller(request: Request):
     try:
         return await request.app.state.ctx.session.caller(_bearer(request))
-    except Unauthorized as error:
+    except (Unauthorized, AccountStoreUnavailable) as error:
         raise ChatNotFound() from error
 
 

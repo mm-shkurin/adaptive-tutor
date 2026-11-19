@@ -234,6 +234,13 @@
 - [S] implementation (ListChats → one list_for; CountingChatStore probe)
 - [S] refactor (no new prod code)
 
+## Tier 2 — Backend (01_API_Tests.md §1 gates cont.)
+
+### 1.4 A session store failure is refused like a missing chat
+- [x] tests (acceptance; sanity fail on 503 vs 404)
+- [x] implementation (chats._caller AccountStoreUnavailable → ChatNotFound)
+- [S] refactor (one-line mapping; no extract)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; §5.2+ modes; UI/Load/Infra)
+- [ ] полный `/harvest` остальных Tier 2 (3.4/3.6; §5.2+ modes; UI/Load/Infra)
 - [ ] 3.4 / 3.6 / §5.2+ need prod (examiner, tell, socratic) — not acceptance-only
