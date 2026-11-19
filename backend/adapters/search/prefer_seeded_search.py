@@ -11,6 +11,10 @@ class PreferSeededSearch:
         self._clock = clock
         self._advance_ms = None
 
+    @property
+    def live(self) -> int:
+        return self._seeded.live
+
     def seed(self, document_id: UUID, pieces: tuple[Source, ...]) -> None:
         self._seeded.seed(document_id, pieces)
 

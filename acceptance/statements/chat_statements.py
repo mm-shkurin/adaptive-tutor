@@ -13,6 +13,7 @@ from statements.interleave_send_statements import InterleaveSendStatements
 from statements.interleave_vector_statements import InterleaveVectorStatements
 from statements.latency_statements import LatencyStatements
 from statements.list_order_statements import ListOrderStatements
+from statements.chat_connection_statements import ChatConnectionStatements
 from statements.chat_store_down_statements import ChatStoreDownStatements
 from statements.examiner_interleave_statements import ExaminerInterleaveStatements
 from statements.examiner_statements import ExaminerStatements
@@ -53,6 +54,7 @@ class ChatStatements(
     ModeInterleaveStatements,
     ExaminerInterleaveStatements,
     ChatStoreDownStatements,
+    ChatConnectionStatements,
     ModelKeyStatements,
     RedactionStatements,
 ):

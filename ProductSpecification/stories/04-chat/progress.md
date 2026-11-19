@@ -354,6 +354,11 @@
 - [x] implementation (with 1.1)
 - [x] refactor (with 1.1)
 
+### 1.5 Repeated failed sends return the store connections to baseline
+- [x] tests (acceptance; sanity fail on baseline+1)
+- [x] implementation (MemoryChatStore/MaterialSearch live+_guard; store-connections probe)
+- [ ] refactor
+
 ## Tier 2 — Integration (06_Integration_Tests.md §2–3)
 
 ### 2.1 A failed model call keeps one person line and no tutor line
@@ -394,6 +399,7 @@
 - [S] refactor (mergeLines + activeExaminerQuestion extracted)
 
 ## Next
+- [ ] Infra 1.7 pool baseline (model/embedding)
 - [ ] Selenium UI 3.9 / 3.11+ (+ remaining UI/Load)
-- [ ] Infra 1.5/1.7 pool baseline; 3.2 log capture if needed
+- [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load
