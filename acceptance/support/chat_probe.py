@@ -67,6 +67,14 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         tutor.hold(TutorHold())
         return Response(status_code=204)
 
+    @app.post("/acceptance/tutor/release", status_code=204)
+    async def release_tutor(request: Request):
+        await document_caller(request)
+        hold = tutor._hold
+        if hold is not None:
+            hold.release()
+        return Response(status_code=204)
+
     @app.post("/acceptance/chats/{chat_id}/reply-after-switch")
     async def reply_after_switch(chat_id: UUID, request: Request, body: dict = Body(...)):
         import asyncio

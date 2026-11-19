@@ -418,7 +418,12 @@
 - [S] implementation (composer stays enabled after 3.11)
 - [S] refactor (no new prod code)
 
+### 3.16 While the reply is in flight the screen shows that it is working
+- [x] tests (acceptance Selenium; tutor hold + chat-working)
+- [x] implementation (chat-working while sending; tutor/release probe)
+- [S] refactor (status line beside refusal)
+
 ## Next
-- [ ] Selenium UI 3.13+ (+ remaining UI/Load)
+- [ ] Selenium UI 3.13–3.15 / 4.1 (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

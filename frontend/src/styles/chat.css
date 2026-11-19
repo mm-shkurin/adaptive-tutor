@@ -286,7 +286,7 @@
 }
 .source-text { font-size: 0.82rem; color: var(--text-soft); }
 
-.chat-empty, .chat-empty-state, .chat-notice, .chat-refusal {
+.chat-empty, .chat-empty-state, .chat-notice, .chat-refusal, .chat-working {
   color: var(--text-soft);
   padding: 12px 16px;
 }

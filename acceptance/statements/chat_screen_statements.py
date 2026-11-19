@@ -25,6 +25,7 @@ CHAT_MODE_EXAMINER = (By.CSS_SELECTOR, "[data-testid='chat-mode-examiner']")
 CHAT_CHOICES = (By.CSS_SELECTOR, "[data-testid='chat-choices']")
 CHAT_GRADE = (By.CSS_SELECTOR, "[data-testid='chat-grade-label']")
 CHAT_REPLY_FAILED = (By.CSS_SELECTOR, "[data-testid='chat-reply-failed']")
+CHAT_WORKING = (By.CSS_SELECTOR, "[data-testid='chat-working']")
 BOUND_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-bound-document']")
 WAIT_SECONDS = 20
 
@@ -70,6 +71,21 @@ class ChatScreenStatements:
             lambda driver: driver.find_elements(*CHAT_REPLY_FAILED),
             "no failure message after failed send",
         )
+
+    def when_the_person_sends_while_the_reply_is_held(self, text: str = PERSON_QUESTION) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_WORKING),
+            "no working state while reply in flight",
+        )
+
+    def then_the_screen_shows_that_it_is_working_and_not_the_failure_message(self) -> None:
+        working = self.driver.find_elements(*CHAT_WORKING)
+        assert working and working[0].is_displayed()
+        assert self.driver.find_elements(*CHAT_REPLY_FAILED) == []
 
     def then_the_list_row_shows_the_document_name_and_the_last_person_line(
         self, document_name: str, preview: str

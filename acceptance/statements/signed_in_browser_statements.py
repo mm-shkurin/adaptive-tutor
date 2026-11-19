@@ -174,6 +174,15 @@ class SignedInBrowserStatements:
         assert failed.status_code == 204
         self.failure_message = "The model could not answer"
 
+    def and_the_tutor_reply_is_held(self) -> None:
+        self.script_tutor(self.tutor_line)
+        held = self.chats.hold_tutor(self.token)
+        assert held.status_code == 204
+
+    def release_held_tutor(self) -> None:
+        released = self.chats.release_tutor(self.token)
+        assert released.status_code == 204
+
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)
         self.driver.execute_script(

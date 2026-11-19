@@ -45,6 +45,11 @@ export function ChatScreen({ screen }) {
                 {view.notice}
               </p>
             ) : null}
+            {screen.sending ? (
+              <p className="chat-working" data-testid="chat-working" role="status">
+                Ответ готовится…
+              </p>
+            ) : null}
             {screen.refusal ? (
               <p
                 className="chat-refusal"

@@ -132,6 +132,13 @@ class ChatClient:
         )
         return read_result(response)
 
+    def release_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/release",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def reply_after_switch(
         self,
         token: str,
