@@ -241,6 +241,28 @@
 - [x] implementation (chats._caller AccountStoreUnavailable → ChatNotFound)
 - [S] refactor (one-line mapping; no extract)
 
+## Tier 2 — Backend (01_API_Tests.md §5 modes + §3.6)
+
+### 5.2 Socratic stores a question and no page
+- [x] tests (acceptance; sanity fail on kind reply vs withheld)
+- [x] implementation (LearningMode socratic path; Line.withheld; record_withheld)
+- [S] refactor (send_message under limit; domain methods on Chat)
+
+### 3.6 Asking to be told when nothing is withheld is refused
+- [x] tests (acceptance)
+- [x] implementation (tell → TellUnavailable when not withholding)
+- [S] refactor (with 5.2)
+
+### 5.3 A try after a withheld question answers with a page
+- [x] tests (acceptance; try + phrase-that-asks-to-be-told)
+- [x] implementation (is_withholding → record_release with person line)
+- [S] refactor (with 5.2)
+
+### 5.4 The tell control answers with a page and stores no person line
+- [x] tests (acceptance)
+- [x] implementation (Outgoing.tell; release without person line)
+- [S] refactor (with 5.2)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (3.4/3.6; §5.2+ modes; UI/Load/Infra)
-- [ ] 3.4 / 3.6 / §5.2+ need prod (examiner, tell, socratic) — not acceptance-only
+- [ ] полный `/harvest` остальных Tier 2 (3.4; §5.5+ examiner; UI/Load/Infra)
+- [ ] 3.4 / §5.5+ need prod (examiner choices/grades) — not acceptance-only

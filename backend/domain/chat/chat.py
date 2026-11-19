@@ -16,6 +16,10 @@ class NotAskable(Exception):
     """This material has no vectors yet."""
 
 
+class TellUnavailable(Exception):
+    """Tell needs an open withheld question."""
+
+
 @dataclass(frozen=True)
 class Chat:
     id: UUID
@@ -81,6 +85,43 @@ class Chat:
     def record_failed(self, question: str) -> tuple["Chat", tuple[Line, ...]]:
         person = Line.person(question)
         return replace(self, lines=self.lines + (person,)), (person,)
+
+    def record_withheld(
+        self, question: str, mode: str, tutor_text: str
+    ) -> tuple["Chat", tuple[Line, Line]]:
+        person = Line.person(question)
+        tutor = Line.withheld(tutor_text, mode)
+        return replace(self, lines=self.lines + (person, tutor)), (person, tutor)
+
+    def record_release(
+        self,
+        try_text: str | None,
+        model: str,
+        mode: str,
+        sources: tuple[Source, ...],
+        tutor_text: str,
+    ) -> tuple["Chat", tuple[Line, ...]]:
+        tutor = Line.grounded(tutor_text, model, mode, sources)
+        if try_text is None:
+            return replace(self, lines=self.lines + (tutor,)), (tutor,)
+        person = Line.person(try_text)
+        return replace(self, lines=self.lines + (person, tutor)), (person, tutor)
+
+    def is_withholding(self) -> bool:
+        for line in reversed(self.lines):
+            if line.role == "tutor":
+                return line.kind == "withheld"
+        return False
+
+    def withheld_prompt(self) -> str | None:
+        prompt = None
+        previous = None
+        for line in self.lines:
+            if line.role == "tutor" and line.kind == "withheld" and previous is not None:
+                if previous.role == "person":
+                    prompt = previous.text
+            previous = line
+        return prompt
 
     def with_appended(self, lines: tuple[Line, ...]) -> "Chat":
         return replace(self, lines=self.lines + lines)

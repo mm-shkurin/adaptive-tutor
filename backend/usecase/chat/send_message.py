@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from uuid import UUID
 
-from domain.chat.chat import Chat, NotAskable
+from domain.chat.chat import Chat, NotAskable, TellUnavailable
 from domain.chat.learning import LearningMode, ListedModel, Question
 from domain.chat.line import Line
 from domain.chat.source import Source
@@ -57,17 +57,74 @@ class SendMessage:
         started = self._now()
 
         async def build() -> Attempt:
-            question = Question.parse(outgoing.text)
-            model = ListedModel.parse(outgoing.model, outgoing.model_present)
-            mode = LearningMode.parse(outgoing.mode, outgoing.mode_present).require_grounded()
             chat = await self._askable(owner_id, chat_id)
-            pieces = await self.search.matching(chat.document_id, question.text)
-            _updated, attempt = await self._attempt(
-                chat, question.text, model.value, mode.value, pieces, started
-            )
+            model = ListedModel.parse(outgoing.model, outgoing.model_present)
+            if outgoing.tell:
+                attempt = await self._tell(chat, model.value, started)
+            else:
+                attempt = await self._spoken(chat, outgoing, model.value, started)
             return await self.chats.commit_attempt(owner_id, chat_id, attempt_key, attempt)
 
         return await self.chats.with_attempt(owner_id, chat_id, attempt_key, build)
+
+    async def _spoken(self, chat: Chat, outgoing: Outgoing, model: str, started) -> Attempt:
+        question = Question.parse(outgoing.text)
+        mode = LearningMode.parse(outgoing.mode, outgoing.mode_present)
+        if chat.is_withholding():
+            return await self._release(chat, question.text, model, "socratic", started)
+        if mode.value == "socratic":
+            return await self._socratic(chat, question.text, model, started)
+        mode.require_grounded()
+        pieces = await self.search.matching(chat.document_id, question.text)
+        _updated, attempt = await self._grounded(
+            chat, question.text, model, mode.value, pieces, started
+        )
+        return attempt
+
+    async def _tell(self, chat: Chat, model: str, started) -> Attempt:
+        if not chat.is_withholding():
+            raise TellUnavailable()
+        prompt = chat.withheld_prompt() or ""
+        return await self._release(chat, None, model, "socratic", started, prompt)
+
+    async def _socratic(self, chat: Chat, question: str, model: str, started) -> Attempt:
+        pieces = await self.search.matching(chat.document_id, question)
+        sources = Source.cite(pieces)
+        if not sources:
+            _updated, lines = chat.record_missing(question, "socratic")
+            return Attempt(chat.id, lines)
+        text = await self._answer(model, "socratic", question, sources, started)
+        if text is None:
+            _updated, lines = chat.record_failed(question)
+            return Attempt(chat.id, lines, ReplyError.failed())
+        _updated, lines = chat.record_withheld(question, "socratic", text)
+        return Attempt(chat.id, lines)
+
+    async def _release(
+        self,
+        chat: Chat,
+        try_text: str | None,
+        model: str,
+        mode: str,
+        started,
+        prompt: str | None = None,
+    ) -> Attempt:
+        ask = prompt if prompt is not None else (try_text or "")
+        pieces = await self.search.matching(chat.document_id, ask)
+        sources = Source.cite(pieces)
+        if not sources:
+            if try_text is None:
+                return Attempt(chat.id, (Line.missing(mode),))
+            _updated, lines = chat.record_missing(try_text, mode)
+            return Attempt(chat.id, lines)
+        text = await self._answer(model, mode, ask, sources, started)
+        if text is None:
+            if try_text is None:
+                return Attempt(chat.id, (), ReplyError.failed())
+            _updated, lines = chat.record_failed(try_text)
+            return Attempt(chat.id, lines, ReplyError.failed())
+        _updated, lines = chat.record_release(try_text, model, mode, sources, text)
+        return Attempt(chat.id, lines)
 
     async def _askable(self, owner_id: UUID, chat_id: UUID) -> Chat:
         found = await self.chats.get(owner_id, chat_id)
@@ -79,7 +136,7 @@ class SendMessage:
             raise NotAskable()
         return chat
 
-    async def _attempt(
+    async def _grounded(
         self,
         chat: Chat,
         question: str,
@@ -92,22 +149,33 @@ class SendMessage:
         if not sources:
             updated, lines = chat.record_missing(question, mode)
             return updated, Attempt(chat.id, lines)
-        if expired(started, self._now(), self.latency):
+        text = await self._answer(model, mode, question, sources, started)
+        if text is None:
             updated, lines = chat.record_failed(question)
             return updated, Attempt(chat.id, lines, ReplyError.failed())
+        updated, lines = chat.record_grounded(question, model, mode, sources, text)
+        return updated, Attempt(chat.id, lines)
+
+    async def _answer(
+        self,
+        model: str,
+        mode: str,
+        question: str,
+        sources: tuple[Source, ...],
+        started,
+    ) -> str | None:
+        if expired(started, self._now(), self.latency):
+            return None
         try:
             text = await asyncio.wait_for(
                 self.tutor.answer(model, mode, question, sources),
                 timeout=max(remaining_seconds(started, self._now(), self.latency), 0),
             )
         except (ReplyFailed, asyncio.TimeoutError):
-            updated, lines = chat.record_failed(question)
-            return updated, Attempt(chat.id, lines, ReplyError.failed())
+            return None
         if expired(started, self._now(), self.latency):
-            updated, lines = chat.record_failed(question)
-            return updated, Attempt(chat.id, lines, ReplyError.failed())
-        updated, lines = chat.record_grounded(question, model, mode, sources, text)
-        return updated, Attempt(chat.id, lines)
+            return None
+        return text
 
     def _now(self):
         if self.clock is None:

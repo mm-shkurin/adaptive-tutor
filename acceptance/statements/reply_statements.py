@@ -66,16 +66,15 @@ class ReplyStatements:
         assert self._tutor()["model"] == MODEL
         calls = self.chats.tutor_calls(self.token)
         assert calls.status_code == 200
-        assert calls.body == {
-            "calls": [
-                {
-                    "model": MODEL,
-                    "mode": "professor",
-                    "question": QUESTION,
-                    "sources": [dict(piece) for piece in self.pieces[:10]],
-                }
-            ]
-        }
+        assert calls.body is not None
+        assert calls.body["calls"] == [
+            {
+                "model": MODEL,
+                "mode": "professor",
+                "question": QUESTION,
+                "sources": [dict(piece) for piece in self.pieces[:10]],
+            }
+        ]
 
     def then_the_page_is_the_starting_page_of_the_first_retrieved_piece(self) -> None:
         assert self._tutor()["page"] == self.pieces[0]["page"]

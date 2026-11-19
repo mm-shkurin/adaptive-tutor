@@ -29,6 +29,10 @@ class Line:
     def missing(mode: str) -> "Line":
         return Line(uuid4(), "tutor", NOT_IN_MATERIAL, None, mode, "reply", None, ())
 
+    @staticmethod
+    def withheld(text: str, mode: str) -> "Line":
+        return Line(uuid4(), "tutor", text, None, mode, "withheld", None, ())
+
     def json(self) -> dict:
         return {
             "id": str(self.id),
