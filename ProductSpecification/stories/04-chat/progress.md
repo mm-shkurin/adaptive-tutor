@@ -473,7 +473,12 @@
 - [S] implementation (missing reply + empty sources already)
 - [S] refactor (no new prod code)
 
+### 0.2 No ready PDF shows an empty state and send adds nothing
+- [x] tests (acceptance Selenium)
+- [S] implementation (no_ready empty state already)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] remaining UI/Load (0.x empty states, 1.3–1.5, 2.5–2.6, Load 1.1)
+- [ ] remaining UI/Load (0.1/0.3–0.4, 1.3–1.5, 2.5–2.6, Load 1.1)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

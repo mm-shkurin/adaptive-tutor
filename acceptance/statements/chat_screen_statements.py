@@ -206,6 +206,29 @@ class ChatScreenStatements:
         ]
         assert reply_text not in tutor_texts
 
+    def then_the_empty_state_is_shown(self) -> None:
+        empty = self.wait.until(
+            lambda driver: driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='chat-empty-state']"
+            )
+        )
+        assert "Нет готового PDF" in empty.text
+        assert self.driver.find_elements(*CHAT_SEND) == [] or not self.driver.find_element(
+            *CHAT_SEND
+        ).is_displayed()
+
+    def when_the_person_tries_to_send_from_empty_state(self) -> None:
+        sends = self.driver.find_elements(*CHAT_SEND)
+        inputs = self.driver.find_elements(*CHAT_INPUT)
+        if inputs and inputs[0].is_displayed():
+            inputs[0].send_keys("should not send")
+        if sends and sends[0].is_displayed() and sends[0].is_enabled():
+            sends[0].click()
+
+    def then_sending_added_no_line(self) -> None:
+        assert self.driver.find_elements(*PERSON_LINE) == []
+        assert self.driver.find_elements(*TUTOR_LINE) == []
+
     def then_the_sources_panel_is_empty(self) -> None:
         panel = self.wait.until(
             lambda driver: driver.find_element(By.CSS_SELECTOR, "[data-testid='chat-sources']")
