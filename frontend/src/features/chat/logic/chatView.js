@@ -43,6 +43,7 @@ export function chatListRows(summaries) {
 }
 
 export function threadLines(lines) {
+  const open = openExaminerQuestion(lines)
   return lines.map((line) => ({
     id: line.id,
     role: line.role,
@@ -50,9 +51,38 @@ export function threadLines(lines) {
     cssRole: line.role === 'person' ? 'user' : 'agent',
     text: line.text,
     model: line.model ?? null,
+    kind: line.kind ?? null,
     citation: line.role === 'tutor' ? pageCitation(line.page ?? null) : null,
     page: line.page ?? null,
+    choices: open && line.id === open.id ? line.choices ?? [] : [],
+    gradeLabel: gradeLabel(line),
+    choiceId: line.choice_id ?? null,
+    correct: line.correct ?? null,
   }))
+}
+
+export function gradeLabel(line) {
+  if (line?.kind !== 'grade') return null
+  if (line.correct === true) return 'Верно'
+  if (line.correct === false) return 'Неверно'
+  return null
+}
+
+export function isWithholding(lines) {
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    if (lines[index].role === 'tutor') return lines[index].kind === 'withheld'
+  }
+  return false
+}
+
+export function openExaminerQuestion(lines) {
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index]
+    if (line.role !== 'tutor') continue
+    if (line.kind === 'question') return line
+    if (line.kind === 'grade') return null
+  }
+  return null
 }
 
 export function sourcesFromLines(lines) {
@@ -66,6 +96,7 @@ export function sourcesFromLines(lines) {
 }
 
 export function chatScreenView({ summaries, chat, emptyReason }) {
+  const lines = chat?.lines ?? []
   return {
     heading: HEADING,
     sourcesTitle: SOURCES_TITLE,
@@ -75,8 +106,10 @@ export function chatScreenView({ summaries, chat, emptyReason }) {
     notice: chat && !chat.askable ? chat.notice || NOTICE_DEFAULT : null,
     documentName: chat?.document_name ?? null,
     askable: chat?.askable ?? false,
+    withholding: isWithholding(lines),
+    openQuestion: openExaminerQuestion(lines),
     rows: chatListRows(summaries ?? []),
-    lines: threadLines(chat?.lines ?? []),
-    sources: sourcesFromLines(chat?.lines ?? []),
+    lines: threadLines(lines),
+    sources: sourcesFromLines(lines),
   }
 }

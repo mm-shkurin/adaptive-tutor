@@ -7,10 +7,12 @@ export function Composer({
   mode,
   sending,
   askable,
+  withholding,
   onDraft,
   onModel,
   onMode,
   onSend,
+  onTell,
   onAttach,
 }) {
   return (
@@ -36,6 +38,17 @@ export function Composer({
               {item.label}
             </button>
           ))}
+          {withholding ? (
+            <button
+              type="button"
+              className="mode-btn"
+              data-testid="chat-tell"
+              disabled={!askable || sending}
+              onClick={onTell}
+            >
+              Скажи
+            </button>
+          ) : null}
         </div>
         <div className="composer-right">
           <select

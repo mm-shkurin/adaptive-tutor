@@ -133,6 +133,35 @@
   white-space: pre-wrap;
 }
 .msg.user .msg-bubble { background: var(--solid-bg); color: var(--solid-fg); }
+.msg-grade {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-deep);
+}
+.msg-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.choice-btn {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--mist);
+}
+.choice-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 .msg-meta {
   display: flex;
   flex-wrap: wrap;

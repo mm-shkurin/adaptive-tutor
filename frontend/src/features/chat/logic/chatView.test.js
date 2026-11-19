@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   chatScreenView,
+  gradeLabel,
+  isWithholding,
+  openExaminerQuestion,
   pageCitation,
   sourcePageLabel,
   sourcesFromLines,
@@ -49,6 +52,57 @@ describe('chatView', () => {
         sources: [{ page: 5, text: 'λ — собственное число' }],
       },
     ])).toEqual([{ key: 't1-0', pageLabel: 'страница 5', text: 'λ — собственное число' }])
+  })
+
+  it('maps examiner question choices and grade labels without a page on the question', () => {
+    const graded = threadLines([
+      {
+        id: 'q0',
+        role: 'tutor',
+        text: 'Old?',
+        kind: 'question',
+        page: null,
+        choices: [
+          { id: 'x1', text: 'X' },
+          { id: 'x2', text: 'Y' },
+          { id: 'x3', text: 'Z' },
+          { id: 'x4', text: 'W' },
+        ],
+      },
+      {
+        id: 'g1',
+        role: 'tutor',
+        text: '',
+        kind: 'grade',
+        correct: true,
+        choice_id: 'x1',
+        page: 4,
+      },
+    ])
+    expect(graded[0].choices).toHaveLength(0)
+    expect(graded[1].gradeLabel).toBe('Верно')
+    expect(graded[1].citation).toBe('страница 4')
+
+    const open = threadLines([
+      {
+        id: 'q1',
+        role: 'tutor',
+        text: 'Which process?',
+        kind: 'question',
+        page: null,
+        choices: [
+          { id: 'c1', text: 'A' },
+          { id: 'c2', text: 'B' },
+          { id: 'c3', text: 'C' },
+          { id: 'c4', text: 'D' },
+        ],
+      },
+    ])
+    expect(open[0].citation).toBeNull()
+    expect(open[0].choices).toHaveLength(4)
+    expect(gradeLabel({ kind: 'grade', correct: false })).toBe('Неверно')
+    expect(isWithholding([{ role: 'tutor', kind: 'withheld' }])).toBe(true)
+    expect(openExaminerQuestion([{ role: 'tutor', kind: 'question', id: 'q1' }]).id).toBe('q1')
   })
 
   it('builds list rows and empty sources when there is no tutor material', () => {

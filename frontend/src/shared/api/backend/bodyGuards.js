@@ -63,13 +63,45 @@ export function isSourceBody(value) {
   )
 }
 
+export function isChoiceBody(value) {
+  return isRecord(value) && typeof value.id === 'string' && typeof value.text === 'string'
+}
+
 export function isLineBody(value) {
-  return (
-    isRecord(value) &&
-    typeof value.id === 'string' &&
-    (value.role === 'person' || value.role === 'tutor') &&
-    typeof value.text === 'string'
-  )
+  if (
+    !(
+      isRecord(value) &&
+      typeof value.id === 'string' &&
+      (value.role === 'person' || value.role === 'tutor') &&
+      typeof value.text === 'string'
+    )
+  ) {
+    return false
+  }
+  if (
+    value.kind !== undefined &&
+    value.kind !== null &&
+    value.kind !== 'question' &&
+    value.kind !== 'grade' &&
+    value.kind !== 'withheld' &&
+    value.kind !== 'answer'
+  ) {
+    return false
+  }
+  if (value.choices !== undefined && value.choices !== null) {
+    if (!Array.isArray(value.choices) || !value.choices.every(isChoiceBody)) return false
+  }
+  if (value.correct !== undefined && value.correct !== null && typeof value.correct !== 'boolean') {
+    return false
+  }
+  if (
+    value.choice_id !== undefined &&
+    value.choice_id !== null &&
+    typeof value.choice_id !== 'string'
+  ) {
+    return false
+  }
+  return true
 }
 
 export function isChatBody(value) {

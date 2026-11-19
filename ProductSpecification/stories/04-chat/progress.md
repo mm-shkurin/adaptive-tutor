@@ -385,6 +385,15 @@
 - [x] implementation (errors already code/message only)
 - [x] refactor (redaction_statements)
 
+## Tier 2 — Frontend (02_UI_Tests.md §3 modes)
+
+### 3.4–3.8 Socratic withhold/tell and Examiner choices (screen wiring)
+- [x] tests (vitest chatView: open question choices, grade labels, withholding)
+- [x] implementation (chatView kind/choices/grade/withholding; ChatThread choices; Composer tell; useChatScreen sendChoice/sendTell/examiner start; bodyGuards line fields)
+- [ ] tests (acceptance Selenium 3.4 / 3.6 / 3.7 / 3.8)
+- [ ] refactor
+
 ## Next
+- [ ] Selenium UI 3.4 / 3.6 / 3.7 / 3.8 (+ 3.5 / 3.9 / 3.10)
 - [ ] Infra 1.5/1.7 pool baseline; 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

@@ -114,8 +114,12 @@ export function useChatScreen() {
   }
 
   function chooseMode(next) {
+    const prior = mode
     setMode(next)
     storeMode(next)
+    if (next === 'examiner' && prior !== 'examiner') {
+      void postPayload({ mode: 'examiner' })
+    }
   }
 
   async function sendDraft() {
@@ -129,22 +133,41 @@ export function useChatScreen() {
       setRefusal(chat.notice || 'Материал пока нельзя спросить.')
       return
     }
+    await postPayload({ text, model, mode }, text)
+  }
+
+  async function sendTell() {
+    await postPayload({ tell: true })
+  }
+
+  async function sendChoice(choiceId) {
+    await postPayload({ choice_id: choiceId })
+  }
+
+  async function postPayload(payload, previewText) {
+    if (!chat || sendLock.current || sending) return
+    if (!chat.askable) {
+      setRefusal(chat.notice || 'Материал пока нельзя спросить.')
+      return
+    }
     sendLock.current = true
     setSending(true)
     setRefusal(null)
     const chatId = chat.id
     const key = crypto.randomUUID()
     try {
-      const result = await sendChatMessage(chatId, { text, model, mode }, key)
+      const result = await sendChatMessage(chatId, payload, key)
       if (activeId.current !== chatId) return
       setChat((current) => ({
         ...current,
         lines: [...(current?.lines ?? []), ...result.lines],
       }))
-      setSummaries((prev) =>
-        prev.map((row) => (row.id === chatId ? { ...row, preview: text } : row)),
-      )
-      setDraft('')
+      if (previewText) {
+        setSummaries((prev) =>
+          prev.map((row) => (row.id === chatId ? { ...row, preview: previewText } : row)),
+        )
+        setDraft('')
+      }
     } catch (error) {
       if (leaveIfExpired(error, navigate)) return
       setRefusal(error.message)
@@ -175,6 +198,8 @@ export function useChatScreen() {
     selectChat,
     startNewChat,
     sendDraft,
+    sendTell,
+    sendChoice,
     openDocuments,
     retry: () => setAttempt((value) => value + 1),
   }

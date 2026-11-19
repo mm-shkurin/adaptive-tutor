@@ -50,17 +50,24 @@ export function ChatScreen({ screen }) {
                 {screen.refusal}
               </p>
             ) : null}
-            <ChatThread lines={view.lines} emptyLabel={view.emptyThread} />
+            <ChatThread
+              lines={view.lines}
+              emptyLabel={view.emptyThread}
+              sending={screen.sending}
+              onChoice={screen.sendChoice}
+            />
             <Composer
               draft={screen.draft}
               model={screen.model}
               mode={screen.mode}
               sending={screen.sending}
               askable={view.askable}
+              withholding={view.withholding}
               onDraft={screen.setDraft}
               onModel={screen.chooseModel}
               onMode={screen.chooseMode}
               onSend={screen.sendDraft}
+              onTell={screen.sendTell}
               onAttach={screen.openDocuments}
             />
           </div>
