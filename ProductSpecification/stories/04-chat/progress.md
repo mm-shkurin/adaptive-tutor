@@ -403,7 +403,12 @@
 - [x] tests (acceptance Selenium 3.4 / 3.5 / 3.6 / 3.7 / 3.8 / 3.10; sanity fail bodyGuards reply + duplicate grade append)
 - [S] refactor (mergeLines + activeExaminerQuestion extracted)
 
+### 3.9 After three grades an academic answer is shown
+- [x] tests (acceptance Selenium; sanity fail on quiz body contains question)
+- [S] implementation (send after stopped examiner already grounded professor)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] Selenium UI 3.9 / 3.11+ (+ remaining UI/Load)
+- [ ] Selenium UI 3.11+ (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

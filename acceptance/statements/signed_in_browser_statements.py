@@ -158,6 +158,16 @@ class SignedInBrowserStatements:
         assert opened.body["lines"][-1]["kind"] == "grade"
         self.chat = opened.body
 
+    def given_a_signed_in_person_whose_examiner_series_has_three_grades(self) -> None:
+        self.given_a_signed_in_person_whose_examiner_question_is_already_graded()
+        self.examiner_question_texts = [
+            line["text"]
+            for line in self.chat["lines"]
+            if line.get("kind") == "question"
+        ]
+        assert len(self.examiner_question_texts) == 3
+        self.script_tutor(self.tutor_line)
+
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)
         self.driver.execute_script(

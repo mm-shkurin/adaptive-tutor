@@ -199,6 +199,32 @@ class ChatScreenStatements:
         graded = next(el for el in tutor_lines if el.get_attribute("data-kind") == "grade")
         assert graded.find_element(*LINE_PAGE).text == f"страница {page}"
 
+    def then_an_academic_answer_with_a_page_is_shown(self, text: str, page: int) -> None:
+        tutor_el = self.wait.until(self._reply_with_page, "no academic reply with page")
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.get_attribute("data-kind") in (None, "reply", "")
+        assert tutor_el.find_element(*LINE_PAGE).text == f"страница {page}"
+        assert tutor_el.find_elements(*CHAT_CHOICES) == []
+
+    def then_the_quiz_list_does_not_contain_those_questions(self, texts: list[str]) -> None:
+        link = self.wait.until(
+            lambda driver: next(
+                (
+                    el
+                    for el in driver.find_elements(By.CSS_SELECTOR, "nav.tabs a")
+                    if "Викторины" in el.text
+                ),
+                False,
+            )
+        )
+        link.click()
+        self.wait.until(
+            lambda driver: "Викторины" in driver.find_element(By.CSS_SELECTOR, "main h2").text
+        )
+        body = self.driver.find_element(By.CSS_SELECTOR, "main").text
+        for text in texts:
+            assert text not in body
+
     def _choices_visible(self, driver):
         elements = [el for el in driver.find_elements(*CHAT_CHOICES) if el.is_displayed()]
         return elements[-1] if elements else False
