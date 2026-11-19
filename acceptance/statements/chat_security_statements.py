@@ -167,6 +167,64 @@ class ChatSecurityStatements:
         assert opened.body["document_id"] == self.document_id
         assert opened.body["id"] == self.chat_id
 
+    def given_a_signed_in_person_with_a_ready_pdf(self) -> None:
+        self.given_a_signed_in_person()
+        self.document_id = self._ready_pdf("mass-assign.pdf")
+        self.injected_owner = str(uuid4())
+        self.injected_id = str(uuid4())
+        self.injected_created_at = "1999-01-01T00:00:00Z"
+        self.bind_call = None
+
+    def when_the_person_starts_a_chat_on_that_pdf_naming_server_owned_fields(self) -> None:
+        self.bind_call = self.chats.create_payload(
+            self.token,
+            self._bind_payload_with_server_owned_fields(),
+        )
+
+    def when_the_person_opens_a_chat_for_that_pdf_naming_server_owned_fields(self) -> None:
+        self.bind_call = self.chats.open_payload(
+            self.token,
+            self._bind_payload_with_server_owned_fields(),
+        )
+
+    def then_server_owned_bind_fields_are_ignored(self) -> None:
+        call = self._bind_call()
+        assert call.status_code in (200, 201)
+        assert call.body is not None
+        assert call.body["document_id"] == self.document_id
+        assert call.body["id"] != self.injected_id
+        assert "owner_id" not in call.body
+        assert "owner" not in call.body
+        assert "created_at" not in call.body
+        assert "role" not in call.body
+        assert "preview" not in call.body
+        assert call.body["lines"] == []
+        listed = self.chats.list(self.token)
+        assert listed.status_code == 200
+        assert listed.body is not None
+        row = next(item for item in listed.body["chats"] if item["id"] == call.body["id"])
+        assert row == {
+            "id": call.body["id"],
+            "document_id": self.document_id,
+            "document_name": "mass-assign.pdf",
+            "preview": None,
+        }
+
+    def _bind_payload_with_server_owned_fields(self) -> dict:
+        return {
+            "document_id": self.document_id,
+            "owner_id": self.injected_owner,
+            "owner": self.injected_owner,
+            "id": self.injected_id,
+            "created_at": self.injected_created_at,
+            "role": "tutor",
+            "preview": "injected-preview",
+        }
+
+    def _bind_call(self):
+        assert self.bind_call is not None
+        return self.bind_call
+
     def _idor_call(self):
         assert self.idor_call is not None
         return self.idor_call

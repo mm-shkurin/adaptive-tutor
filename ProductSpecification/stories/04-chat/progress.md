@@ -122,6 +122,35 @@
 - [S] implementation (Outgoing.from_payload ignores extras)
 - [S] refactor (no new prod code)
 
+### 3.2 Server-owned fields on a new chat and on a switch are ignored
+- [x] tests (acceptance; sanity fail on injected id == server id)
+- [S] implementation (CreateChatBody/OpenChatBody extra="ignore")
+- [S] refactor (no new prod code)
+
+## Tier 2 — Backend (01_API_Tests.md §4 reply cont.)
+
+### 4.3 A piece with no page is still answered and the source has no page
+- [x] tests (acceptance; already green)
+- [S] implementation (Source.page Optional; Line.grounded uses sources[0].page)
+- [S] refactor (no new prod code)
+
+### 4.4 The list shows this person's document name and last line, newest first
+- [x] tests (acceptance; already green)
+- [S] implementation (ListChats + Chat.preview + owner-scoped list_for)
+- [S] refactor (no new prod code)
+
+### 4.5 A multibyte line and a multibyte piece round-trip unchanged
+- [x] tests (acceptance; already green)
+- [S] implementation (text stored/returned verbatim)
+- [S] refactor (no new prod code)
+
+## Tier 2 — Backend (01_API_Tests.md §5 modes start)
+
+### 5.1 Five-year-old answers in plain words with a page
+- [x] tests (acceptance; already green)
+- [S] implementation (five_year_old in GROUNDED_MODES; scripted tutor)
+- [S] refactor (no new prod code)
+
 ## Tier 2 — Backend (01_API_Tests.md §6)
 
 ### 6.1 Opening a ready PDF with no vectors makes it askable from the stored text
@@ -184,5 +213,5 @@
 - [S] refactor (no new prod code)
 
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.3–4.5/4.8–4.11; §5 modes; Sec 3.2; UI/Load/Infra)
-- [ ] 3.4 / 3.6 / §5 need prod (examiner, tell, socratic) — not acceptance-only
+- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.8–4.11; §5.2+ modes; UI/Load/Infra)
+- [ ] 3.4 / 3.6 / §5.2+ need prod (examiner, tell, socratic) — not acceptance-only

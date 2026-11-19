@@ -53,3 +53,17 @@
 **Where:** `backend/usecase/chat/open_chat.py`, `adapters/http/chats.py` `POST /open`
 **Implication:** Switch/open is identity only; vectorization stays on GET, same as create.
 **From:** scenario 7.1 (7.1-switching-document-keeps-the-previous-chat)
+
+## Quirk: late reply + switch needs tutor hold probe
+
+**Quirk:** A late reply while switching needs an in-process tutor hold plus `reply-after-switch` probe; client ThreadPool cannot beat the 50ms acceptance latency budget.
+**Where:** `acceptance/support/tutor_hold.py`, `acceptance/support/chat_probe.py`, `ScriptedTutor.hold`
+**Implication:** Interleave send-then-switch on the server event loop; do not hang the tutor with `sleep(30)`.
+**From:** scenario 7.2 (7.2-a-reply-to-the-chat-just-left-stays-on-that-chat)
+
+## Quirk: failed/unknown document status setup paths
+
+**Quirk:** `move` cannot jump waiting→failed or set an unknown status; failed needs indexing first, unknown needs `probe.force_document_status`.
+**Where:** `domain/document/document.py` (`transition`), `acceptance/clients/application/index_probe.py` (`force_document_status`)
+**Implication:** Gate setups for failed/unknown must follow those paths, not a single move call.
+**From:** scenario 1.2 (1.2-a-document-that-is-not-ready-cannot-be-bound)

@@ -8,26 +8,27 @@ class ChatClient:
         self.http = httpx.Client(base_url=base_url, timeout=30, follow_redirects=False)
 
     def create(self, token: str, document_id: str) -> HttpResult:
-        response = self.http.post(
-            "/api/v1/chats",
-            headers=self._bearer(token),
-            json={"document_id": document_id},
-        )
-        return read_result(response)
+        return self.create_payload(token, {"document_id": document_id})
 
     def create_without_document(self, token: str) -> HttpResult:
+        return self.create_payload(token, {})
+
+    def create_payload(self, token: str, payload: dict) -> HttpResult:
         response = self.http.post(
             "/api/v1/chats",
             headers=self._bearer(token),
-            json={},
+            json=payload,
         )
         return read_result(response)
 
     def open(self, token: str, document_id: str) -> HttpResult:
+        return self.open_payload(token, {"document_id": document_id})
+
+    def open_payload(self, token: str, payload: dict) -> HttpResult:
         response = self.http.post(
             "/api/v1/chats/open",
             headers=self._bearer(token),
-            json={"document_id": document_id},
+            json=payload,
         )
         return read_result(response)
 
