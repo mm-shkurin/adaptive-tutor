@@ -13,6 +13,7 @@ from statements.interleave_send_statements import InterleaveSendStatements
 from statements.interleave_vector_statements import InterleaveVectorStatements
 from statements.latency_statements import LatencyStatements
 from statements.list_order_statements import ListOrderStatements
+from statements.chat_store_down_statements import ChatStoreDownStatements
 from statements.examiner_interleave_statements import ExaminerInterleaveStatements
 from statements.examiner_statements import ExaminerStatements
 from statements.mode_interleave_statements import ModeInterleaveStatements
@@ -49,6 +50,7 @@ class ChatStatements(
     ExaminerStatements,
     ModeInterleaveStatements,
     ExaminerInterleaveStatements,
+    ChatStoreDownStatements,
 ):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)

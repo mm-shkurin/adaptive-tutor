@@ -205,6 +205,17 @@ class ChatClient:
         response = self.http.post("/acceptance/session-store/recover")
         return read_result(response)
 
+    def fail_chat_store(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/chat-store/fail",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def recover_chat_store(self) -> HttpResult:
+        response = self.http.post("/acceptance/chat-store/recover")
+        return read_result(response)
+
     def arm_thread_interleave(self, token: str) -> HttpResult:
         response = self.http.post(
             "/acceptance/chats/interleave-thread",

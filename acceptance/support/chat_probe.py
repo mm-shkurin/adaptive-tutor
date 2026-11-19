@@ -149,6 +149,17 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         accounts.dead = False
         return Response(status_code=204)
 
+    @app.post("/acceptance/chat-store/fail", status_code=204)
+    async def fail_chat_store(request: Request):
+        await document_caller(request)
+        request.app.state.ctx.list_chats.chats.dead = True
+        return Response(status_code=204)
+
+    @app.post("/acceptance/chat-store/recover", status_code=204)
+    async def recover_chat_store(request: Request):
+        request.app.state.ctx.list_chats.chats.dead = False
+        return Response(status_code=204)
+
     @app.post("/acceptance/chats/interleave-thread", status_code=204)
     async def arm_thread_interleave(request: Request):
         await document_caller(request)

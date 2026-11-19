@@ -327,5 +327,33 @@
 - [x] implementation (with 5.13)
 - [x] refactor (with 5.11)
 
+## Tier 2 — Infrastructure (04_Infrastructure_Tests.md §1 chat store)
+
+### 1.1 A dead chat store refuses the list
+- [x] tests (acceptance; sanity fail on 503→500)
+- [x] implementation (MemoryChatStore.dead → StoreUnavailable; message per DSL)
+- [x] refactor (probe + statements; no further extract)
+
+### 1.2 A dead chat store refuses the send and stores no line
+- [x] tests (acceptance)
+- [x] implementation (with 1.1)
+- [x] refactor (with 1.1)
+
+### 1.3 The thread reads back after the store recovers
+- [x] tests (acceptance)
+- [x] implementation (recover probe)
+- [x] refactor (with 1.1)
+
+### 1.4 One send is stored after the store recovers
+- [x] tests (acceptance)
+- [x] implementation (with 1.3)
+- [x] refactor (with 1.1)
+
+### 1.6 A dead chat store refuses a read, a new chat, and a switch
+- [x] tests (acceptance)
+- [x] implementation (with 1.1)
+- [x] refactor (with 1.1)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (UI/Load/Infra)
+- [ ] Infra 1.5/1.7 pool baseline; 2.1–2.2 model key; 3.2 redaction
+- [ ] полный `/harvest` UI/Load + Integration 2.1/3.1 outlines

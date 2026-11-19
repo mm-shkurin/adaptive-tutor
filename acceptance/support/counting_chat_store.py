@@ -10,6 +10,14 @@ class CountingChatStore:
         self._inner = inner
         self.reads = 0
 
+    @property
+    def dead(self) -> bool:
+        return self._inner.dead
+
+    @dead.setter
+    def dead(self, value: bool) -> None:
+        self._inner.dead = value
+
     def reset_reads(self) -> None:
         self.reads = 0
 
