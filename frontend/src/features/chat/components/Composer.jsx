@@ -22,7 +22,7 @@ export function Composer({
         placeholder="Сообщение для AdaptiveTutor"
         rows={2}
         value={draft}
-        disabled={!askable || sending}
+        disabled={!askable}
         onChange={(event) => onDraft(event.target.value)}
       />
       <div className="composer-bar">
@@ -33,6 +33,7 @@ export function Composer({
               type="button"
               className={item.id === mode ? 'mode-btn active' : 'mode-btn'}
               data-testid={`chat-mode-${item.id}`}
+              disabled={sending}
               onClick={() => onMode(item.id)}
             >
               {item.label}
@@ -79,7 +80,7 @@ export function Composer({
             className="composer-send"
             data-testid="chat-send"
             aria-label="Отправить"
-            disabled={!askable || sending}
+            disabled={!askable}
             onClick={onSend}
           >
             <StrokeIcon name="send" />

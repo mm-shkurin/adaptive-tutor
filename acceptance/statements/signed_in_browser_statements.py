@@ -21,6 +21,11 @@ from uuid import uuid4
 STORAGE_KEY = "adaptivetutor.session"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 READY_NAME = "Матанализ.pdf"
+SECOND_NAME = "Алгебра.pdf"
+EARLIER_ANSWER = "Earlier tutor reply for the first send."
+LATER_ANSWER = "Later tutor reply for the second send."
+EARLIER_QUESTION = "Первый вопрос пока в полёте"
+LATER_QUESTION = "Второй вопрос обгоняет первый"
 
 
 class SignedInBrowserStatements:
@@ -177,11 +182,72 @@ class SignedInBrowserStatements:
 
     def and_the_tutor_reply_is_held(self) -> None:
         self.script_tutor(self.tutor_line)
+        stretched = self.chats.set_chat_latency(self.token, 30_000)
+        assert stretched.status_code == 204
         held = self.chats.hold_tutor(self.token)
         assert held.status_code == 204
 
     def release_held_tutor(self) -> None:
         released = self.chats.release_tutor(self.token)
+        assert released.status_code == 204
+
+    def _stretch_chat_latency_for_holds(self) -> None:
+        stretched = self.chats.set_chat_latency(self.token, 30_000)
+        assert stretched.status_code == 204
+
+    def given_a_signed_in_person_with_two_ready_pdfs_and_an_askable_chat(self) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        uploaded = self.documents.submit_pdf(self.token, SECOND_NAME, self.lecture)
+        assert uploaded.status_code == 201
+        self.probe.release_indexing()
+        second = self._until_ready(self.token, uploaded.body["id"])
+        assert second.status_code == 200
+        assert second.body["status"] == "ready"
+        self.probe.hold_indexing()
+        seeded = self.chats.seed_search(
+            self.token,
+            second.body["id"],
+            ({"text": "Алгебраическая структура с операцией.", "page": 2},),
+        )
+        assert seeded.status_code == 204
+        self.second_document = second.body
+        self.first_document = self.ready_document.body
+        self.left_chat_id = self.chat_id
+
+    def then_the_left_chat_stored_the_tutor_reply(self) -> None:
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            opened = self.chats.get(self.token, self.left_chat_id)
+            assert opened.status_code == 200
+            texts = [line.get("text") for line in opened.body["lines"]]
+            if self.tutor_line in texts:
+                return
+            time.sleep(0.05)
+        raise AssertionError("left chat never stored the tutor reply")
+
+    def and_two_ordered_tutor_replies_are_held(self) -> None:
+        self._stretch_chat_latency_for_holds()
+        held = self.chats.hold_each_tutor(
+            self.token, [EARLIER_ANSWER, LATER_ANSWER]
+        )
+        assert held.status_code == 204
+        self.earlier_answer = EARLIER_ANSWER
+        self.later_answer = LATER_ANSWER
+        self.earlier_question = EARLIER_QUESTION
+        self.later_question = LATER_QUESTION
+
+    def wait_until_tutor_holds_entered(self, count: int) -> None:
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            seen = self.chats.tutor_holds(self.token)
+            assert seen.status_code == 200
+            if seen.body is not None and seen.body.get("entered", 0) >= count:
+                return
+            time.sleep(0.05)
+        raise AssertionError(f"tutor holds entered < {count}")
+
+    def release_tutor_call(self, index: int) -> None:
+        released = self.chats.release_tutor_call(self.token, index)
         assert released.status_code == 204
 
     def then_one_examiner_question_is_stored(self) -> None:

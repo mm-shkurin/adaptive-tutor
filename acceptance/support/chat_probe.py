@@ -67,12 +67,40 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         tutor.hold(TutorHold())
         return Response(status_code=204)
 
+    @app.post("/acceptance/chat/latency", status_code=204)
+    async def set_chat_latency(request: Request, body: dict = Body(...)):
+        from datetime import timedelta
+
+        await document_caller(request)
+        request.app.state.ctx.send_message.latency = timedelta(milliseconds=int(body["ms"]))
+        return Response(status_code=204)
+
     @app.post("/acceptance/tutor/release", status_code=204)
     async def release_tutor(request: Request):
         await document_caller(request)
         hold = tutor._hold
         if hold is not None:
             hold.release()
+        return Response(status_code=204)
+
+    @app.post("/acceptance/tutor/hold-each", status_code=204)
+    async def hold_each_tutor(request: Request, body: dict | None = Body(None)):
+        await document_caller(request)
+        payload = body or {}
+        texts = tuple(payload.get("texts") or ())
+        tutor.hold_each(texts)
+        return Response(status_code=204)
+
+    @app.get("/acceptance/tutor/holds")
+    async def tutor_holds(request: Request):
+        await document_caller(request)
+        entered = sum(1 for hold in tutor._each_holds if hold._entered.is_set())
+        return {"entered": entered, "total": len(tutor._each_holds)}
+
+    @app.post("/acceptance/tutor/release-call", status_code=204)
+    async def release_tutor_call(request: Request, body: dict = Body(...)):
+        await document_caller(request)
+        tutor.release_call(int(body["index"]))
         return Response(status_code=204)
 
     @app.post("/acceptance/chats/{chat_id}/reply-after-switch")

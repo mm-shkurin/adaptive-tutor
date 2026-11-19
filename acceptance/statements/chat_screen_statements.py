@@ -1,3 +1,5 @@
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -27,6 +29,9 @@ CHAT_GRADE = (By.CSS_SELECTOR, "[data-testid='chat-grade-label']")
 CHAT_REPLY_FAILED = (By.CSS_SELECTOR, "[data-testid='chat-reply-failed']")
 CHAT_WORKING = (By.CSS_SELECTOR, "[data-testid='chat-working']")
 BOUND_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-bound-document']")
+CHAT_SWITCH = (By.CSS_SELECTOR, "[data-testid='chat-switch-document']")
+CHAT_DOCUMENT_PICKER = (By.CSS_SELECTOR, "[data-testid='chat-document-picker']")
+CHAT_DOCUMENT_CHOICE = (By.CSS_SELECTOR, "[data-testid='chat-document-choice']")
 WAIT_SECONDS = 20
 
 PERSON_QUESTION = "Что такое собственное число матрицы?"
@@ -81,6 +86,72 @@ class ChatScreenStatements:
             lambda driver: driver.find_elements(*CHAT_WORKING),
             "no working state while reply in flight",
         )
+
+    def when_the_person_sends_without_waiting_for_the_reply(self, text: str) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(
+            lambda driver: any(
+                el.find_element(*LINE_TEXT).text == text
+                for el in driver.find_elements(*PERSON_LINE)
+            )
+            or driver.find_elements(*CHAT_WORKING),
+            "send did not leave the composer",
+        )
+
+    def when_the_person_switches_to_another_ready_pdf(self, document_name: str) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SWITCH)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_DOCUMENT_PICKER),
+            "no document picker after switch",
+        )
+        choice = self.wait.until(
+            lambda driver: next(
+                (
+                    el
+                    for el in driver.find_elements(*CHAT_DOCUMENT_CHOICE)
+                    if el.get_attribute("data-document-name") == document_name
+                    or el.text == document_name
+                ),
+                False,
+            )
+        )
+        choice.click()
+        self.wait.until(
+            lambda driver: driver.find_element(*BOUND_DOCUMENT).get_attribute("textContent")
+            == document_name,
+            "bound document did not switch",
+        )
+
+    def then_that_reply_is_not_painted_on_the_chat_now_shown(self, reply_text: str) -> None:
+        time.sleep(0.4)
+        tutor_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*TUTOR_LINE)
+        ]
+        assert reply_text not in tutor_texts
+
+    def then_the_tutor_shows_text(self, text: str) -> None:
+        self.wait.until(
+            lambda driver: any(
+                el.find_element(*LINE_TEXT).text == text
+                for el in driver.find_elements(*TUTOR_LINE)
+            ),
+            f"tutor text missing: {text}",
+        )
+
+    def then_the_thread_shows_the_later_response_and_keeps_it(
+        self, later_text: str, earlier_text: str
+    ) -> None:
+        self.then_the_tutor_shows_text(later_text)
+        self.then_the_tutor_shows_text(earlier_text)
+        tutor_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*TUTOR_LINE)
+        ]
+        assert later_text in tutor_texts
+        assert earlier_text in tutor_texts
+
 
     def then_the_screen_shows_that_it_is_working_and_not_the_failure_message(self) -> None:
         working = self.driver.find_elements(*CHAT_WORKING)

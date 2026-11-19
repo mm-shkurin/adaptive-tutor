@@ -24,6 +24,15 @@ export function createChat(documentId, signal) {
   })
 }
 
+export function openChat(documentId, signal) {
+  return send(BACKEND.chats.open, {
+    method: 'POST',
+    body: { document_id: documentId },
+    signal,
+    guard: isChatBody,
+  })
+}
+
 export function sendChatMessage(chatId, payload, idempotencyKey, signal) {
   return send(BACKEND.chats.messages(chatId), {
     method: 'POST',

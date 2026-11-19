@@ -14,7 +14,7 @@ export function ChatScreen({ screen }) {
             type="button"
             className="btn btn-outline"
             data-testid="chat-switch-document"
-            onClick={screen.openDocuments}
+            onClick={screen.beginSwitchDocument}
           >
             Сменить документ
           </button>
@@ -28,6 +28,30 @@ export function ChatScreen({ screen }) {
           </button>
         </div>
       </div>
+      {screen.documentChoices ? (
+        <div className="chat-document-picker" data-testid="chat-document-picker">
+          {screen.documentChoices.map((doc) => (
+            <button
+              key={doc.id}
+              type="button"
+              className="btn btn-outline"
+              data-testid="chat-document-choice"
+              data-document-name={doc.name}
+              onClick={() => screen.chooseDocument(doc.id)}
+            >
+              {doc.name}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="btn"
+            data-testid="chat-document-picker-cancel"
+            onClick={screen.cancelSwitchDocument}
+          >
+            Отмена
+          </button>
+        </div>
+      ) : null}
       {view.emptyReason === 'no_ready' ? (
         <p className="chat-empty-state" data-testid="chat-empty-state">
           {view.noReady}

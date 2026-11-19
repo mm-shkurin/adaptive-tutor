@@ -132,10 +132,41 @@ class ChatClient:
         )
         return read_result(response)
 
+    def set_chat_latency(self, token: str, ms: int) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/chat/latency",
+            headers=self._bearer(token),
+            json={"ms": ms},
+        )
+        return read_result(response)
+
     def release_tutor(self, token: str) -> HttpResult:
         response = self.http.post(
             "/acceptance/tutor/release",
             headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def hold_each_tutor(self, token: str, texts: list[str]) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/hold-each",
+            headers=self._bearer(token),
+            json={"texts": texts},
+        )
+        return read_result(response)
+
+    def tutor_holds(self, token: str) -> HttpResult:
+        response = self.http.get(
+            "/acceptance/tutor/holds",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def release_tutor_call(self, token: str, index: int) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/tutor/release-call",
+            headers=self._bearer(token),
+            json={"index": index},
         )
         return read_result(response)
 

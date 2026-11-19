@@ -433,7 +433,17 @@
 - [S] implementation (sendLock already drops the second in-flight post)
 - [S] refactor (no new prod code)
 
+### 3.13 A late reply is not painted on the chat now shown
+- [x] tests (acceptance Selenium; left chat stores tutor; open chat omits it)
+- [x] implementation (document picker + openChat; shouldPaintSend / applySendLines; latency stretch for holds)
+- [x] refactor (sendResult + chatSwitch + openListedChats extracted)
+
+### 3.15 A later response that arrives first is not replaced by the earlier one
+- [x] tests (acceptance Selenium; hold-each + release later first; vitest merge)
+- [x] implementation (concurrent text sends; tutor outside with_chat; hold-each queue)
+- [x] refactor (with 3.13 extracts)
+
 ## Next
-- [ ] Selenium UI 3.13 / 3.15 (+ remaining UI/Load)
+- [ ] Selenium UI 2.2 switch assertion (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

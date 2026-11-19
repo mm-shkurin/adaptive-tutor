@@ -4,12 +4,15 @@ import {
   createChat,
   getChat,
   listChats,
+  openChat,
   sendChatMessage,
 } from '../../shared/api/backend/chatApi'
-import { endSession } from '../../shared/session/authSession'
-import { isSessionExpired } from '../../shared/session/authorizedRequest'
+import { listDocuments } from '../../shared/api/backend/documentApi'
 import { readStoredMode, readStoredModel, storeMode, storeModel } from './logic/chatPrefs'
+import { readyDocumentChoices, summaryFromChat, upsertSummary } from './logic/chatSwitch'
 import { chatScreenView } from './logic/chatView'
+import { leaveIfExpired, openListedChats } from './logic/openListedChats'
+import { applySendLines, shouldPaintSend } from './logic/sendResult'
 
 export function useChatScreen() {
   const navigate = useNavigate()
@@ -23,8 +26,10 @@ export function useChatScreen() {
   const [mode, setMode] = useState(() => readStoredMode())
   const [sending, setSending] = useState(false)
   const [refusal, setRefusal] = useState(null)
+  const [documentChoices, setDocumentChoices] = useState(null)
   const activeId = useRef(null)
   const sendLock = useRef(false)
+  const inFlight = useRef(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -32,38 +37,9 @@ export function useChatScreen() {
     listChats(controller.signal)
       .then(async (listed) => {
         if (controller.signal.aborted) return
-        const chats = listed.chats
-        setSummaries(chats)
-        if (chats.length === 0) {
-          try {
-            const created = await createChat(undefined, controller.signal)
-            if (controller.signal.aborted) return
-            activeId.current = created.id
-            setChat(created)
-            setSummaries([{
-              id: created.id,
-              document_id: created.document_id,
-              document_name: created.document_name,
-              preview: null,
-            }])
-            setEmptyReason(null)
-            setStatus('ready')
-          } catch (error) {
-            if (controller.signal.aborted) return
-            if (leaveIfExpired(error, navigate)) return
-            setChat(null)
-            setEmptyReason('no_ready')
-            setStatus('ready')
-          }
-          return
-        }
-        const selected = chats[0]
-        activeId.current = selected.id
-        const opened = await getChat(selected.id, controller.signal)
-        if (controller.signal.aborted) return
-        setChat(opened)
-        setEmptyReason(null)
-        setStatus('ready')
+        await openListedChats(listed.chats, controller, {
+          activeId, setChat, setSummaries, setEmptyReason, setStatus, navigate,
+        })
       })
       .catch((error) => {
         if (controller.signal.aborted) return
@@ -77,6 +53,7 @@ export function useChatScreen() {
     if (chatId === activeId.current) return
     activeId.current = chatId
     setRefusal(null)
+    setDocumentChoices(null)
     try {
       const opened = await getChat(chatId)
       if (activeId.current !== chatId) return
@@ -89,19 +66,38 @@ export function useChatScreen() {
 
   async function startNewChat() {
     setRefusal(null)
+    setDocumentChoices(null)
     try {
       const created = await createChat(chat?.document_id)
       activeId.current = created.id
       setChat(created)
-      setSummaries((prev) => [
-        {
-          id: created.id,
-          document_id: created.document_id,
-          document_name: created.document_name,
-          preview: null,
-        },
-        ...prev,
-      ])
+      setSummaries((prev) => [summaryFromChat(created), ...prev])
+    } catch (error) {
+      if (leaveIfExpired(error, navigate)) return
+      setRefusal(error.message)
+    }
+  }
+
+  async function beginSwitchDocument() {
+    setRefusal(null)
+    try {
+      setDocumentChoices(readyDocumentChoices(await listDocuments()))
+    } catch (error) {
+      if (leaveIfExpired(error, navigate)) return
+      setRefusal(error.message)
+    }
+  }
+
+  async function chooseDocument(documentId) {
+    setDocumentChoices(null)
+    setRefusal(null)
+    try {
+      const opened = await openChat(documentId)
+      activeId.current = opened.id
+      const loaded = await getChat(opened.id)
+      if (activeId.current !== opened.id) return
+      setChat(loaded)
+      setSummaries((prev) => upsertSummary(prev, loaded))
     } catch (error) {
       if (leaveIfExpired(error, navigate)) return
       setRefusal(error.message)
@@ -117,13 +113,11 @@ export function useChatScreen() {
     const prior = mode
     setMode(next)
     storeMode(next)
-    if (next === 'examiner' && prior !== 'examiner') {
-      void postPayload({ mode: 'examiner' })
-    }
+    if (next === 'examiner' && prior !== 'examiner') void postPayload({ mode: 'examiner' })
   }
 
   async function sendDraft() {
-    if (!chat || sendLock.current || sending) return
+    if (!chat || sendLock.current) return
     const text = draft.trim()
     if (!text) {
       setRefusal('Введите сообщение.')
@@ -136,52 +130,42 @@ export function useChatScreen() {
     await postPayload({ text, model, mode }, text)
   }
 
-  async function sendTell() {
-    await postPayload({ tell: true })
-  }
-
-  async function sendChoice(choiceId) {
-    await postPayload({ choice_id: choiceId })
-  }
-
   async function postPayload(payload, previewText) {
-    if (!chat || sendLock.current || sending) return
+    if (!chat || sendLock.current) return
     if (!chat.askable) {
       setRefusal(chat.notice || 'Материал пока нельзя спросить.')
       return
     }
     sendLock.current = true
+    inFlight.current += 1
     setSending(true)
     setRefusal(null)
     const chatId = chat.id
     const key = crypto.randomUUID()
+    const allowConcurrent = Boolean(previewText)
+    if (previewText) setDraft('')
+    if (allowConcurrent) sendLock.current = false
     try {
       const result = await sendChatMessage(chatId, payload, key)
-      if (activeId.current !== chatId) return
+      if (!shouldPaintSend(activeId.current, chatId)) return
       setChat((current) => ({
         ...current,
-        lines: mergeLines(current?.lines ?? [], result.lines),
+        lines: applySendLines(current?.lines ?? [], result.lines, activeId.current, chatId),
       }))
-      if (result.error) {
-        setRefusal(result.error.message)
-      }
+      if (result.error) setRefusal(result.error.message)
       if (previewText) {
         setSummaries((prev) =>
           prev.map((row) => (row.id === chatId ? { ...row, preview: previewText } : row)),
         )
-        setDraft('')
       }
     } catch (error) {
       if (leaveIfExpired(error, navigate)) return
-      setRefusal(error.message)
+      if (shouldPaintSend(activeId.current, chatId)) setRefusal(error.message)
     } finally {
-      sendLock.current = false
-      setSending(false)
+      if (!allowConcurrent) sendLock.current = false
+      inFlight.current = Math.max(0, inFlight.current - 1)
+      setSending(inFlight.current > 0)
     }
-  }
-
-  function openDocuments() {
-    navigate('/documents')
   }
 
   const view = chatScreenView({ summaries, chat, emptyReason })
@@ -195,34 +179,19 @@ export function useChatScreen() {
     mode,
     sending,
     refusal,
+    documentChoices,
     setDraft,
     chooseModel,
     chooseMode,
     selectChat,
     startNewChat,
+    beginSwitchDocument,
+    chooseDocument,
+    cancelSwitchDocument: () => setDocumentChoices(null),
     sendDraft,
-    sendTell,
-    sendChoice,
-    openDocuments,
+    sendTell: () => postPayload({ tell: true }),
+    sendChoice: (choiceId) => postPayload({ choice_id: choiceId }),
+    openDocuments: () => navigate('/documents'),
     retry: () => setAttempt((value) => value + 1),
   }
-}
-
-function mergeLines(existing, incoming) {
-  const byId = new Map(existing.map((line) => [line.id, line]))
-  for (const line of incoming) {
-    byId.set(line.id, line)
-  }
-  const order = existing.map((line) => line.id)
-  for (const line of incoming) {
-    if (!order.includes(line.id)) order.push(line.id)
-  }
-  return order.map((id) => byId.get(id))
-}
-
-function leaveIfExpired(error, navigate) {
-  if (!isSessionExpired(error)) return false
-  endSession()
-  navigate('/', { replace: true })
-  return true
 }
