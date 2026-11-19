@@ -214,6 +214,14 @@ class SignedInBrowserStatements:
         self.first_document = self.ready_document.body
         self.left_chat_id = self.chat_id
 
+    def document_count(self) -> int:
+        listed = self.documents.list_documents(self.token)
+        assert listed.status_code == 200
+        return len(listed.body.get("documents") or [])
+
+    def then_no_document_was_added(self, before: int) -> None:
+        assert self.document_count() == before
+
     def then_the_left_chat_stored_the_tutor_reply(self) -> None:
         deadline = time.time() + 20
         while time.time() < deadline:

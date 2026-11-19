@@ -32,6 +32,8 @@ BOUND_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-bound-document']")
 CHAT_SWITCH = (By.CSS_SELECTOR, "[data-testid='chat-switch-document']")
 CHAT_DOCUMENT_PICKER = (By.CSS_SELECTOR, "[data-testid='chat-document-picker']")
 CHAT_DOCUMENT_CHOICE = (By.CSS_SELECTOR, "[data-testid='chat-document-choice']")
+CHAT_ATTACH = (By.CSS_SELECTOR, "[data-testid='chat-attach']")
+DOCUMENTS_HEADING = (By.CSS_SELECTOR, "[data-testid='documents-heading']")
 WAIT_SECONDS = 20
 
 PERSON_QUESTION = "Что такое собственное число матрицы?"
@@ -100,6 +102,19 @@ class ChatScreenStatements:
             or driver.find_elements(*CHAT_WORKING),
             "send did not leave the composer",
         )
+
+    def when_the_person_uses_the_paperclip(self) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_ATTACH)).click()
+
+    def then_documents_is_shown(self) -> None:
+        heading = self.wait.until(
+            lambda driver: next(
+                (el for el in driver.find_elements(*DOCUMENTS_HEADING) if el.is_displayed()),
+                False,
+            ),
+            "Documents screen not shown after paperclip",
+        )
+        assert "Документ" in heading.text
 
     def when_the_person_switches_to_another_ready_pdf(self, document_name: str) -> None:
         self.wait.until(lambda driver: driver.find_element(*CHAT_SWITCH)).click()
