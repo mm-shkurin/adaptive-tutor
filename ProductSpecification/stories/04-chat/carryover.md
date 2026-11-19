@@ -151,3 +151,10 @@
 **Where:** `acceptance/support/acceptance_server.py` (`latency=timedelta(milliseconds=50)`)
 **Implication:** In-flight Selenium scenarios must not require a completed held reply unless latency is widened for that run.
 **From:** scenario 3.16 (3.16-while-the-reply-is-in-flight-the-screen-shows-that-it-is-working)
+
+## Quirk: double-activate uses one JS double-click
+
+**Quirk:** Sequential Selenium `click()` on choice/tell after the first re-render raises `StaleElementReferenceException`; fire both clicks in one `execute_script`.
+**Where:** `acceptance/statements/chat_screen_statements.py` (double-activate helpers)
+**Implication:** UI double-activate scenarios must not re-find between the two clicks.
+**From:** scenario 3.14 (3.14-a-double-clicked-control-stores-one-effect)
