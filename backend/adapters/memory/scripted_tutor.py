@@ -22,7 +22,8 @@ class TutorCall:
 
 
 class ScriptedTutor:
-    def __init__(self):
+    def __init__(self, api_key: str = "test"):
+        self.api_key = api_key
         self.text = ""
         self.calls: list[TutorCall] = []
         self._fail = False
@@ -67,6 +68,8 @@ class ScriptedTutor:
         if self._clock is not None and self._moment is not None:
             self._clock.moment = self._moment
         if self._fail:
+            raise ReplyFailed()
+        if not self.api_key:
             raise ReplyFailed()
         if self._hold is not None:
             await self._hold.wait()

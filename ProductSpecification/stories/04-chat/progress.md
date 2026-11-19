@@ -366,6 +366,18 @@
 - [x] implementation (MemoryMaterialSearch.fail → ReplyFailed; `_match`)
 - [x] refactor (with 2.1)
 
+## Tier 2 — Infrastructure (04_Infrastructure_Tests.md §2 model key)
+
+### 2.1 A missing model key does not stop startup
+- [x] tests (backend unit load_settings)
+- [x] implementation (FREE_LLM_API_KEY already optional)
+- [x] refactor (no new prod code)
+
+### 2.2 A missing model key fails the send
+- [x] tests (acceptance)
+- [x] implementation (ScriptedTutor.api_key empty → ReplyFailed)
+- [x] refactor (clear-key probe)
+
 ## Next
-- [ ] Infra 1.5/1.7 pool baseline; 2.1–2.2 model key; 3.2 redaction
+- [ ] Infra 1.5/1.7 pool baseline; 3.2 redaction
 - [ ] полный `/harvest` UI/Load
