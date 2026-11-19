@@ -32,7 +32,7 @@ export function useChatScreen() {
   const inFlight = useRef(0)
   const draftRef = useRef('')
 
-  function setDraft(value) {
+  const setDraft = (value) => {
     draftRef.current = value
     setDraftState(value)
   }
@@ -40,17 +40,13 @@ export function useChatScreen() {
   useEffect(() => {
     const controller = new AbortController()
     setStatus('loading')
+    const state = { activeId, setChat, setSummaries, setEmptyReason, setStatus, navigate }
     listChats(controller.signal)
       .then(async (listed) => {
-        if (controller.signal.aborted) return
-        await openListedChats(listed.chats, controller, {
-          activeId, setChat, setSummaries, setEmptyReason, setStatus, navigate,
-        })
+        if (!controller.signal.aborted) await openListedChats(listed.chats, controller, state)
       })
       .catch((error) => {
-        if (controller.signal.aborted) return
-        if (leaveIfExpired(error, navigate)) return
-        setStatus('error')
+        if (!controller.signal.aborted && !leaveIfExpired(error, navigate)) setStatus('error')
       })
     return () => controller.abort()
   }, [attempt, navigate])

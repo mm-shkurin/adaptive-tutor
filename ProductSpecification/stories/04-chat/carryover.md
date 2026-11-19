@@ -61,6 +61,27 @@
 **Implication:** Interleave send-then-switch on the server event loop; do not hang the tutor with `sleep(30)`.
 **From:** scenario 7.2 (7.2-a-reply-to-the-chat-just-left-stays-on-that-chat)
 
+## Quirk: Selenium tutor holds need latency stretch
+
+**Quirk:** Frozen acceptance clock + 50ms `SendMessage.latency` makes `wait_for` expire on wall time while the tutor is held.
+**Where:** `acceptance/support/acceptance_server.py`, `/acceptance/chat/latency`
+**Implication:** Call `set_chat_latency` (~30s) before UI hold / hold-each scenarios, or the tutor line never stores.
+**From:** scenario 3.13 (3.13-a-late-reply-is-not-painted-on-the-chat-now-shown)
+
+## Quirk: tutor runs outside with_chat for concurrent paints
+
+**Quirk:** Holding `with_chat` across tutor serialized HTTP sends so a second `hold_each` never entered.
+**Where:** `backend/usecase/chat/send_build.py`
+**Implication:** Snapshot miss + commit stay under `with_chat`; tutor/search run outside so UI can merge out-of-order replies.
+**From:** scenario 3.15 (3.15-a-later-response-is-not-replaced-by-the-earlier-one)
+
+## Quirk: draftRef clears double-clicked send
+
+**Quirk:** Unlocking after start while reading React `draft` state let a sync double-click fire two text posts.
+**Where:** `frontend/src/features/chat/useChatScreen.js` `draftRef`
+**Implication:** Clear the ref before unlock for one-line double-click; retyped concurrent sends still update the ref via `setDraft`.
+**From:** scenario 3.3 (3.3-a-double-clicked-send-stores-one-line)
+
 ## Quirk: failed/unknown document status setup paths
 
 **Quirk:** `move` cannot jump waiting→failed or set an unknown status; failed needs indexing first, unknown needs `probe.force_document_status`.
