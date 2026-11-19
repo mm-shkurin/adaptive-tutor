@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from uuid import UUID
 
@@ -6,6 +7,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, Operation
 from sqlalchemy.orm import selectinload
 
 from adapters.persistence.tables import ChatAttemptRow, ChatLineRow, ChatRow, DocumentRow
+from adapters.storage.chat_attempt_commit import append_attempt
 from domain.chat.chat import Chat
 from usecase.chat.errors import ChatNotFound, StoreUnavailable
 from usecase.chat.send_message import Attempt, ReplyError
@@ -14,6 +16,8 @@ from usecase.chat.send_message import Attempt, ReplyError
 class PostgresChatStore:
     def __init__(self, sessions):
         self._sessions = sessions
+        self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
+        self._write_lock = asyncio.Lock()
 
     async def add(self, owner_id: UUID, chat: Chat, created_at: datetime) -> None:
         async def work(session):
@@ -119,6 +123,34 @@ class PostgresChatStore:
             )
 
         await self._run(work)
+
+    async def with_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str, build):
+        lock = self._attempt_locks.setdefault((chat_id, attempt_key), asyncio.Lock())
+        async with lock:
+            remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
+            if remembered is not None:
+                return remembered
+            return await build()
+
+    async def commit_attempt(
+        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    ) -> Attempt:
+        async with self._write_lock:
+            remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
+            if remembered is not None:
+                return remembered
+            try:
+                await self._run(
+                    lambda session: append_attempt(
+                        session, owner_id, chat_id, attempt_key, attempt
+                    )
+                )
+            except IntegrityError:
+                remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
+                if remembered is not None:
+                    return remembered
+                raise
+            return attempt
 
     async def _owned(self, session, owner_id: UUID, chat_id: UUID) -> Chat | None:
         found = (

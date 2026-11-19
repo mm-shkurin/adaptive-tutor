@@ -135,3 +135,43 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         await document_caller(request)
         chats = request.app.state.ctx.list_chats.chats
         return {"reads": chats.reads}
+
+    @app.post("/acceptance/chats/interleave-thread", status_code=204)
+    async def arm_thread_interleave(request: Request):
+        await document_caller(request)
+        from support.vector_latch import VectorLatch
+
+        request.app.state.ctx.list_chats.chats.arm_thread_interleave(VectorLatch())
+        return Response(status_code=204)
+
+    @app.post("/acceptance/chats/interleave-attempt", status_code=204)
+    async def arm_attempt_interleave(request: Request):
+        await document_caller(request)
+        from support.vector_latch import VectorLatch
+
+        request.app.state.ctx.list_chats.chats.arm_attempt_interleave(VectorLatch())
+        return Response(status_code=204)
+
+    @app.post("/acceptance/chats/{chat_id}/interleave-sends")
+    async def interleave_sends(chat_id: UUID, request: Request, body: dict = Body(...)):
+        import asyncio
+
+        from adapters.http.chats import _attempt, _chat
+        from usecase.chat.outgoing import Outgoing
+
+        account = await document_caller(request)
+        send = request.app.state.ctx.send_message
+        get_chat = request.app.state.ctx.get_chat
+
+        async def once(item: dict):
+            outgoing = Outgoing.from_payload(
+                {"text": item["text"], "model": item["model"], "mode": item["mode"]}
+            )
+            return await send.send(account.id, chat_id, outgoing, item["key"])
+
+        results = await asyncio.gather(*(once(item) for item in body["attempts"]))
+        opened = await get_chat.open(account.id, chat_id)
+        return {
+            "sends": [_attempt(result) for result in results],
+            "thread": _chat(opened),
+        }

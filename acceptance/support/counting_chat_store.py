@@ -39,3 +39,17 @@ class CountingChatStore:
         self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
     ) -> None:
         await self._inner.save_attempt(owner_id, chat_id, attempt_key, attempt)
+
+    async def with_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str, build):
+        return await self._inner.with_attempt(owner_id, chat_id, attempt_key, build)
+
+    async def commit_attempt(
+        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    ) -> Attempt:
+        return await self._inner.commit_attempt(owner_id, chat_id, attempt_key, attempt)
+
+    def arm_thread_interleave(self, latch) -> None:
+        self._inner.arm_thread_interleave(latch)
+
+    def arm_attempt_interleave(self, latch) -> None:
+        self._inner.arm_attempt_interleave(latch)

@@ -212,7 +212,17 @@
 - [S] implementation (SendMessage already binds reply to request chat_id)
 - [S] refactor (no new prod code)
 
-## Tier 2 — Backend (01_API_Tests.md §4 list order)
+## Tier 2 — Backend (01_API_Tests.md §4 concurrent + list order)
+
+### 4.8 Two different attempts in flight both remain in the thread
+- [x] tests (acceptance; thread latch + interleave-sends; sanity fail on line count)
+- [x] implementation (thread interleave on get; commit_attempt appends under write lock)
+- [x] refactor (Postgres append_attempt extracted under 200-line limit)
+
+### 4.9 The same attempt interleaved stores one person line
+- [x] tests (acceptance; attempt latch; model once)
+- [x] implementation (with_attempt lock before tutor; commit_attempt idempotent)
+- [x] refactor (with 4.8)
 
 ### 4.10 Two chats created at the same instant keep their order
 - [x] tests (acceptance; already green)
@@ -225,5 +235,5 @@
 - [S] refactor (no new prod code)
 
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.8–4.9; §5.2+ modes; UI/Load/Infra)
+- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; §5.2+ modes; UI/Load/Infra)
 - [ ] 3.4 / 3.6 / §5.2+ need prod (examiner, tell, socratic) — not acceptance-only

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import httpx
 
 from clients.application.http_result import HttpResult, read_result
@@ -189,6 +191,28 @@ class ChatClient:
         response = self.http.get(
             "/acceptance/chats/store-reads",
             headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def arm_thread_interleave(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/chats/interleave-thread",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def arm_attempt_interleave(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/chats/interleave-attempt",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def interleave_sends(self, token: str, chat_id: str, attempts: list[dict]) -> HttpResult:
+        response = self.http.post(
+            f"/acceptance/chats/{chat_id}/interleave-sends",
+            headers=self._bearer(token),
+            json={"attempts": attempts},
         )
         return read_result(response)
 

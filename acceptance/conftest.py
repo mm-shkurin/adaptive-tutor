@@ -21,6 +21,7 @@ pytest.register_assert_rewrite(
     "statements.switch_chat_statements",
     "statements.chat_security_statements",
     "statements.list_order_statements",
+    "statements.interleave_send_statements",
 )
 
 from statements.chat_statements import ChatStatements

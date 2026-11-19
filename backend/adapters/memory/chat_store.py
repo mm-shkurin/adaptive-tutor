@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from uuid import UUID
 
@@ -10,6 +11,16 @@ class MemoryChatStore:
     def __init__(self):
         self._rows: list[tuple[UUID, Chat, datetime]] = []
         self._attempts: dict[tuple[UUID, UUID, str], Attempt] = {}
+        self._write_lock = asyncio.Lock()
+        self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
+        self._thread_interleave = None
+        self._attempt_interleave = None
+
+    def arm_thread_interleave(self, latch) -> None:
+        self._thread_interleave = latch
+
+    def arm_attempt_interleave(self, latch) -> None:
+        self._attempt_interleave = latch
 
     async def add(self, owner_id: UUID, chat: Chat, created_at: datetime) -> None:
         self._rows.append((owner_id, chat, created_at))
@@ -20,10 +31,10 @@ class MemoryChatStore:
         return tuple(row[1] for row in owned)
 
     async def get(self, owner_id: UUID, chat_id: UUID) -> Chat | None:
-        for owner, chat, _created in self._rows:
-            if owner == owner_id and chat.id == chat_id:
-                return chat
-        return None
+        found = self._lookup(owner_id, chat_id)
+        if self._thread_interleave is not None:
+            await self._thread_interleave.after_read()
+        return found
 
     async def newest_for_document(self, owner_id: UUID, document_id: UUID) -> Chat | None:
         owned = [
@@ -44,11 +55,42 @@ class MemoryChatStore:
         raise ChatNotFound()
 
     async def find_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str) -> Attempt | None:
-        return self._attempts.get((owner_id, chat_id, attempt_key))
+        found = self._attempts.get((owner_id, chat_id, attempt_key))
+        if self._attempt_interleave is not None:
+            await self._attempt_interleave.after_read()
+        return found
 
     async def save_attempt(
         self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
     ) -> None:
-        if await self.get(owner_id, chat_id) is None:
+        if self._lookup(owner_id, chat_id) is None:
             raise ChatNotFound()
         self._attempts[(owner_id, chat_id, attempt_key)] = attempt
+
+    async def with_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str, build):
+        lock = self._attempt_locks.setdefault((chat_id, attempt_key), asyncio.Lock())
+        async with lock:
+            remembered = self._attempts.get((owner_id, chat_id, attempt_key))
+            if remembered is not None:
+                return remembered
+            return await build()
+
+    async def commit_attempt(
+        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    ) -> Attempt:
+        async with self._write_lock:
+            remembered = self._attempts.get((owner_id, chat_id, attempt_key))
+            if remembered is not None:
+                return remembered
+            current = self._lookup(owner_id, chat_id)
+            if current is None:
+                raise ChatNotFound()
+            await self.save(owner_id, current.with_appended(attempt.lines))
+            self._attempts[(owner_id, chat_id, attempt_key)] = attempt
+            return attempt
+
+    def _lookup(self, owner_id: UUID, chat_id: UUID) -> Chat | None:
+        for owner, chat, _created in self._rows:
+            if owner == owner_id and chat.id == chat_id:
+                return chat
+        return None

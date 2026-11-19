@@ -55,17 +55,19 @@ class SendMessage:
         if remembered is not None:
             return remembered
         started = self._now()
-        question = Question.parse(outgoing.text)
-        model = ListedModel.parse(outgoing.model, outgoing.model_present)
-        mode = LearningMode.parse(outgoing.mode, outgoing.mode_present).require_grounded()
-        chat = await self._askable(owner_id, chat_id)
-        pieces = await self.search.matching(chat.document_id, question.text)
-        updated, attempt = await self._attempt(
-            chat, question.text, model.value, mode.value, pieces, started
-        )
-        await self.chats.save(owner_id, updated)
-        await self.chats.save_attempt(owner_id, chat_id, attempt_key, attempt)
-        return attempt
+
+        async def build() -> Attempt:
+            question = Question.parse(outgoing.text)
+            model = ListedModel.parse(outgoing.model, outgoing.model_present)
+            mode = LearningMode.parse(outgoing.mode, outgoing.mode_present).require_grounded()
+            chat = await self._askable(owner_id, chat_id)
+            pieces = await self.search.matching(chat.document_id, question.text)
+            _updated, attempt = await self._attempt(
+                chat, question.text, model.value, mode.value, pieces, started
+            )
+            return await self.chats.commit_attempt(owner_id, chat_id, attempt_key, attempt)
+
+        return await self.chats.with_attempt(owner_id, chat_id, attempt_key, build)
 
     async def _askable(self, owner_id: UUID, chat_id: UUID) -> Chat:
         found = await self.chats.get(owner_id, chat_id)

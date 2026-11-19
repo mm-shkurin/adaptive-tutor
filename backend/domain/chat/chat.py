@@ -81,3 +81,6 @@ class Chat:
     def record_failed(self, question: str) -> tuple["Chat", tuple[Line, ...]]:
         person = Line.person(question)
         return replace(self, lines=self.lines + (person,)), (person,)
+
+    def with_appended(self, lines: tuple[Line, ...]) -> "Chat":
+        return replace(self, lines=self.lines + lines)
