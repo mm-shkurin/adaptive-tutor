@@ -453,7 +453,12 @@
 - [S] implementation (chat-attach already navigates to Documents)
 - [S] refactor (no new prod code)
 
+### 3.2 A blank line leaves the thread unchanged
+- [x] tests (acceptance Selenium)
+- [S] implementation (composer already refuses whitespace)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.4–2.6, 3.2–3.3, Load 1.1)
+- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.4–2.6, 3.3, Load 1.1)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

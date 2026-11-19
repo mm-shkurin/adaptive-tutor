@@ -103,6 +103,34 @@ class ChatScreenStatements:
             "send did not leave the composer",
         )
 
+    def when_the_person_activates_send_twice_without_waiting(
+        self, text: str = PERSON_QUESTION
+    ) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+        button = self.wait.until(lambda driver: driver.find_element(*CHAT_SEND))
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", button
+        )
+        self.wait.until(self._tutor_visible, "no tutor line after double send")
+
+    def when_the_person_sends_a_blank_line(self) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys("   ")
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_REPLY_FAILED),
+            "no blank-line refusal",
+        )
+
+    def then_a_blank_line_refusal_is_shown(self) -> None:
+        alert = self.wait.until(lambda driver: driver.find_element(*CHAT_REPLY_FAILED))
+        assert alert.text == "Введите сообщение."
+        assert self.driver.find_elements(*TUTOR_LINE) == []
+        assert self.driver.find_elements(*PERSON_LINE) == []
+
     def when_the_person_uses_the_paperclip(self) -> None:
         self.wait.until(lambda driver: driver.find_element(*CHAT_ATTACH)).click()
 
