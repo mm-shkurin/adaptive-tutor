@@ -17,6 +17,12 @@ class PreferSeededSearch:
     def advance_clock_on_match(self, offset_ms: int | None) -> None:
         self._advance_ms = offset_ms
 
+    def fail(self) -> None:
+        self._seeded.fail()
+
+    def clear_fail(self) -> None:
+        self._seeded.clear_fail()
+
     async def ready(self, document_id: UUID) -> bool:
         if self._seeded.has(document_id):
             return True

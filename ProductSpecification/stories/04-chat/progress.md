@@ -354,6 +354,18 @@
 - [x] implementation (with 1.1)
 - [x] refactor (with 1.1)
 
+## Tier 2 — Integration (06_Integration_Tests.md §2–3)
+
+### 2.1 A failed model call keeps one person line and no tutor line
+- [x] tests (acceptance; parametrize timeout/4xx/5xx/malformed)
+- [x] implementation (hang/fail tutor → record_failed)
+- [x] refactor (send_socratic extracted under 200)
+
+### 3.1 A failed search keeps one person line and no tutor line
+- [x] tests (acceptance; parametrize fail modes)
+- [x] implementation (MemoryMaterialSearch.fail → ReplyFailed; `_match`)
+- [x] refactor (with 2.1)
+
 ## Next
 - [ ] Infra 1.5/1.7 pool baseline; 2.1–2.2 model key; 3.2 redaction
-- [ ] полный `/harvest` UI/Load + Integration 2.1/3.1 outlines
+- [ ] полный `/harvest` UI/Load

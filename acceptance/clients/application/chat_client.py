@@ -89,6 +89,13 @@ class ChatClient:
         )
         return read_result(response)
 
+    def fail_search(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/search/fail",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def fail_tutor(self, token: str) -> HttpResult:
         response = self.http.post(
             "/acceptance/tutor/fail",

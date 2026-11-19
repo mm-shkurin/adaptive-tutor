@@ -13,6 +13,7 @@ from usecase.chat.outgoing import Outgoing
 from usecase.chat.ports import ChatStore, MaterialSearch, Tutor
 from usecase.chat.reply_budget import CHAT_LATENCY, expired, remaining_seconds
 from usecase.chat.send_build import build_attempt
+from usecase.chat.send_socratic import release, socratic
 
 
 @dataclass(frozen=True)
@@ -74,11 +75,14 @@ class SendMessage:
         mode = LearningMode.parse(outgoing.mode, outgoing.mode_present)
         question = Question.parse(outgoing.text)
         if chat.is_withholding():
-            return await self._release(chat, question.text, model, "socratic", started)
+            return await release(self, chat, question.text, model, "socratic", started)
         if mode.value == "socratic":
-            return await self._socratic(chat, question.text, model, started)
+            return await socratic(self, chat, question.text, model, started)
         mode.require_grounded()
-        pieces = await self.search.matching(chat.document_id, question.text)
+        pieces = await self._match(chat, question.text)
+        if pieces is None:
+            _updated, lines = chat.record_failed(question.text)
+            return Attempt(chat.id, lines, ReplyError.failed())
         _updated, attempt = await self._grounded(
             chat, question.text, model, mode.value, pieces, started
         )
@@ -90,46 +94,13 @@ class SendMessage:
         if not chat.is_withholding():
             raise TellUnavailable()
         prompt = chat.withheld_prompt() or ""
-        return await self._release(chat, None, model, "socratic", started, prompt)
+        return await release(self, chat, None, model, "socratic", started, prompt)
 
-    async def _socratic(self, chat: Chat, question: str, model: str, started) -> Attempt:
-        pieces = await self.search.matching(chat.document_id, question)
-        sources = Source.cite(pieces)
-        if not sources:
-            _updated, lines = chat.record_missing(question, "socratic")
-            return Attempt(chat.id, lines)
-        text = await self._answer(model, "socratic", question, sources, started)
-        if text is None:
-            _updated, lines = chat.record_failed(question)
-            return Attempt(chat.id, lines, ReplyError.failed())
-        _updated, lines = chat.record_withheld(question, "socratic", text)
-        return Attempt(chat.id, lines)
-
-    async def _release(
-        self,
-        chat: Chat,
-        try_text: str | None,
-        model: str,
-        mode: str,
-        started,
-        prompt: str | None = None,
-    ) -> Attempt:
-        ask = prompt if prompt is not None else (try_text or "")
-        pieces = await self.search.matching(chat.document_id, ask)
-        sources = Source.cite(pieces)
-        if not sources:
-            if try_text is None:
-                return Attempt(chat.id, (Line.missing(mode),))
-            _updated, lines = chat.record_missing(try_text, mode)
-            return Attempt(chat.id, lines)
-        text = await self._answer(model, mode, ask, sources, started)
-        if text is None:
-            if try_text is None:
-                return Attempt(chat.id, (), ReplyError.failed())
-            _updated, lines = chat.record_failed(try_text)
-            return Attempt(chat.id, lines, ReplyError.failed())
-        _updated, lines = chat.record_release(try_text, model, mode, sources, text)
-        return Attempt(chat.id, lines)
+    async def _match(self, chat: Chat, question: str) -> tuple[Source, ...] | None:
+        try:
+            return await self.search.matching(chat.document_id, question)
+        except ReplyFailed:
+            return None
 
     async def _askable(self, owner_id: UUID, chat_id: UUID) -> Chat:
         found = await self.chats.get(owner_id, chat_id)

@@ -19,6 +19,26 @@ class FailedReplyStatements:
         assert len(self.sent.body["lines"]) == 1
         assert self.sent.body["lines"][0]["role"] == "person"
 
+    def and_the_model_call_fails(self, how: str) -> None:
+        assert how in {"times out", "returns a 4xx status", "returns a 5xx status", "returns a malformed body"}
+        if how == "times out":
+            armed = self.chats.hang_tutor(self.token)
+        else:
+            armed = self.chats.fail_tutor(self.token)
+        assert armed.status_code == 204
+
+    def and_the_search_fails(self, how: str) -> None:
+        assert how in {"times out", "returns a 4xx status", "returns a 5xx status", "returns a malformed body"}
+        armed = self.chats.fail_search(self.token)
+        assert armed.status_code == 204
+
+    def when_the_person_sends_a_line_expecting_failure(self) -> None:
+        self.failed_key = FAILED_KEY
+        self.sent = self.chats.send(
+            self.token, self.chat_id, QUESTION, MODEL, "professor", self.failed_key
+        )
+        self.opened = self.chats.get(self.token, self.chat_id)
+
     def when_the_person_repeats_that_same_attempt(self) -> None:
         self.sent = self.chats.send(
             self.token, self.chat_id, QUESTION, MODEL, "professor", self.failed_key

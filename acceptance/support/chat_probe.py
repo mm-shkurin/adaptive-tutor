@@ -35,6 +35,12 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         tutor.fail()
         return Response(status_code=204)
 
+    @app.post("/acceptance/search/fail", status_code=204)
+    async def fail_search(request: Request):
+        await document_caller(request)
+        search.fail()
+        return Response(status_code=204)
+
     @app.post("/acceptance/tutor/hang", status_code=204)
     async def hang_tutor(request: Request):
         await document_caller(request)
