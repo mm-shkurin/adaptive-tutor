@@ -443,7 +443,12 @@
 - [x] implementation (concurrent text sends; tutor outside with_chat; hold-each queue)
 - [x] refactor (with 3.13 extracts)
 
+### 2.2 Switching document keeps the old chat and shows the chosen PDF
+- [x] tests (acceptance Selenium)
+- [S] implementation (document picker + openChat from 3.13)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] Selenium UI 2.2 switch assertion (+ remaining UI/Load)
+- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.3–2.6, 3.2–3.3, Load 1.1)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load
