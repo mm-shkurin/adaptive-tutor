@@ -273,6 +273,25 @@ class ChatScreenStatements:
         send = self.wait.until(lambda driver: driver.find_element(*CHAT_SEND))
         assert send.is_enabled()
 
+    def when_the_person_activates_that_source(self) -> None:
+        before = self.driver.current_url
+        self._url_before_source = before
+        card = self.wait.until(lambda driver: driver.find_elements(*SOURCE_CARD))[0]
+        self._source_page_before = card.find_element(*SOURCE_PAGE).text
+        self._source_text_before = card.find_element(*SOURCE_TEXT).text
+        card.click()
+
+    def then_the_pdf_does_not_open_and_the_source_still_shows(
+        self, page: int, text: str
+    ) -> None:
+        assert self.driver.current_url == self._url_before_source
+        assert self.driver.find_elements(By.CSS_SELECTOR, "embed, object, iframe") == []
+        card = self.driver.find_elements(*SOURCE_CARD)[0]
+        assert card.find_element(*SOURCE_PAGE).text == f"страница {page}"
+        assert card.find_element(*SOURCE_TEXT).text == text
+        assert card.find_element(*SOURCE_PAGE).text == self._source_page_before
+        assert card.find_element(*SOURCE_TEXT).text == self._source_text_before
+
     def then_the_quiz_list_does_not_contain_those_questions(self, texts: list[str]) -> None:
         link = self.wait.until(
             lambda driver: next(

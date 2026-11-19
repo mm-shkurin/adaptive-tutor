@@ -423,7 +423,12 @@
 - [x] implementation (chat-working while sending; tutor/release probe)
 - [S] refactor (status line beside refusal)
 
+### 4.1 A source card does not open the PDF
+- [x] tests (acceptance Selenium)
+- [S] implementation (source cards are non-navigating divs)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] Selenium UI 3.13–3.15 / 4.1 (+ remaining UI/Load)
+- [ ] Selenium UI 3.13–3.15 (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

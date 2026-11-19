@@ -137,3 +137,17 @@
 **Why:** UI 3.10 needs a second click target after the series stops; the API returns the prior grade unchanged.
 **Where applied:** `activeExaminerQuestion` in `frontend/src/features/chat/logic/chatView.js`
 **From:** scenario 3.4–3.10 (3.4-3.10-socratic-examiner-ui)
+
+## Quirk: reply_failed is send-only
+
+**Quirk:** `reply_failed` is on the send attempt `error` field, not on `GET /chats/{id}`; the UI must read `result.error` after send to show the failure while keeping the person line.
+**Where:** `frontend/src/features/chat/useChatScreen.js`, OpenAPI send result `error`
+**Implication:** Reloading the chat after a failed attempt shows the person line only unless the UI still holds the last send error in memory.
+**From:** scenario 3.11 (3.11-a-failed-reply-is-shown-on-the-chat)
+
+## Quirk: acceptance chat latency is 50ms
+
+**Quirk:** Acceptance `SendMessage` uses a 50ms chat latency budget, so a held tutor almost always expires before release.
+**Where:** `acceptance/support/acceptance_server.py` (`latency=timedelta(milliseconds=50)`)
+**Implication:** In-flight Selenium scenarios must not require a completed held reply unless latency is widened for that run.
+**From:** scenario 3.16 (3.16-while-the-reply-is-in-flight-the-screen-shows-that-it-is-working)
