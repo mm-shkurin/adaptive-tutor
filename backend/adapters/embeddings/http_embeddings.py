@@ -11,15 +11,20 @@ class HttpEmbeddings:
         self._url = base_url.rstrip("/") + "/embeddings"
         self._api_key = api_key
         self._timeout = timeout
+        self.live = 0
 
     async def embed(self, texts: tuple[str, ...]) -> tuple[tuple[float, ...], ...]:
-        response = await self._post(texts)
-        if response.status_code != 200:
-            raise StoreUnavailable()
+        self.live += 1
         try:
-            return _vectors(response.json(), len(texts))
-        except (KeyError, TypeError, ValueError) as error:
-            raise StoreUnavailable() from error
+            response = await self._post(texts)
+            if response.status_code != 200:
+                raise StoreUnavailable()
+            try:
+                return _vectors(response.json(), len(texts))
+            except (KeyError, TypeError, ValueError) as error:
+                raise StoreUnavailable() from error
+        finally:
+            self.live -= 1
 
     async def _post(self, texts: tuple[str, ...]) -> httpx.Response:
         headers = {"Content-Type": "application/json"}

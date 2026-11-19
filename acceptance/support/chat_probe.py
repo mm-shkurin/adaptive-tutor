@@ -189,6 +189,8 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
         return {
             "chat_store": request.app.state.ctx.list_chats.chats.live,
             "search_store": search.live,
+            "model": tutor.live,
+            "embeddings": 0 if vectors is None else vectors.embeddings_live,
         }
 
     @app.post("/acceptance/chats/interleave-thread", status_code=204)

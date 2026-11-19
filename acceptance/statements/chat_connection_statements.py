@@ -11,8 +11,14 @@ class ChatConnectionStatements:
         counted = self.chats.store_connections(self.token)
         assert counted.status_code == 200
         assert counted.body is not None
-        self.baseline_chat_store = counted.body["chat_store"]
-        self.baseline_search_store = counted.body["search_store"]
+        self.baseline_connections = {
+            "chat_store": counted.body["chat_store"],
+            "search_store": counted.body["search_store"],
+            "model": counted.body["model"],
+            "embeddings": counted.body["embeddings"],
+        }
+        self.baseline_chat_store = self.baseline_connections["chat_store"]
+        self.baseline_search_store = self.baseline_connections["search_store"]
 
     def when_several_sends_fail_because_the_chat_store_or_the_search_store_is_unavailable(
         self,
@@ -61,3 +67,37 @@ class ChatConnectionStatements:
         assert people[0]["text"] == QUESTION
         assert len(tutors) == 1
         assert tutors[0]["text"] == SCRIPT
+
+    def when_several_model_calls_and_embedding_calls_fail(self) -> None:
+        for _ in range(3):
+            armed = self.chats.fail_tutor(self.token)
+            assert armed.status_code == 204
+            failed = self.chats.send(
+                self.token, self.chat_id, QUESTION, MODEL, "professor", str(uuid4())
+            )
+            assert failed.status_code == 200
+            assert failed.body is not None
+            assert failed.body["error"] == REPLY_FAILED
+        cleared = self.chats.script_tutor(self.token, SCRIPT)
+        assert cleared.status_code == 204
+        self.fakes.clear_vectors(self.document_id)
+        for fails in (
+            "returns a 5xx status",
+            "returns a 4xx status",
+            "returns a malformed body",
+        ):
+            self.fakes.fail_embeddings(fails)
+            opened = self.chats.get(self.token, self.chat_id)
+            assert opened.status_code == 200
+            assert opened.body is not None
+            assert opened.body["askable"] is False
+        self.fakes.fail_embeddings(None)
+
+    def then_the_open_connections_return_to_the_baseline(self) -> None:
+        counted = self.chats.store_connections(self.token)
+        assert counted.status_code == 200
+        assert counted.body is not None
+        assert counted.body["chat_store"] == self.baseline_connections["chat_store"]
+        assert counted.body["search_store"] == self.baseline_connections["search_store"]
+        assert counted.body["model"] == self.baseline_connections["model"]
+        assert counted.body["embeddings"] == self.baseline_connections["embeddings"]

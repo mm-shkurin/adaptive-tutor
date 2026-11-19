@@ -26,6 +26,7 @@ class ScriptedTutor:
         self.api_key = api_key
         self.text = ""
         self.calls: list[TutorCall] = []
+        self.live = 0
         self._fail = False
         self._hang = False
         self._hold = None
@@ -64,23 +65,27 @@ class ScriptedTutor:
         self._moment = moment
 
     async def answer(self, model: str, mode: str, question: str, sources: tuple[Source, ...]) -> str:
-        self.calls.append(TutorCall(model, mode, question, sources))
-        if self._clock is not None and self._moment is not None:
-            self._clock.moment = self._moment
-        if self._fail:
-            raise ReplyFailed()
-        if not self.api_key:
-            raise ReplyFailed()
-        if self._hold is not None:
-            await self._hold.wait()
+        self.live += 1
+        try:
+            self.calls.append(TutorCall(model, mode, question, sources))
+            if self._clock is not None and self._moment is not None:
+                self._clock.moment = self._moment
+            if self._fail:
+                raise ReplyFailed()
+            if not self.api_key:
+                raise ReplyFailed()
+            if self._hold is not None:
+                await self._hold.wait()
+                self.finished = True
+                return self.text
+            if self._hang:
+                try:
+                    await asyncio.sleep(30)
+                except asyncio.CancelledError:
+                    raise
+                self.finished = True
+                return self.text
             self.finished = True
             return self.text
-        if self._hang:
-            try:
-                await asyncio.sleep(30)
-            except asyncio.CancelledError:
-                raise
-            self.finished = True
-            return self.text
-        self.finished = True
-        return self.text
+        finally:
+            self.live -= 1

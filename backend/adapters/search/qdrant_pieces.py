@@ -15,6 +15,10 @@ class QdrantPieces:
         self._interleave = None
         self._write_lock = asyncio.Lock()
 
+    @property
+    def embeddings_live(self) -> int:
+        return self._embeddings.live
+
     def arm_interleave(self, latch) -> None:
         self._interleave = latch
 
