@@ -229,6 +229,18 @@ class ChatScreenStatements:
         assert self.driver.find_elements(*PERSON_LINE) == []
         assert self.driver.find_elements(*TUTOR_LINE) == []
 
+    def then_the_tutor_bubble_has_no_page(self, text: str) -> None:
+        self.then_the_tutor_shows_text(text)
+        tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.find_elements(*LINE_PAGE) == []
+
+    def then_the_source_shows_piece_text_without_a_page(self, text: str) -> None:
+        cards = self.wait.until(lambda driver: driver.find_elements(*SOURCE_CARD))
+        assert len(cards) >= 1
+        assert text in [el.text for el in self.driver.find_elements(*SOURCE_TEXT)]
+        assert self.driver.find_elements(*SOURCE_PAGE) == []
+
     def then_the_sources_panel_is_empty(self) -> None:
         panel = self.wait.until(
             lambda driver: driver.find_element(By.CSS_SELECTOR, "[data-testid='chat-sources']")

@@ -478,7 +478,14 @@
 - [S] implementation (no_ready empty state already)
 - [S] refactor (no new prod code)
 
+### 1.3 A source without a page shows the piece text and no page number
+- [x] tests (acceptance Selenium)
+- [S] implementation (optional page already)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] remaining UI/Load (0.1/0.3–0.4, 1.3–1.5, 2.5–2.6, Load 1.1)
+- [ ] remaining UI/Load (0.1/0.3–0.4, 1.4–1.5, 2.5–2.6, Load 1.1)
+- [ ] Infra 3.2 log capture if needed
+- [ ] полный `/harvest` UI/Load
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load
