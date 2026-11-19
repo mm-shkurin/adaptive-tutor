@@ -43,7 +43,7 @@ export function chatListRows(summaries) {
 }
 
 export function threadLines(lines) {
-  const open = openExaminerQuestion(lines)
+  const active = activeExaminerQuestion(lines)
   return lines.map((line) => ({
     id: line.id,
     role: line.role,
@@ -54,11 +54,28 @@ export function threadLines(lines) {
     kind: line.kind ?? null,
     citation: line.role === 'tutor' ? pageCitation(line.page ?? null) : null,
     page: line.page ?? null,
-    choices: open && line.id === open.id ? line.choices ?? [] : [],
+    choices: active && line.id === active.id ? line.choices ?? [] : [],
     gradeLabel: gradeLabel(line),
     choiceId: line.choice_id ?? null,
     correct: line.correct ?? null,
   }))
+}
+
+export function activeExaminerQuestion(lines) {
+  const open = openExaminerQuestion(lines)
+  if (open) return open
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index]
+    if (line.role !== 'tutor') continue
+    if (line.kind === 'grade') {
+      for (let prior = index - 1; prior >= 0; prior -= 1) {
+        if (lines[prior].kind === 'question') return lines[prior]
+      }
+      return null
+    }
+    if (line.kind === 'question') return line
+  }
+  return null
 }
 
 export function gradeLabel(line) {

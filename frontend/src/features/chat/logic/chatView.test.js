@@ -79,7 +79,7 @@ describe('chatView', () => {
         page: 4,
       },
     ])
-    expect(graded[0].choices).toHaveLength(0)
+    expect(graded[0].choices).toHaveLength(4)
     expect(graded[1].gradeLabel).toBe('Верно')
     expect(graded[1].citation).toBe('страница 4')
 

@@ -130,6 +130,18 @@ class ChatScreenStatements:
         assert tutor_el.get_attribute("data-kind") == "withheld"
         assert tutor_el.find_elements(*LINE_PAGE) == []
 
+    def when_the_person_sends_a_try(self, text: str = "I think it needs sunlight.") -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(self._reply_with_page, "no answer after try")
+
+    def then_the_tutor_shows_the_answer_with_a_page(self, text: str, page: int) -> None:
+        tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.find_element(*LINE_PAGE).text == f"страница {page}"
+
     def when_the_person_uses_the_tell_control(self) -> None:
         before = len(self.driver.find_elements(*PERSON_LINE))
         self._person_count_before_tell = before
@@ -162,6 +174,23 @@ class ChatScreenStatements:
         )
         button.click()
         self.wait.until(self._grade_visible, "no grade after choice")
+
+    def when_the_person_chooses_again(self, choice_id: str = "c2") -> None:
+        button = self.wait.until(
+            lambda driver: driver.find_element(
+                By.CSS_SELECTOR, f"[data-testid='chat-choice-{choice_id}']"
+            )
+        )
+        before = len(self.driver.find_elements(*CHAT_GRADE))
+        button.click()
+        self.wait.until(
+            lambda driver: len(driver.find_elements(*CHAT_GRADE)) == before
+            or len(driver.find_elements(*CHAT_GRADE)) == before + 1,
+            "choice click did not settle",
+        )
+
+    def grade_labels(self) -> list[str]:
+        return [el.text for el in self.driver.find_elements(*CHAT_GRADE)]
 
     def then_right_or_wrong_is_shown_with_the_page(self, page: int) -> None:
         grade = self.wait.until(lambda driver: driver.find_elements(*CHAT_GRADE))[-1]

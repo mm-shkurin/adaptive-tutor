@@ -160,7 +160,7 @@ export function useChatScreen() {
       if (activeId.current !== chatId) return
       setChat((current) => ({
         ...current,
-        lines: [...(current?.lines ?? []), ...result.lines],
+        lines: mergeLines(current?.lines ?? [], result.lines),
       }))
       if (previewText) {
         setSummaries((prev) =>
@@ -203,6 +203,18 @@ export function useChatScreen() {
     openDocuments,
     retry: () => setAttempt((value) => value + 1),
   }
+}
+
+function mergeLines(existing, incoming) {
+  const byId = new Map(existing.map((line) => [line.id, line]))
+  for (const line of incoming) {
+    byId.set(line.id, line)
+  }
+  const order = existing.map((line) => line.id)
+  for (const line of incoming) {
+    if (!order.includes(line.id)) order.push(line.id)
+  }
+  return order.map((id) => byId.get(id))
 }
 
 function leaveIfExpired(error, navigate) {

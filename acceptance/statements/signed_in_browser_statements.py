@@ -138,6 +138,26 @@ class SignedInBrowserStatements:
         assert opened.status_code == 200
         self.chat = opened.body
 
+    def given_a_signed_in_person_whose_examiner_question_is_already_graded(self) -> None:
+        self.given_a_signed_in_person_with_an_open_examiner_question()
+        for _ in range(2):
+            self.script_tutor(EXAMINER_QUESTION)
+            graded = self.chats.send_payload(
+                self.token, self.chat_id, {"choice_id": "c1"}, str(uuid4())
+            )
+            assert graded.status_code == 200
+            assert graded.body["lines"][-1]["kind"] == "question"
+        wrong = self.chats.send_payload(
+            self.token, self.chat_id, {"choice_id": "c2"}, str(uuid4())
+        )
+        assert wrong.status_code == 200
+        assert wrong.body["lines"][0]["kind"] == "grade"
+        assert wrong.body["lines"][0]["correct"] is False
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        assert opened.body["lines"][-1]["kind"] == "grade"
+        self.chat = opened.body
+
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)
         self.driver.execute_script(
