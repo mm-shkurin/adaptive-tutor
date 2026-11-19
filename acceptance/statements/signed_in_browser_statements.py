@@ -214,6 +214,13 @@ class SignedInBrowserStatements:
         self.first_document = self.ready_document.body
         self.left_chat_id = self.chat_id
 
+    def then_one_person_and_one_tutor_line_are_stored(self) -> None:
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        roles = [line["role"] for line in opened.body["lines"]]
+        assert roles.count("person") == 1
+        assert roles.count("tutor") == 1
+
     def document_count(self) -> int:
         listed = self.documents.list_documents(self.token)
         assert listed.status_code == 200

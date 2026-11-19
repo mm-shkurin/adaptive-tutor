@@ -458,7 +458,12 @@
 - [S] implementation (composer already refuses whitespace)
 - [S] refactor (no new prod code)
 
+### 3.3 A double-clicked send stores one line
+- [x] tests (acceptance Selenium; sanity via two stored lines before draftRef clear)
+- [x] implementation (draftRef sync clear drops second click; concurrent retype still allowed)
+- [S] refactor (with send path)
+
 ## Next
-- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.4–2.6, 3.3, Load 1.1)
+- [ ] remaining UI/Load (0.x empty states, 1.x sources, 2.4–2.6, Load 1.1)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

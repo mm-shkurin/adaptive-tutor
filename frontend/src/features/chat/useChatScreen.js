@@ -21,7 +21,7 @@ export function useChatScreen() {
   const [summaries, setSummaries] = useState([])
   const [chat, setChat] = useState(null)
   const [emptyReason, setEmptyReason] = useState(null)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraftState] = useState('')
   const [model, setModel] = useState(() => readStoredModel())
   const [mode, setMode] = useState(() => readStoredMode())
   const [sending, setSending] = useState(false)
@@ -30,6 +30,12 @@ export function useChatScreen() {
   const activeId = useRef(null)
   const sendLock = useRef(false)
   const inFlight = useRef(0)
+  const draftRef = useRef('')
+
+  function setDraft(value) {
+    draftRef.current = value
+    setDraftState(value)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -118,7 +124,7 @@ export function useChatScreen() {
 
   async function sendDraft() {
     if (!chat || sendLock.current) return
-    const text = draft.trim()
+    const text = draftRef.current.trim()
     if (!text) {
       setRefusal('Введите сообщение.')
       return
@@ -127,6 +133,8 @@ export function useChatScreen() {
       setRefusal(chat.notice || 'Материал пока нельзя спросить.')
       return
     }
+    draftRef.current = ''
+    setDraftState('')
     await postPayload({ text, model, mode }, text)
   }
 
@@ -143,7 +151,6 @@ export function useChatScreen() {
     const chatId = chat.id
     const key = crypto.randomUUID()
     const allowConcurrent = Boolean(previewText)
-    if (previewText) setDraft('')
     if (allowConcurrent) sendLock.current = false
     try {
       const result = await sendChatMessage(chatId, payload, key)
@@ -190,8 +197,8 @@ export function useChatScreen() {
     cancelSwitchDocument: () => setDocumentChoices(null),
     sendDraft,
     sendTell: () => postPayload({ tell: true }),
-    sendChoice: (choiceId) => postPayload({ choice_id: choiceId }),
+    sendChoice: (id) => postPayload({ choice_id: id }),
     openDocuments: () => navigate('/documents'),
-    retry: () => setAttempt((value) => value + 1),
+    retry: () => setAttempt((n) => n + 1),
   }
 }
