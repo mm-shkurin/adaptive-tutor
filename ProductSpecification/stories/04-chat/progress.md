@@ -268,6 +268,44 @@
 - [x] implementation (examiner start; draft_choices; Line.question; migration 0011)
 - [x] refactor (examiner_start extracted; send_message under 200)
 
+## Tier 2 — Backend (01_API_Tests.md §3.4 + §5.6–5.17 examiner grades)
+
+### 3.4 An invalid examiner answer is refused
+- [x] tests (acceptance; sanity fail on correct=True→False)
+- [x] implementation (ChoiceRequired/ChoiceUnknown; open question blocks text)
+- [ ] refactor
+
+### 5.6 Continuing the examiner series with the supported choice
+- [x] tests (acceptance)
+- [x] implementation (grade + next question when count < 3)
+- [ ] refactor
+
+### 5.7 Grading the third examiner question
+- [x] tests (acceptance)
+- [x] implementation (wrong grade; no fourth question)
+- [ ] refactor
+
+### 5.8 A second answer to the same question does not grade again
+- [x] tests (acceptance)
+- [x] implementation (Attempt.persist=False returns prior grade)
+- [ ] refactor
+
+### 5.10 After the third grade the next line is academic and is not a quiz
+- [x] tests (acceptance)
+- [x] implementation (stopped series → grounded professor)
+- [ ] refactor
+
+### 5.15 Choosing Examiner while a question is open does not post another
+- [x] tests (acceptance)
+- [x] implementation (empty attempt while open)
+- [ ] refactor
+
+### 5.17 A stopped examiner series ignores a new series, a choice, and tell
+- [x] tests (acceptance)
+- [x] implementation (no-op examiner/choice/tell when stopped)
+- [ ] refactor
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (3.4; §5.6+ examiner grades; UI/Load/Infra)
-- [ ] 3.4 / §5.6+ need prod (grade/choice_id paths) — not acceptance-only
+- [ ] refactor examiner grade chunk (mode_statements split; domain polish)
+- [ ] полный `/harvest` остальных Tier 2 (5.11–5.14 interleave; UI/Load/Infra)
+- [ ] 5.11–5.14 need interleave probes — not acceptance-only smoke

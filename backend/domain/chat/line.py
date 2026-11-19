@@ -55,6 +55,21 @@ class Line:
             supported_choice_id=supported_choice_id,
         )
 
+    @staticmethod
+    def grade(choice_id: str, correct: bool, page: int | None) -> "Line":
+        return Line(
+            uuid4(),
+            "tutor",
+            "",
+            None,
+            "examiner",
+            "grade",
+            page,
+            (),
+            choice_id=choice_id,
+            correct=correct,
+        )
+
     def json(self) -> dict:
         body = {
             "id": str(self.id),

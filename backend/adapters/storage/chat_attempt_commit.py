@@ -22,11 +22,12 @@ async def append_attempt(
     existing = await session.get(ChatAttemptRow, {"chat_id": chat_id, "attempt_key": attempt_key})
     if existing is not None:
         return
-    start = len(row.lines)
-    row.lines.extend(
-        ChatLineRow.from_line(chat_id, start + offset, line)
-        for offset, line in enumerate(attempt.lines)
-    )
+    if attempt.persist:
+        start = len(row.lines)
+        row.lines.extend(
+            ChatLineRow.from_line(chat_id, start + offset, line)
+            for offset, line in enumerate(attempt.lines)
+        )
     error = attempt.error
     session.add(
         ChatAttemptRow(

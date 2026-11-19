@@ -8,7 +8,7 @@ from domain.chat.learning import LearningMode, ListedModel, Question
 from domain.chat.line import Line
 from domain.chat.source import Source
 from usecase.chat.errors import ChatNotFound, ReplyFailed
-from usecase.chat.examiner_start import start_examiner
+from usecase.chat.examiner_turn import examiner_or_choice
 from usecase.chat.outgoing import Outgoing
 from usecase.chat.ports import ChatStore, MaterialSearch, Tutor
 from usecase.chat.reply_budget import CHAT_LATENCY, expired, remaining_seconds
@@ -32,6 +32,7 @@ class Attempt:
     chat_id: UUID
     lines: tuple[Line, ...]
     error: ReplyError | None = None
+    persist: bool = True
 
 
 class SendMessage:
@@ -69,14 +70,11 @@ class SendMessage:
         return await self.chats.with_attempt(owner_id, chat_id, attempt_key, build)
 
     async def _spoken(self, chat: Chat, outgoing: Outgoing, model: str, started) -> Attempt:
+        answer = lambda m, mode, q, sources: self._answer(m, mode, q, sources, started)
+        routed = await examiner_or_choice(chat, outgoing, model, self.search, answer)
+        if routed is not None:
+            return routed
         mode = LearningMode.parse(outgoing.mode, outgoing.mode_present)
-        if mode.value == "examiner" and not isinstance(outgoing.text, str):
-            return await start_examiner(
-                chat,
-                model,
-                self.search,
-                lambda m, mode, q, sources: self._answer(m, mode, q, sources, started),
-            )
         question = Question.parse(outgoing.text)
         if chat.is_withholding():
             return await self._release(chat, question.text, model, "socratic", started)
@@ -90,6 +88,8 @@ class SendMessage:
         return attempt
 
     async def _tell(self, chat: Chat, model: str, started) -> Attempt:
+        if chat.examiner_series_stopped() and not chat.is_withholding():
+            return Attempt(chat.id, ())
         if not chat.is_withholding():
             raise TellUnavailable()
         prompt = chat.withheld_prompt() or ""

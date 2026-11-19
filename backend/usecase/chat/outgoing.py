@@ -9,6 +9,8 @@ class Outgoing:
     model_present: bool
     mode_present: bool
     tell: bool
+    choice_id: object
+    has_choice: bool
 
     @staticmethod
     def from_payload(payload: object) -> "Outgoing":
@@ -20,4 +22,6 @@ class Outgoing:
             model_present="model" in body,
             mode_present="mode" in body,
             tell=body.get("tell") is True,
+            choice_id=body.get("choice_id"),
+            has_choice="choice_id" in body,
         )

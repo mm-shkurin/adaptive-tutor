@@ -21,6 +21,17 @@ class TellUnavailable(Exception):
     """Tell needs an open withheld question."""
 
 
+class ChoiceRequired(Exception):
+    """An open examiner question needs a choice_id."""
+
+
+class ChoiceUnknown(Exception):
+    """The choice_id is not one of the open question's choices."""
+
+
+EXAMINER_SERIES = 3
+
+
 @dataclass(frozen=True)
 class Chat:
     id: UUID
@@ -136,6 +147,39 @@ class Chat:
         self, text: str, choices: tuple[Choice, ...], supported_choice_id: str
     ) -> tuple["Chat", tuple[Line, ...]]:
         tutor = Line.question(text, "examiner", choices, supported_choice_id)
+        return replace(self, lines=self.lines + (tutor,)), (tutor,)
+
+    def examiner_grade_count(self) -> int:
+        return sum(1 for line in self.lines if line.role == "tutor" and line.kind == "grade")
+
+    def examiner_series_stopped(self) -> bool:
+        return self.examiner_grade_count() >= EXAMINER_SERIES
+
+    def last_examiner_grade(self) -> Line | None:
+        for line in reversed(self.lines):
+            if line.role == "tutor" and line.kind == "grade":
+                return line
+        return None
+
+    def require_examiner_choice(self, choice_id: object) -> str:
+        question = self.open_examiner_question()
+        if question is None:
+            raise ChoiceUnknown()
+        if not isinstance(choice_id, str):
+            raise ChoiceUnknown()
+        allowed = {choice.id for choice in question.choices}
+        if choice_id not in allowed:
+            raise ChoiceUnknown()
+        return choice_id
+
+    def record_examiner_grade(
+        self, choice_id: str, page: int | None
+    ) -> tuple["Chat", tuple[Line, ...]]:
+        question = self.open_examiner_question()
+        if question is None:
+            raise ChoiceUnknown()
+        correct = choice_id == question.supported_choice_id
+        tutor = Line.grade(choice_id, correct, page)
         return replace(self, lines=self.lines + (tutor,)), (tutor,)
 
     def with_appended(self, lines: tuple[Line, ...]) -> "Chat":

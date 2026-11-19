@@ -102,3 +102,10 @@
 **Where:** `examiner_start.py`, `domain/chat/exam.draft_choices`, `Line.question`
 **Implication:** Grading later reads `supported_choice_id` from the open question line, not from the client.
 **From:** scenario 5.5 (5.5-examiner-posts-the-first-question-with-four-choices)
+
+## Quirk: examiner grade uses choice_id; re-grade does not append
+
+**Quirk:** Open question + text → `choice_required`. Unknown id → `choice_unknown`. Supported id grades with piece page; count &lt; 3 posts next question. Re-choice with no open question returns prior grade via `Attempt.persist=False` (attempt row keeps line ids, chat lines unchanged). Stopped series no-ops examiner/choice/tell.
+**Where:** `examiner_grade.py`, `examiner_turn.py`, `Chat.record_examiner_grade`, `Attempt.persist`
+**Implication:** Do not append a second grade line for a closed question; UI re-click must replay the stored grade.
+**From:** scenarios 3.4, 5.6–5.8, 5.10, 5.15, 5.17

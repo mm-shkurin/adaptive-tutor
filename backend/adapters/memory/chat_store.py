@@ -85,7 +85,8 @@ class MemoryChatStore:
             current = self._lookup(owner_id, chat_id)
             if current is None:
                 raise ChatNotFound()
-            await self.save(owner_id, current.with_appended(attempt.lines))
+            if attempt.persist and attempt.lines:
+                await self.save(owner_id, current.with_appended(attempt.lines))
             self._attempts[(owner_id, chat_id, attempt_key)] = attempt
             return attempt
 

@@ -4,7 +4,13 @@ from fastapi.responses import JSONResponse
 
 from domain.account.name import NameNotAllowed
 from domain.account.photo import PhotoNotAllowed, PhotoTooLarge
-from domain.chat.chat import DocumentNotReady, NotAskable, TellUnavailable
+from domain.chat.chat import (
+    ChoiceRequired,
+    ChoiceUnknown,
+    DocumentNotReady,
+    NotAskable,
+    TellUnavailable,
+)
 from domain.chat.learning import EmptyQuestion, ModeNotListed, ModelNotListed
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
@@ -31,6 +37,8 @@ _MODEL = {"code": "invalid_model", "message": "Model is not allowed"}
 _MODE = {"code": "invalid_mode", "message": "Mode is not allowed"}
 _NOT_ASKABLE = {"code": "not_askable", "message": "Material cannot be asked yet"}
 _TELL = {"code": "tell_unavailable", "message": "Nothing is withheld"}
+_CHOICE_REQUIRED = {"code": "choice_required", "message": "Choice is required"}
+_CHOICE_UNKNOWN = {"code": "choice_unknown", "message": "Choice is not on the question"}
 
 
 def register_errors(app: FastAPI) -> None:
@@ -45,6 +53,8 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(ModeNotListed, _status(400, _MODE))
     app.add_exception_handler(NotAskable, _status(409, _NOT_ASKABLE))
     app.add_exception_handler(TellUnavailable, _status(400, _TELL))
+    app.add_exception_handler(ChoiceRequired, _status(400, _CHOICE_REQUIRED))
+    app.add_exception_handler(ChoiceUnknown, _status(400, _CHOICE_UNKNOWN))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)
     app.add_exception_handler(RateUnavailable, _rate_refusal)
