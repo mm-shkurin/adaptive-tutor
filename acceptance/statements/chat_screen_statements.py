@@ -19,12 +19,20 @@ SOURCE_TEXT = (By.CSS_SELECTOR, "[data-testid='chat-source-text']")
 CHAT_NEW = (By.CSS_SELECTOR, "[data-testid='chat-new']")
 CHAT_INPUT = (By.CSS_SELECTOR, "[data-testid='chat-input']")
 CHAT_SEND = (By.CSS_SELECTOR, "[data-testid='chat-send']")
+CHAT_TELL = (By.CSS_SELECTOR, "[data-testid='chat-tell']")
+CHAT_MODE_SOCRATIC = (By.CSS_SELECTOR, "[data-testid='chat-mode-socratic']")
+CHAT_MODE_EXAMINER = (By.CSS_SELECTOR, "[data-testid='chat-mode-examiner']")
+CHAT_CHOICES = (By.CSS_SELECTOR, "[data-testid='chat-choices']")
+CHAT_GRADE = (By.CSS_SELECTOR, "[data-testid='chat-grade-label']")
 BOUND_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-bound-document']")
 WAIT_SECONDS = 20
 
 PERSON_QUESTION = "Что такое собственное число матрицы?"
 TUTOR_ANSWER = "Собственное число — скаляр λ, для которого Av = λv."
 SOURCE_TEXT_VALUE = "Число λ называется собственным числом квадратной матрицы A."
+SOCRATIC_QUESTION = "What would you say photosynthesis needs?"
+EXAMINER_QUESTION = "Which process uses light?"
+RELEASE = "Photosynthesis needs light, water, and carbon dioxide."
 MODEL = "qwen/qwen3-32b"
 PAGE = 5
 
@@ -106,6 +114,75 @@ class ChatScreenStatements:
         assert tutor_el.find_element(*LINE_TEXT).text == tutor
         assert tutor_el.find_element(*LINE_MODEL).text == model
         assert tutor_el.find_element(*LINE_PAGE).text == f"страница {page}"
+
+    def when_the_person_sends_a_question_in_socratic_mode(self) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_MODE_SOCRATIC)).click()
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(PERSON_QUESTION)
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SEND)).click()
+        self.wait.until(self._tutor_visible, "no tutor line after socratic send")
+
+    def then_the_tutor_shows_a_question_without_a_page(self, text: str) -> None:
+        self.wait.until(self._tutor_visible, "no tutor line")
+        tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.get_attribute("data-kind") == "withheld"
+        assert tutor_el.find_elements(*LINE_PAGE) == []
+
+    def when_the_person_uses_the_tell_control(self) -> None:
+        before = len(self.driver.find_elements(*PERSON_LINE))
+        self._person_count_before_tell = before
+        self.wait.until(lambda driver: driver.find_element(*CHAT_TELL)).click()
+        self.wait.until(self._reply_with_page, "no released answer after tell")
+
+    def then_the_answer_with_a_page_is_shown_without_a_new_person_line(
+        self, text: str, page: int
+    ) -> None:
+        tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.find_element(*LINE_PAGE).text == f"страница {page}"
+        assert len(self.driver.find_elements(*PERSON_LINE)) == self._person_count_before_tell
+
+    def when_the_person_chooses_examiner(self) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_MODE_EXAMINER)).click()
+        self.wait.until(self._choices_visible, "no examiner choices")
+
+    def then_one_question_with_four_choices_is_shown_without_a_page(self, text: str) -> None:
+        tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
+        assert tutor_el.find_element(*LINE_TEXT).text == text
+        assert tutor_el.get_attribute("data-kind") == "question"
+        assert tutor_el.find_elements(*LINE_PAGE) == []
+        choices = tutor_el.find_elements(By.CSS_SELECTOR, "[data-testid^='chat-choice-']")
+        assert len(choices) == 4
+
+    def when_the_person_chooses_a_choice(self, choice_id: str = "c1") -> None:
+        button = self.wait.until(
+            lambda driver: driver.find_element(By.CSS_SELECTOR, f"[data-testid='chat-choice-{choice_id}']")
+        )
+        button.click()
+        self.wait.until(self._grade_visible, "no grade after choice")
+
+    def then_right_or_wrong_is_shown_with_the_page(self, page: int) -> None:
+        grade = self.wait.until(lambda driver: driver.find_elements(*CHAT_GRADE))[-1]
+        assert grade.text in ("Верно", "Неверно")
+        tutor_lines = self.driver.find_elements(*TUTOR_LINE)
+        graded = next(el for el in tutor_lines if el.get_attribute("data-kind") == "grade")
+        assert graded.find_element(*LINE_PAGE).text == f"страница {page}"
+
+    def _choices_visible(self, driver):
+        elements = [el for el in driver.find_elements(*CHAT_CHOICES) if el.is_displayed()]
+        return elements[-1] if elements else False
+
+    def _grade_visible(self, driver):
+        elements = [el for el in driver.find_elements(*CHAT_GRADE) if el.is_displayed()]
+        return elements[-1] if elements else False
+
+    def _reply_with_page(self, driver):
+        for el in reversed(driver.find_elements(*TUTOR_LINE)):
+            if el.find_elements(*LINE_PAGE):
+                return el
+        return False
 
     def _chat_tab(self, driver):
         elements = [el for el in driver.find_elements(*CHAT_TAB) if el.is_displayed()]

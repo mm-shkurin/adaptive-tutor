@@ -389,11 +389,11 @@
 
 ### 3.4–3.8 Socratic withhold/tell and Examiner choices (screen wiring)
 - [x] tests (vitest chatView: open question choices, grade labels, withholding)
-- [x] implementation (chatView kind/choices/grade/withholding; ChatThread choices; Composer tell; useChatScreen sendChoice/sendTell/examiner start; bodyGuards line fields)
-- [ ] tests (acceptance Selenium 3.4 / 3.6 / 3.7 / 3.8)
-- [ ] refactor
+- [x] implementation (chatView kind/choices/grade/withholding; ChatThread choices; Composer tell; useChatScreen sendChoice/sendTell/examiner start; bodyGuards accept reply/question/grade/withheld)
+- [x] tests (acceptance Selenium 3.4 / 3.6 / 3.7 / 3.8; sanity fail on bodyGuards rejecting kind reply)
+- [S] refactor (no extract; statements already one screen)
 
 ## Next
-- [ ] Selenium UI 3.4 / 3.6 / 3.7 / 3.8 (+ 3.5 / 3.9 / 3.10)
+- [ ] Selenium UI 3.5 / 3.9 / 3.10 (+ remaining UI/Load)
 - [ ] Infra 1.5/1.7 pool baseline; 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

@@ -7,12 +7,15 @@ from clients.application.document_client import DocumentClient
 from clients.application.index_probe import IndexProbe
 from clients.application.session_client import ScriptedProvider, SessionClient
 from statements.chat_screen_statements import (
+    EXAMINER_QUESTION,
     MODEL,
     PAGE,
     PERSON_QUESTION,
+    SOCRATIC_QUESTION,
     SOURCE_TEXT_VALUE,
     TUTOR_ANSWER,
 )
+from uuid import uuid4
 
 STORAGE_KEY = "adaptivetutor.session"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -102,6 +105,38 @@ class SignedInBrowserStatements:
         scripted = self.chats.script_tutor(self.token, self.tutor_line)
         assert scripted.status_code == 204
         self.chat = created.body
+        self.chat_id = created.body["id"]
+
+    def script_tutor(self, text: str) -> None:
+        scripted = self.chats.script_tutor(self.token, text)
+        assert scripted.status_code == 204
+
+    def given_a_signed_in_person_whose_tutor_is_withholding(self) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        self.script_tutor(SOCRATIC_QUESTION)
+        sent = self.chats.send(
+            self.token,
+            self.chat_id,
+            self.person_line,
+            self.model,
+            "socratic",
+            str(uuid4()),
+        )
+        assert sent.status_code == 200
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        self.chat = opened.body
+
+    def given_a_signed_in_person_with_an_open_examiner_question(self) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        self.script_tutor(EXAMINER_QUESTION)
+        sent = self.chats.send_payload(
+            self.token, self.chat_id, {"mode": "examiner"}, str(uuid4())
+        )
+        assert sent.status_code == 200
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        self.chat = opened.body
 
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)

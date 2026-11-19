@@ -84,7 +84,7 @@ export function isLineBody(value) {
     value.kind !== 'question' &&
     value.kind !== 'grade' &&
     value.kind !== 'withheld' &&
-    value.kind !== 'answer'
+    value.kind !== 'reply'
   ) {
     return false
   }
