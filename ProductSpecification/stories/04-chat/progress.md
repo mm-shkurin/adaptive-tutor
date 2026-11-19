@@ -212,6 +212,18 @@
 - [S] implementation (SendMessage already binds reply to request chat_id)
 - [S] refactor (no new prod code)
 
+## Tier 2 — Backend (01_API_Tests.md §4 list order)
+
+### 4.10 Two chats created at the same instant keep their order
+- [x] tests (acceptance; already green)
+- [S] implementation (list_for order created_at desc, id desc)
+- [S] refactor (no new prod code)
+
+### 4.11 A long chat list is read a constant number of times
+- [x] tests (acceptance; sanity fail on reads == 0)
+- [S] implementation (ListChats → one list_for; CountingChatStore probe)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.8–4.11; §5.2+ modes; UI/Load/Infra)
+- [ ] полный `/harvest` остальных Tier 2 (1.4; 3.4/3.6; 4.8–4.9; §5.2+ modes; UI/Load/Infra)
 - [ ] 3.4 / 3.6 / §5.2+ need prod (examiner, tell, socratic) — not acceptance-only

@@ -122,3 +122,16 @@ def register_chat_probe(app: FastAPI, search, tutor, intake, vectors=None) -> No
 
         await vectors.write(uuid4(), ())
         return Response(status_code=204)
+
+    @app.post("/acceptance/chats/store-reads/reset", status_code=204)
+    async def reset_store_reads(request: Request):
+        await document_caller(request)
+        chats = request.app.state.ctx.list_chats.chats
+        chats.reset_reads()
+        return Response(status_code=204)
+
+    @app.get("/acceptance/chats/store-reads")
+    async def store_reads(request: Request):
+        await document_caller(request)
+        chats = request.app.state.ctx.list_chats.chats
+        return {"reads": chats.reads}

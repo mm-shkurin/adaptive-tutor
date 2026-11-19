@@ -11,6 +11,7 @@ from statements.empty_vector_statements import EmptyVectorStatements
 from statements.failed_reply_statements import FailedReplyStatements
 from statements.interleave_vector_statements import InterleaveVectorStatements
 from statements.latency_statements import LatencyStatements
+from statements.list_order_statements import ListOrderStatements
 from statements.partial_vector_statements import PartialVectorStatements
 from statements.reply_statements import LECTURE, MODEL, SCRIPT, ReplyStatements
 from statements.switch_chat_statements import SwitchChatStatements
@@ -35,6 +36,7 @@ class ChatStatements(
     SwitchChatStatements,
     ChatGateStatements,
     ChatSecurityStatements,
+    ListOrderStatements,
 ):
     def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
         self.sessions = SessionClient(base_url, provider)

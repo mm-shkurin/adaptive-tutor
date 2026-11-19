@@ -178,6 +178,20 @@ class ChatClient:
         response = self.http.get("/acceptance/tutor/calls", headers=self._bearer(token))
         return read_result(response)
 
+    def reset_store_reads(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/chats/store-reads/reset",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def store_reads(self, token: str) -> HttpResult:
+        response = self.http.get(
+            "/acceptance/chats/store-reads",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def close(self) -> None:
         self.http.close()
 

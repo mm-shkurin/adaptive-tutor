@@ -20,6 +20,7 @@ pytest.register_assert_rewrite(
     "statements.empty_vector_statements",
     "statements.switch_chat_statements",
     "statements.chat_security_statements",
+    "statements.list_order_statements",
 )
 
 from statements.chat_statements import ChatStatements

@@ -14,6 +14,7 @@ from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.chat_store import MemoryChatStore
+from support.counting_chat_store import CountingChatStore
 from adapters.embeddings.http_embeddings import HttpEmbeddings
 from adapters.memory.material_search import MemoryMaterialSearch
 from adapters.search.http_qdrant import HttpQdrant
@@ -111,7 +112,7 @@ class AcceptanceServer:
         self._intake = intake
         self._pieces = pieces
         reader = ProbeGatedPdfReader(PyPdfReader(), self.probe)
-        chats = MemoryChatStore()
+        chats = CountingChatStore(MemoryChatStore())
         vectors = QdrantPieces(
             HttpEmbeddings(self.fakes.embeddings_url, "", timeout=0.4),
             HttpQdrant(self.fakes.qdrant_url, ""),
@@ -122,6 +123,7 @@ class AcceptanceServer:
         self._search = search
         self._vectors = vectors
         self._tutor = tutor
+        self._chats = chats
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
