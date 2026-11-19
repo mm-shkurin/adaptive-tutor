@@ -34,6 +34,8 @@ CHAT_DOCUMENT_PICKER = (By.CSS_SELECTOR, "[data-testid='chat-document-picker']")
 CHAT_DOCUMENT_CHOICE = (By.CSS_SELECTOR, "[data-testid='chat-document-choice']")
 CHAT_ATTACH = (By.CSS_SELECTOR, "[data-testid='chat-attach']")
 DOCUMENTS_HEADING = (By.CSS_SELECTOR, "[data-testid='documents-heading']")
+CHAT_MODEL = (By.CSS_SELECTOR, "[data-testid='chat-model']")
+CHAT_MODE_PREFIX = "chat-mode-"
 WAIT_SECONDS = 20
 
 PERSON_QUESTION = "Что такое собственное число матрицы?"
@@ -114,6 +116,35 @@ class ChatScreenStatements:
             "arguments[0].click(); arguments[0].click();", button
         )
         self.wait.until(self._tutor_visible, "no tutor line after double send")
+
+    def when_the_person_chooses_model_and_mode(self, model: str, mode: str) -> None:
+        select = self.wait.until(lambda driver: driver.find_element(*CHAT_MODEL))
+        select.click()
+        option = select.find_element(By.CSS_SELECTOR, f"option[value='{model}']")
+        option.click()
+        mode_btn = self.wait.until(
+            lambda driver: driver.find_element(
+                By.CSS_SELECTOR, f"[data-testid='{CHAT_MODE_PREFIX}{mode}']"
+            )
+        )
+        mode_btn.click()
+        assert select.get_attribute("value") == model
+
+    def when_the_person_leaves_and_opens_the_chat_again(self) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_ATTACH)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*DOCUMENTS_HEADING),
+            "did not leave chat",
+        )
+        self.when_the_person_opens_the_chat()
+
+    def then_that_model_and_mode_are_still_chosen(self, model: str, mode: str) -> None:
+        select = self.wait.until(lambda driver: driver.find_element(*CHAT_MODEL))
+        assert select.get_attribute("value") == model
+        mode_btn = self.driver.find_element(
+            By.CSS_SELECTOR, f"[data-testid='{CHAT_MODE_PREFIX}{mode}']"
+        )
+        assert "active" in (mode_btn.get_attribute("class") or "")
 
     def when_the_person_sends_a_blank_line(self) -> None:
         field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
