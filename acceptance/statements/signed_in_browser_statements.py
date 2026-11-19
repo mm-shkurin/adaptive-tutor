@@ -11,6 +11,7 @@ from statements.chat_screen_statements import (
     MODEL,
     PAGE,
     PERSON_QUESTION,
+    RELEASE,
     SOCRATIC_QUESTION,
     SOURCE_TEXT_VALUE,
     TUTOR_ANSWER,
@@ -182,6 +183,32 @@ class SignedInBrowserStatements:
     def release_held_tutor(self) -> None:
         released = self.chats.release_tutor(self.token)
         assert released.status_code == 204
+
+    def then_one_examiner_question_is_stored(self) -> None:
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        assert opened.body is not None
+        questions = [line for line in opened.body["lines"] if line.get("kind") == "question"]
+        assert len(questions) == 1
+
+    def then_one_grade_effect_is_stored(self) -> None:
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        assert opened.body is not None
+        grades = [line for line in opened.body["lines"] if line.get("kind") == "grade"]
+        assert len(grades) == 1
+
+    def then_one_tell_release_is_stored(self) -> None:
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        assert opened.body is not None
+        releases = [
+            line
+            for line in opened.body["lines"]
+            if line.get("role") == "tutor" and line.get("kind") == "reply"
+        ]
+        assert len(releases) == 1
+        assert releases[0]["text"] == RELEASE
 
     def given_a_guest(self) -> None:
         self.driver.get(self.app_url)

@@ -428,7 +428,12 @@
 - [S] implementation (source cards are non-navigating divs)
 - [S] refactor (no new prod code)
 
+### 3.14 A double-clicked Examiner, choice, or tell stores one effect
+- [x] tests (acceptance Selenium; examiner/choice/tell × double JS click)
+- [S] implementation (sendLock already drops the second in-flight post)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] Selenium UI 3.13–3.15 (+ remaining UI/Load)
+- [ ] Selenium UI 3.13 / 3.15 (+ remaining UI/Load)
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` UI/Load

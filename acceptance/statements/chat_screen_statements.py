@@ -187,6 +187,33 @@ class ChatScreenStatements:
         self.wait.until(lambda driver: driver.find_element(*CHAT_MODE_EXAMINER)).click()
         self.wait.until(self._choices_visible, "no examiner choices")
 
+    def when_the_person_activates_examiner_twice_without_waiting(self) -> None:
+        button = self.wait.until(lambda driver: driver.find_element(*CHAT_MODE_EXAMINER))
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", button
+        )
+        self.wait.until(self._choices_visible, "no examiner choices after double click")
+
+    def when_the_person_activates_a_choice_twice_without_waiting(
+        self, choice_id: str = "c1"
+    ) -> None:
+        button = self.wait.until(
+            lambda driver: driver.find_element(
+                By.CSS_SELECTOR, f"[data-testid='chat-choice-{choice_id}']"
+            )
+        )
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", button
+        )
+        self.wait.until(self._grade_visible, "no grade after double choice")
+
+    def when_the_person_activates_tell_twice_without_waiting(self) -> None:
+        button = self.wait.until(lambda driver: driver.find_element(*CHAT_TELL))
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", button
+        )
+        self.wait.until(self._reply_with_page, "no release after double tell")
+
     def then_one_question_with_four_choices_is_shown_without_a_page(self, text: str) -> None:
         tutor_el = self.driver.find_elements(*TUTOR_LINE)[-1]
         assert tutor_el.find_element(*LINE_TEXT).text == text
