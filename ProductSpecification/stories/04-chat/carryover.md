@@ -88,3 +88,17 @@
 **Where:** `adapters/memory/account_store.py`, `adapters/http/chats._caller`, `/acceptance/session-store/fail`
 **Implication:** Recover via `/acceptance/session-store/recover` (no auth) before asserting the thread is unchanged.
 **From:** scenario 1.4 (1.4-a-session-store-failure-is-refused-like-a-missing-chat)
+
+## Quirk: tell is a flag, not phrase match; release keeps socratic mode
+
+**Quirk:** `tell: true` without an open withhold is `tell_unavailable`. A text line that “asks to be told” is still a try (person line + release). Release tutor lines stay `mode=socratic`.
+**Where:** `Outgoing.tell`, `SendMessage._tell` / `_release`, `Chat.is_withholding`
+**Implication:** Do not parse `text` for tell intent; use the body flag only.
+**From:** scenario 5.4 (5.4-the-tell-control-answers-with-a-page)
+
+## Quirk: examiner start is mode without text; choices omit correct on the wire
+
+**Quirk:** `{"mode":"examiner"}` with no `text` posts `kind=question` and four choices; `supported_choice_id` is stored server-side and never appears in `Line.json`.
+**Where:** `examiner_start.py`, `domain/chat/exam.draft_choices`, `Line.question`
+**Implication:** Grading later reads `supported_choice_id` from the open question line, not from the client.
+**From:** scenario 5.5 (5.5-examiner-posts-the-first-question-with-four-choices)

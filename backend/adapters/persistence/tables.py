@@ -1,7 +1,18 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -134,8 +145,13 @@ class ChatLineRow(Base):
     kind: Mapped[str | None] = mapped_column(String(16))
     page: Mapped[int | None] = mapped_column(Integer)
     sources: Mapped[list] = mapped_column(JSON)
+    choices: Mapped[list] = mapped_column(JSON, default=list)
+    choice_id: Mapped[str | None] = mapped_column(String(64))
+    correct: Mapped[bool | None] = mapped_column(Boolean)
+    supported_choice_id: Mapped[str | None] = mapped_column(String(64))
 
     def to_domain(self):
+        from domain.chat.choice import Choice
         from domain.chat.line import Line
         from domain.chat.source import Source
 
@@ -148,6 +164,10 @@ class ChatLineRow(Base):
             kind=self.kind,
             page=self.page,
             sources=tuple(Source(page=item["page"], text=item["text"]) for item in self.sources),
+            choices=tuple(Choice(item["id"], item["text"]) for item in (self.choices or ())),
+            choice_id=self.choice_id,
+            correct=self.correct,
+            supported_choice_id=self.supported_choice_id,
         )
 
     @staticmethod
@@ -163,6 +183,10 @@ class ChatLineRow(Base):
             kind=line.kind,
             page=line.page,
             sources=[source.json() for source in line.sources],
+            choices=[choice.json() for choice in line.choices],
+            choice_id=line.choice_id,
+            correct=line.correct,
+            supported_choice_id=line.supported_choice_id,
         )
 
 

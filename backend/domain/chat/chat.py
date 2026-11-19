@@ -1,6 +1,7 @@
 from dataclasses import dataclass, replace
 from uuid import UUID, uuid4
 
+from domain.chat.choice import Choice
 from domain.chat.line import Line
 from domain.chat.source import Source
 from domain.document.document import Document
@@ -122,6 +123,20 @@ class Chat:
                     prompt = previous.text
             previous = line
         return prompt
+
+    def open_examiner_question(self) -> Line | None:
+        for line in reversed(self.lines):
+            if line.role == "tutor" and line.kind == "question":
+                return line
+            if line.role == "tutor" and line.kind == "grade":
+                return None
+        return None
+
+    def record_examiner_question(
+        self, text: str, choices: tuple[Choice, ...], supported_choice_id: str
+    ) -> tuple["Chat", tuple[Line, ...]]:
+        tutor = Line.question(text, "examiner", choices, supported_choice_id)
+        return replace(self, lines=self.lines + (tutor,)), (tutor,)
 
     def with_appended(self, lines: tuple[Line, ...]) -> "Chat":
         return replace(self, lines=self.lines + lines)

@@ -263,6 +263,11 @@
 - [x] implementation (Outgoing.tell; release without person line)
 - [S] refactor (with 5.2)
 
+### 5.5 Examiner posts the first question with four choices and no page
+- [x] tests (acceptance; sanity fail on choices length 3)
+- [x] implementation (examiner start; draft_choices; Line.question; migration 0011)
+- [x] refactor (examiner_start extracted; send_message under 200)
+
 ## Next
-- [ ] полный `/harvest` остальных Tier 2 (3.4; §5.5+ examiner; UI/Load/Infra)
-- [ ] 3.4 / §5.5+ need prod (examiner choices/grades) — not acceptance-only
+- [ ] полный `/harvest` остальных Tier 2 (3.4; §5.6+ examiner grades; UI/Load/Infra)
+- [ ] 3.4 / §5.6+ need prod (grade/choice_id paths) — not acceptance-only

@@ -8,6 +8,7 @@ from domain.chat.learning import LearningMode, ListedModel, Question
 from domain.chat.line import Line
 from domain.chat.source import Source
 from usecase.chat.errors import ChatNotFound, ReplyFailed
+from usecase.chat.examiner_start import start_examiner
 from usecase.chat.outgoing import Outgoing
 from usecase.chat.ports import ChatStore, MaterialSearch, Tutor
 from usecase.chat.reply_budget import CHAT_LATENCY, expired, remaining_seconds
@@ -68,8 +69,15 @@ class SendMessage:
         return await self.chats.with_attempt(owner_id, chat_id, attempt_key, build)
 
     async def _spoken(self, chat: Chat, outgoing: Outgoing, model: str, started) -> Attempt:
-        question = Question.parse(outgoing.text)
         mode = LearningMode.parse(outgoing.mode, outgoing.mode_present)
+        if mode.value == "examiner" and not isinstance(outgoing.text, str):
+            return await start_examiner(
+                chat,
+                model,
+                self.search,
+                lambda m, mode, q, sources: self._answer(m, mode, q, sources, started),
+            )
+        question = Question.parse(outgoing.text)
         if chat.is_withholding():
             return await self._release(chat, question.text, model, "socratic", started)
         if mode.value == "socratic":

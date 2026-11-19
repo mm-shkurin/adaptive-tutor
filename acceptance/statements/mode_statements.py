@@ -95,6 +95,32 @@ class ModeStatements:
             self.token, self.chat_id, {"tell": True}, str(uuid4())
         )
 
+    def when_the_person_chooses_examiner(self) -> None:
+        scripted = self.chats.script_tutor(self.token, "Which process uses light?")
+        assert scripted.status_code == 204
+        self.sent = self.chats.send_payload(
+            self.token, self.chat_id, {"mode": "examiner"}, str(uuid4())
+        )
+
+    def then_the_tutor_posts_one_question_with_four_choices_and_no_page(self) -> None:
+        sent = self._sent()
+        assert sent.status_code == 200
+        assert sent.body is not None
+        assert len(sent.body["lines"]) == 1
+        tutor = sent.body["lines"][0]
+        assert tutor["role"] == "tutor"
+        assert tutor["mode"] == "examiner"
+        assert tutor["kind"] == "question"
+        assert tutor["text"] == "Which process uses light?"
+        assert tutor["page"] is None
+        assert tutor["sources"] == []
+        assert tutor["model"] is None
+        assert "correct" not in tutor
+        assert "choice_id" not in tutor
+        assert len(tutor["choices"]) == 4
+        assert [choice["id"] for choice in tutor["choices"]] == ["c1", "c2", "c3", "c4"]
+        assert all("text" in choice for choice in tutor["choices"])
+
     def then_the_tutor_answers_with_a_page_and_no_person_line_is_added(self) -> None:
         sent = self._sent()
         assert sent.status_code == 200
