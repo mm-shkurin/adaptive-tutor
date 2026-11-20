@@ -44,7 +44,7 @@ services:
       - "127.0.0.1:${QDRANT_HOST_PORT:-6333}:6333"
 
   # Real MiniLM embeddings for indexing/search (OpenAI /v1/embeddings, dim 384).
-  # Not freellmapi — that stays for future chat/tutor completions only.
+  # Not freellmapi — chat/tutor uses FREE_LLM_CHAT_URL → HttpTutor.
   embeddings:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
     restart: unless-stopped

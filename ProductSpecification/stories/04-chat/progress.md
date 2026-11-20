@@ -49,7 +49,7 @@
 
 ## Harvest — Tier 1 → Tier 2
 
-- [ ] harvest (полный батч Tier 2 ещё не гоняли; ниже — точечная сдача)
+- [x] harvest (fan-out set empty: all Tier 2 already `[x]`/`[S]` pointwise; formal baseline skipped as optional per Next)
 
 ## Tier 2 — Backend (01_API_Tests.md §1–3 gates)
 
@@ -534,5 +534,5 @@
 - [x] cleanup (removed draft `domain/llm`, `infrastructure/llm`, examples, and obsolete LLM guides; live path is `HttpTutor`)
 
 ## Next
-- [ ] полный `/harvest` checkbox (pointwise Tier 2 UI/Load/Infra done; formal fan-out/baseline optional)
 - [ ] story close / merge order with frontend lane
+- [ ] optional: earned-red baseline of Tier 1 acceptance against `429fee1` (pre-chat) if still wanted

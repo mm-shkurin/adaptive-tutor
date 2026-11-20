@@ -6,7 +6,7 @@
 
 ## In Progress
 
-История 4 «Чат»: спека открыта. Tier 1 закрыт. Tier 2 pointwise сдан (API+Sec+Integration+Infra+Load+UI). Live send: `HttpTutor` + `FREE_LLM_CHAT_URL` (не TEI). Дальше formal `/harvest` checkbox (optional) / merge с фронт-полосой. Tier 2 — 95.
+История 4 «Чат»: спека открыта. Tier 1+Tier 2 pointwise сданы; harvest checkbox закрыт (fan-out empty; baseline optional). Live send: `HttpTutor` + `FREE_LLM_CHAT_URL`. Дальше merge с фронт-полосой. Tier 2 — 95.
 
 Порядок сдачи с 2026-11-14: **4 Чат → 7 Викторины → 3 Презентации → 8 Прогресс**. Номера не меняются. Интервью 4 (2026-11-14): в чат входят цитаты, панель «Источники», четыре режима, эмбеддинги и Qdrant. Скрепка пока только открывает вкладку «Документы». Истории 5 и 6 отдельно не сдаются.
 
