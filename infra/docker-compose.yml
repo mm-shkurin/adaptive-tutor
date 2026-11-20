@@ -91,6 +91,9 @@ services:
         condition: service_started
       embeddings:
         condition: service_healthy
+    networks:
+      - default
+      - freellmapi_default
 
   gateway:
     image: nginx:1.27-alpine
@@ -109,3 +112,7 @@ volumes:
   redis_data:
   qdrant_data:
   embeddings_data:
+
+networks:
+  freellmapi_default:
+    external: true
