@@ -15,7 +15,8 @@ tech-profile:
 | Persistence | PostgreSQL |
 | Migrations | Alembic |
 | Vectors | Qdrant |
-| Embeddings and chat models | freellmapi, OpenAI-compatible HTTP |
+| Embeddings | TEI (`all-MiniLM-L6-v2`, OpenAI `/v1/embeddings`) via `FREE_LLM_API_URL` |
+| Chat models | freellmapi OpenAI `/v1/chat/completions` via `FREE_LLM_CHAT_URL` → `HttpTutor` |
 
 ## Frontend
 
