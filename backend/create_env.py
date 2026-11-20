@@ -7,8 +7,9 @@ import os
 
 env_content = """# AdaptiveTutor Backend Environment Variables
 
-# FreeLLMAPI Configuration
-FREE_LLM_API_URL=http://localhost:3001/v1
+# Embeddings vs chat completions (separate base URLs)
+FREE_LLM_API_URL=http://localhost:18081/v1
+FREE_LLM_CHAT_URL=http://localhost:3001/v1
 FREE_LLM_API_KEY=YOUR_UNIFIED_KEY_HERE
 
 # Database

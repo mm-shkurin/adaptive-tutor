@@ -525,6 +525,13 @@
 - [S] implementation (scripted tutor + PreferSeededSearch; no prod change)
 - [S] refactor (ChatLoadStatements already one concept; no extract)
 
+## Live tutor (production wire)
+
+### Production send uses freellmapi chat completions
+- [x] tests (unit HttpTutor: completion text, empty key, 4xx/5xx/malformed/timeout; settings default chat URL)
+- [x] implementation (`HttpTutor` + `FREE_LLM_CHAT_URL`; `AppContext` wires it instead of `RefusingTutor`; embeddings stay on `FREE_LLM_API_URL`/TEI)
+- [ ] refactor
+
 ## Next
 - [ ] полный `/harvest` checkbox (pointwise Tier 2 UI/Load/Infra done; formal fan-out/baseline optional)
 - [ ] story close / merge order with frontend lane

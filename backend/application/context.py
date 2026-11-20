@@ -21,7 +21,7 @@ from adapters.search.http_qdrant import HttpQdrant
 from adapters.search.qdrant_pieces import QdrantPieces
 from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
-from adapters.tutor.refusing_tutor import RefusingTutor
+from adapters.tutor.http_tutor import HttpTutor
 from adapters.tokens.jwt_tokens import JwtTokens
 from adapters.virus.clamav import ClamavVirusCheck
 from application.settings import Settings, load_settings
@@ -129,7 +129,9 @@ def _context(settings: Settings) -> AppContext:
         open_chat=OpenChat(create, chats),
         list_chats=ListChats(chats),
         get_chat=GetChat(chats, pieces, vectors),
-        send_message=SendMessage(chats, vectors, RefusingTutor(), clock),
+        send_message=SendMessage(
+            chats, vectors, HttpTutor(settings.free_llm_chat_url, settings.free_llm_api_key), clock
+        ),
     )
 
 

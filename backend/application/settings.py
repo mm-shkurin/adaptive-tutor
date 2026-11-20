@@ -31,6 +31,7 @@ class Settings:
     qdrant_url: str
     qdrant_api_key: str
     free_llm_api_url: str
+    free_llm_chat_url: str
     free_llm_api_key: str
 
 
@@ -72,6 +73,7 @@ def load_settings(env) -> Settings:
         qdrant_url=qdrant_url,
         qdrant_api_key=_text(env, "QDRANT_API_KEY"),
         free_llm_api_url=_text(env, "FREE_LLM_API_URL", "http://localhost:3001/v1"),
+        free_llm_chat_url=_text(env, "FREE_LLM_CHAT_URL", "http://localhost:3001/v1"),
         free_llm_api_key=_text(env, "FREE_LLM_API_KEY"),
     )
 

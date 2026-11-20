@@ -13,3 +13,4 @@ def test_missing_model_key_does_not_stop_startup():
     }
     settings = load_settings(env)
     assert settings.free_llm_api_key == ""
+    assert settings.free_llm_chat_url == "http://localhost:3001/v1"

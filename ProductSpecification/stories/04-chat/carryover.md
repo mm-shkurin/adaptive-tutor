@@ -12,11 +12,18 @@
 **Implication:** Open-time vector scenarios must clear post-index vectors; do not reuse the indexing embedding-refusal probe path.
 **From:** scenario 1.2 (1.2-a-vector-run-that-fails-leaves-the-document-ready-and-the-next-open-can-finish)
 
-## Quirk: production send still uses RefusingTutor
+## Quirk: chat completions URL is not the embeddings URL
 
-**Quirk:** `application/context.py` wires `RefusingTutor` into `SendMessage`, so every non-acceptance send stores a person line with `reply_failed` and no tutor line.
-**Where:** `backend/application/context.py`, `adapters/tutor/refusing_tutor.py`
-**Implication:** Happy-path tutor answers need a real HTTP tutor adapter; until then failed-reply is the live path.
+**Quirk:** Production `SendMessage` uses `HttpTutor` on `FREE_LLM_CHAT_URL` (freellmapi `/v1/chat/completions`). `FREE_LLM_API_URL` stays on TEI embeddings and must not be reused for tutor calls.
+**Where:** `backend/adapters/tutor/http_tutor.py`, `backend/application/context.py`, `backend/application/settings.py`
+**Implication:** Compose/local `.env` needs both URLs; empty `FREE_LLM_API_KEY` still fails the send without hitting the network.
+**From:** live tutor wire (HttpTutor)
+
+## Quirk: production send still uses RefusingTutor — resolved
+
+**Quirk:** Was: `RefusingTutor` on every live send. Now wired to `HttpTutor` (see chat completions URL quirk above).
+**Where:** `backend/application/context.py`
+**Implication:** Acceptance still uses `ScriptedTutor`; live stack needs freellmapi on `FREE_LLM_CHAT_URL`.
 **From:** scenario 6.6 (6.6-a-failed-reply-keeps-one-person-line)
 
 ## Quirk: interleave opens must gather on the server
