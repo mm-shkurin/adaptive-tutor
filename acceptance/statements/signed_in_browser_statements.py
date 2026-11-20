@@ -56,6 +56,119 @@ class SignedInBrowserStatements:
     def given_a_signed_in_person_with_no_documents(self) -> None:
         self._open_session("ada@example.test", "Ada")
 
+    def given_a_signed_in_person_with_a_ready_pdf_and_a_document_in_state(
+        self, state: str
+    ) -> None:
+        self.given_a_signed_in_person_with_a_ready_pdf_named_matanaliz()
+        created = self.chats.create(self.token, self.ready_document.body["id"])
+        assert created.status_code == 201
+        self.chat = created.body
+        self.chat_id = created.body["id"]
+        name = f"{state}.pdf"
+        uploaded = self.documents.submit_pdf(self.token, name, self.lecture)
+        assert uploaded.status_code == 201
+        document_id = uploaded.body["id"]
+        if state == "waiting":
+            seen = self.documents.read(self.token, document_id)
+            assert seen.status_code == 200
+            assert seen.body["status"] == "waiting"
+        elif state == "indexing":
+            moved = self.documents.move_indexing_status(
+                self.token, document_id, "indexing"
+            )
+            assert moved.status_code == 200
+            assert moved.body["status"] == "indexing"
+        elif state == "failed":
+            indexing = self.documents.move_indexing_status(
+                self.token, document_id, "indexing"
+            )
+            assert indexing.status_code == 200
+            failed = self.documents.move_indexing_status(
+                self.token, document_id, "failed", "broken"
+            )
+            assert failed.status_code == 200
+            assert failed.body["status"] == "failed"
+        else:
+            raise ValueError(state)
+        self.not_ready_name = name
+        self.ready_name = READY_NAME
+
+    def given_a_signed_in_person_whose_chat_cannot_be_asked_yet(self) -> None:
+        token = self._open_session("ada@example.test", "Ada")
+        self.token = token
+        uploaded = self.documents.submit_pdf(token, READY_NAME, self.lecture)
+        assert uploaded.status_code == 201
+        document_id = uploaded.body["id"]
+        indexing = self.documents.move_indexing_status(token, document_id, "indexing")
+        assert indexing.status_code == 200
+        ready = self.documents.move_indexing_status(token, document_id, "ready")
+        assert ready.status_code == 200
+        assert ready.body["status"] == "ready"
+        self.ready_document = ready
+        created = self.chats.create(token, document_id)
+        assert created.status_code == 201
+        opened = self.chats.get(token, created.body["id"])
+        assert opened.status_code == 200
+        assert opened.body is not None
+        assert opened.body["askable"] is False
+        self.chat = opened.body
+        self.chat_id = created.body["id"]
+
+    def given_a_signed_in_person_with_script_texts_in_thread_preview_and_source(
+        self, script: str
+    ) -> None:
+        self.given_a_signed_in_person_with_an_askable_chat()
+        document_id = self.ready_document.body["id"]
+        seeded = self.chats.seed_search(
+            self.token, document_id, ({"text": script, "page": self.page},)
+        )
+        assert seeded.status_code == 204
+        scripted = self.chats.script_tutor(self.token, script)
+        assert scripted.status_code == 204
+        sent = self.chats.send(
+            self.token,
+            self.chat_id,
+            script,
+            self.model,
+            "professor",
+            str(uuid4()),
+        )
+        assert sent.status_code == 200
+        opened = self.chats.get(self.token, self.chat_id)
+        assert opened.status_code == 200
+        self.chat = opened.body
+        self.script_text = script
+
+    def then_no_chat_is_bound_to_document_named(self, name: str) -> None:
+        listed = self.chats.list(self.token)
+        assert listed.status_code == 200
+        assert listed.body is not None
+        names = [row.get("document_name") for row in listed.body.get("chats") or []]
+        assert name not in names
+
+    def then_one_new_chat_effect_is_stored(self, before: int) -> None:
+        listed = self.chats.list(self.token)
+        assert listed.status_code == 200
+        assert listed.body is not None
+        assert len(listed.body.get("chats") or []) == before + 1
+
+    def chat_count(self) -> int:
+        listed = self.chats.list(self.token)
+        assert listed.status_code == 200
+        assert listed.body is not None
+        return len(listed.body.get("chats") or [])
+
+    def then_one_switch_effect_is_stored(self, document_name: str) -> None:
+        listed = self.chats.list(self.token)
+        assert listed.status_code == 200
+        assert listed.body is not None
+        matches = [
+            row
+            for row in listed.body.get("chats") or []
+            if row.get("document_name") == document_name
+        ]
+        assert len(matches) == 1
+
     def given_a_signed_in_person_with_a_ready_pdf_named_matanaliz(self) -> None:
         token = self._open_session("ada@example.test", "Ada")
         self.token = token

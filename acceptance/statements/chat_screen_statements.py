@@ -35,6 +35,9 @@ CHAT_DOCUMENT_CHOICE = (By.CSS_SELECTOR, "[data-testid='chat-document-choice']")
 CHAT_ATTACH = (By.CSS_SELECTOR, "[data-testid='chat-attach']")
 DOCUMENTS_HEADING = (By.CSS_SELECTOR, "[data-testid='documents-heading']")
 CHAT_MODEL = (By.CSS_SELECTOR, "[data-testid='chat-model']")
+CHAT_NOTICE = (By.CSS_SELECTOR, "[data-testid='chat-notice']")
+CHAT_SOURCES = (By.CSS_SELECTOR, "[data-testid='chat-sources']")
+LANDING = (By.CSS_SELECTOR, "[data-testid='landing']")
 CHAT_MODE_PREFIX = "chat-mode-"
 WAIT_SECONDS = 20
 
@@ -228,6 +231,176 @@ class ChatScreenStatements:
     def then_sending_added_no_line(self) -> None:
         assert self.driver.find_elements(*PERSON_LINE) == []
         assert self.driver.find_elements(*TUTOR_LINE) == []
+
+    def when_the_guest_opens_the_product(self) -> None:
+        assert self.app_url is not None
+        self.driver.get(self.app_url)
+        self.wait.until(lambda driver: driver.find_elements(*LANDING), "no landing")
+
+    def then_the_landing_is_shown(self) -> None:
+        landing = self.wait.until(lambda driver: driver.find_element(*LANDING))
+        assert landing.is_displayed()
+
+    def then_the_chat_list_is_not_shown(self) -> None:
+        assert self.driver.find_elements(*CHAT_LIST) == []
+        assert self.driver.find_elements(*CHAT_TAB) == []
+
+    def then_the_composer_is_not_shown(self) -> None:
+        assert self.driver.find_elements(*CHAT_INPUT) == []
+        assert self.driver.find_elements(*CHAT_SEND) == []
+
+    def when_the_person_opens_the_document_picker(self) -> None:
+        self.wait.until(lambda driver: driver.find_element(*CHAT_SWITCH)).click()
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_DOCUMENT_PICKER),
+            "no document picker",
+        )
+
+    def then_document_is_not_a_choice(self, name: str) -> None:
+        names = [
+            el.get_attribute("data-document-name") or el.text
+            for el in self.driver.find_elements(*CHAT_DOCUMENT_CHOICE)
+        ]
+        assert name not in names
+
+    def then_document_is_a_choice(self, name: str) -> None:
+        names = [
+            el.get_attribute("data-document-name") or el.text
+            for el in self.driver.find_elements(*CHAT_DOCUMENT_CHOICE)
+        ]
+        assert name in names
+
+    def then_the_material_cannot_be_asked_yet(self) -> None:
+        notice = self.wait.until(lambda driver: driver.find_element(*CHAT_NOTICE))
+        assert notice.text == "Материал пока нельзя спросить."
+
+    def when_the_person_tries_to_send_while_not_askable(
+        self, text: str = PERSON_QUESTION
+    ) -> None:
+        inputs = self.driver.find_elements(*CHAT_INPUT)
+        sends = self.driver.find_elements(*CHAT_SEND)
+        if inputs and inputs[0].is_displayed() and inputs[0].is_enabled():
+            inputs[0].clear()
+            inputs[0].send_keys(text)
+        if sends and sends[0].is_displayed() and sends[0].is_enabled():
+            sends[0].click()
+
+
+    def when_the_person_opens_the_chat_on_a_narrow_window(self) -> None:
+        self.driver.set_window_size(800, 900)
+        self.when_the_person_opens_the_chat()
+
+    def then_history_and_sources_can_be_reached(self) -> None:
+        history = self.wait.until(lambda driver: driver.find_element(*CHAT_LIST))
+        sources = self.wait.until(lambda driver: driver.find_element(*CHAT_SOURCES))
+        assert history.is_displayed()
+        assert sources.is_displayed()
+        assert history.value_of_css_property("display") != "none"
+        assert sources.value_of_css_property("display") != "none"
+
+    def then_script_texts_are_shown_as_text_not_elements(self, script: str) -> None:
+        self.wait.until(
+            lambda driver: any(
+                el.find_element(*LINE_TEXT).text == script
+                for el in driver.find_elements(*PERSON_LINE)
+            ),
+            "person script text missing",
+        )
+        person_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*PERSON_LINE)
+        ]
+        tutor_texts = [
+            el.find_element(*LINE_TEXT).text for el in self.driver.find_elements(*TUTOR_LINE)
+        ]
+        preview_texts = [
+            el.text for el in self.driver.find_elements(*CHAT_LIST_PREVIEW)
+        ]
+        source_texts = [el.text for el in self.driver.find_elements(*SOURCE_TEXT)]
+        assert script in person_texts
+        assert script in tutor_texts
+        assert script in preview_texts
+        assert script in source_texts
+        for host in (
+            *self.driver.find_elements(*PERSON_LINE),
+            *self.driver.find_elements(*TUTOR_LINE),
+            *self.driver.find_elements(*CHAT_LIST),
+            *self.driver.find_elements(*CHAT_SOURCES),
+        ):
+            assert host.find_elements(By.TAG_NAME, "script") == []
+
+
+    def when_the_person_types_an_unsent_line(self, text: str) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        field.clear()
+        field.send_keys(text)
+
+    def when_the_person_returns_to_the_left_chat(self, document_name: str) -> None:
+        row = self.wait.until(
+            lambda driver: next(
+                (
+                    el
+                    for el in driver.find_elements(
+                        By.CSS_SELECTOR, "[data-testid='chat-list-row']"
+                    )
+                    if document_name
+                    in el.find_element(*CHAT_LIST_DOCUMENT).text
+                ),
+                False,
+            ),
+            f"no list row for {document_name}",
+        )
+        row.click()
+        self.wait.until(
+            lambda driver: driver.find_element(*BOUND_DOCUMENT).get_attribute(
+                "textContent"
+            )
+            == document_name,
+            "did not return to left chat",
+        )
+
+    def then_the_unsent_line_is_still_in_the_composer(self, text: str) -> None:
+        field = self.wait.until(lambda driver: driver.find_element(*CHAT_INPUT))
+        assert field.get_attribute("value") == text
+
+    def when_the_person_activates_new_chat_twice_without_waiting(self) -> None:
+        button = self.wait.until(lambda driver: driver.find_element(*CHAT_NEW))
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", button
+        )
+        self.wait.until(self._thread_empty, "thread not empty after double new chat")
+
+    def when_the_person_activates_switch_document_twice_without_waiting(
+        self, document_name: str
+    ) -> None:
+        switch = self.wait.until(lambda driver: driver.find_element(*CHAT_SWITCH))
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", switch
+        )
+        self.wait.until(
+            lambda driver: driver.find_elements(*CHAT_DOCUMENT_PICKER),
+            "no document picker after double switch",
+        )
+        choice = self.wait.until(
+            lambda driver: next(
+                (
+                    el
+                    for el in driver.find_elements(*CHAT_DOCUMENT_CHOICE)
+                    if el.get_attribute("data-document-name") == document_name
+                    or el.text == document_name
+                ),
+                False,
+            )
+        )
+        self.driver.execute_script(
+            "arguments[0].click(); arguments[0].click();", choice
+        )
+        self.wait.until(
+            lambda driver: driver.find_element(*BOUND_DOCUMENT).get_attribute(
+                "textContent"
+            )
+            == document_name,
+            "bound document did not switch after double choice",
+        )
 
     def then_the_tutor_bubble_has_no_page(self, text: str) -> None:
         self.then_the_tutor_shows_text(text)

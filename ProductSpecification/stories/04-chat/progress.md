@@ -478,14 +478,47 @@
 - [S] implementation (no_ready empty state already)
 - [S] refactor (no new prod code)
 
+### 0.1 A guest sees the landing and not the chat
+- [x] tests (acceptance Selenium)
+- [S] implementation (RequireSession → landing; no chat chrome for guests)
+- [S] refactor (no new prod code)
+
+### 0.3 A document that is not ready cannot be chosen
+- [x] tests (acceptance Selenium; waiting/indexing/failed)
+- [S] implementation (readyDocumentChoices filters status === ready)
+- [S] refactor (unit covers filter; no extract)
+
+### 0.4 The material that cannot be asked yet shows the sentence and send adds nothing
+- [x] tests (acceptance Selenium; sanity fail on askable True after force-ready without pieces)
+- [S] implementation (chat notice + composer disabled when !askable)
+- [S] refactor (no new prod code)
+
 ### 1.3 A source without a page shows the piece text and no page number
 - [x] tests (acceptance Selenium)
 - [S] implementation (optional page already)
 - [S] refactor (no new prod code)
 
+### 1.4 History and sources stay reachable on a narrow window
+- [x] tests (acceptance Selenium; viewport 800px)
+- [S] implementation (chat.css stacks panels under 960px; not display:none)
+- [S] refactor (no new prod code)
+
+### 1.5 A script in the thread, the preview, and the source is shown as text
+- [x] tests (acceptance Selenium)
+- [S] implementation (React text nodes; no script children in chat hosts)
+- [S] refactor (no new prod code)
+
+### 2.5 A double-clicked new chat or switch stores one chat
+- [x] tests (acceptance Selenium; new chat + switch choice)
+- [x] implementation (createLock / switchLock drop the second in-flight effect)
+- [S] refactor (locks mirror sendLock; no further extract)
+
+### 2.6 Unsent text is still in the composer after leaving and returning
+- [x] tests (acceptance Selenium)
+- [S] implementation (draft state survives document switch + list return)
+- [S] refactor (no new prod code)
+
 ## Next
-- [ ] remaining UI/Load (0.1/0.3–0.4, 1.4–1.5, 2.5–2.6, Load 1.1)
+- [ ] Load 1.1 reply latency under peak burst
 - [ ] Infra 3.2 log capture if needed
-- [ ] полный `/harvest` UI/Load
-- [ ] Infra 3.2 log capture if needed
-- [ ] полный `/harvest` UI/Load
+- [ ] полный `/harvest` checkbox / UI-Load batch close

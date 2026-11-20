@@ -29,6 +29,8 @@ export function useChatScreen() {
   const [documentChoices, setDocumentChoices] = useState(null)
   const activeId = useRef(null)
   const sendLock = useRef(false)
+  const createLock = useRef(false)
+  const switchLock = useRef(false)
   const inFlight = useRef(0)
   const draftRef = useRef('')
 
@@ -67,6 +69,8 @@ export function useChatScreen() {
   }
 
   async function startNewChat() {
+    if (createLock.current) return
+    createLock.current = true
     setRefusal(null)
     setDocumentChoices(null)
     try {
@@ -77,10 +81,13 @@ export function useChatScreen() {
     } catch (error) {
       if (leaveIfExpired(error, navigate)) return
       setRefusal(error.message)
+    } finally {
+      createLock.current = false
     }
   }
 
   async function beginSwitchDocument() {
+    if (switchLock.current) return
     setRefusal(null)
     try {
       setDocumentChoices(readyDocumentChoices(await listDocuments()))
@@ -91,6 +98,8 @@ export function useChatScreen() {
   }
 
   async function chooseDocument(documentId) {
+    if (switchLock.current) return
+    switchLock.current = true
     setDocumentChoices(null)
     setRefusal(null)
     try {
@@ -103,6 +112,8 @@ export function useChatScreen() {
     } catch (error) {
       if (leaveIfExpired(error, navigate)) return
       setRefusal(error.message)
+    } finally {
+      switchLock.current = false
     }
   }
 
