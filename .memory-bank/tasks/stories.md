@@ -6,7 +6,7 @@
 |---|---------|-----------|
 | 1 | Вход, лендинг и профиль | Done. |
 | 2 | PDF-документы | Done (текст/куски в Postgres; live embeddings — TEI MiniLM sidecar + Qdrant). |
-| 4 | Чат | Tier 1 закрыт. Tier 2 API 6.4–6.11 сданы; дальше полный `/harvest`. Live tutor ещё `RefusingTutor`. |
+| 4 | Чат | Tier 1+Tier 2 pointwise сданы. Live `HttpTutor` + `FREE_LLM_CHAT_URL`. Дальше formal `/harvest` / merge. |
 | 7 | Викторины | Бэклог, сразу после чата. |
 | 3 | Презентации из слайдов | Бэклог, после викторин. |
 | 5 | Цитаты | Входят в историю 4. |

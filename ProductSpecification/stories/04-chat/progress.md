@@ -530,7 +530,7 @@
 ### Production send uses freellmapi chat completions
 - [x] tests (unit HttpTutor: completion text, empty key, 4xx/5xx/malformed/timeout; settings default chat URL)
 - [x] implementation (`HttpTutor` + `FREE_LLM_CHAT_URL`; `AppContext` wires it instead of `RefusingTutor`; embeddings stay on `FREE_LLM_API_URL`/TEI)
-- [ ] refactor
+- [S] refactor (HttpTutor + helpers already one concept each; files under limit; no separate commit)
 
 ## Next
 - [ ] полный `/harvest` checkbox (pointwise Tier 2 UI/Load/Infra done; formal fan-out/baseline optional)
