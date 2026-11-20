@@ -15,3 +15,9 @@
 **Surprise:** A real book PDF (119 pieces) failed with `search store refused` even after TEI was healthy; small fixtures indexed fine.
 **Why:** Default httpx timeout was 10s while TEI needed ~8–11s for that batch on CPU; no TEI Success log during the failed attempt.
 **Impact:** `HttpEmbeddings` and `HttpQdrant` timeouts are 60s; TEI needs `--auto-truncate` or long pieces return 422.
+
+## discussion (2026-11-20)
+
+**Decision:** Production tutor calls freellmapi via `HttpTutor` on `FREE_LLM_CHAT_URL`; `FREE_LLM_API_URL` stays on TEI embeddings only.
+**Why:** Compose already pointed `FREE_LLM_API_URL` at embeddings; reusing it for chat completions would hit TEI.
+**Where applied:** `backend/adapters/tutor/http_tutor.py`, `backend/application/settings.py`, `backend/application/context.py`
