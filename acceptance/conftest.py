@@ -31,6 +31,7 @@ pytest.register_assert_rewrite(
     "statements.chat_connection_statements",
     "statements.model_key_statements",
     "statements.redaction_statements",
+    "statements.chat_load_statements",
 )
 
 from statements.chat_statements import ChatStatements

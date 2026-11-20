@@ -518,7 +518,13 @@
 - [S] implementation (draft state survives document switch + list return)
 - [S] refactor (no new prod code)
 
+## Tier 2 — Load (03_Load_Tests.md)
+
+### 1.1 A chat reply under the peak burst stays inside the latency budget
+- [x] tests (acceptance; 20×5 fakes; sanity on P95 threshold)
+- [S] implementation (scripted tutor + PreferSeededSearch; no prod change)
+- [S] refactor (ChatLoadStatements already one concept; no extract)
+
 ## Next
-- [ ] Load 1.1 reply latency under peak burst
 - [ ] Infra 3.2 log capture if needed
 - [ ] полный `/harvest` checkbox / UI-Load batch close
