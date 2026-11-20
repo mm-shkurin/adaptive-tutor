@@ -130,7 +130,15 @@ def _context(settings: Settings) -> AppContext:
         list_chats=ListChats(chats),
         get_chat=GetChat(chats, pieces, vectors),
         send_message=SendMessage(
-            chats, vectors, HttpTutor(settings.free_llm_chat_url, settings.free_llm_api_key), clock
+            chats,
+            vectors,
+            HttpTutor(
+                settings.free_llm_chat_url,
+                settings.free_llm_api_key,
+                timeout=float(os.environ.get("CHAT_LATENCY_SECONDS", "5")),
+            ),
+            clock,
+            latency=timedelta(seconds=int(os.environ.get("CHAT_LATENCY_SECONDS", "5"))),
         ),
     )
 

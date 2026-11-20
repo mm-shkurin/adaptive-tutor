@@ -93,3 +93,18 @@ def test_five_year_old_uses_the_plain_words_system_prompt():
 
     asyncio.run(_tutor(handler).answer("auto", "five_year_old", "Q?", ()))
     assert "five-year-old" in captured["system"]
+
+
+def test_an_unknown_listed_model_falls_back_to_auto():
+    models = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode())
+        models.append(body["model"])
+        if body["model"] != "auto":
+            return httpx.Response(404, json={"error": "missing"})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "fallback"}}]})
+
+    text = asyncio.run(_tutor(handler).answer("qwen/qwen3-32b", "professor", "Q?", ()))
+    assert text == "fallback"
+    assert models == ["qwen/qwen3-32b", "auto"]

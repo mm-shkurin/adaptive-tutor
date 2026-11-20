@@ -38,7 +38,10 @@ class HttpTutor:
         try:
             response = await self._post(model, mode, question, sources)
             if response.status_code < 200 or response.status_code >= 300:
-                raise ReplyFailed()
+                if model != "auto":
+                    response = await self._post("auto", mode, question, sources)
+                if response.status_code < 200 or response.status_code >= 300:
+                    raise ReplyFailed()
             try:
                 return _assistant_text(response.json())
             except (KeyError, TypeError, ValueError, IndexError) as error:

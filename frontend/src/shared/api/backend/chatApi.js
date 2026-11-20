@@ -39,6 +39,8 @@ export function sendChatMessage(chatId, payload, idempotencyKey, signal) {
     body: payload,
     headers: { 'Idempotency-Key': idempotencyKey },
     signal,
+    // Live freellmapi often needs 20–40s; default REQUEST_TIMEOUT_MS is 15s.
+    timeoutMs: 90_000,
     guard: isSendResultBody,
   })
 }
