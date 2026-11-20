@@ -60,13 +60,16 @@ class ChatStatements(
     RedactionStatements,
     ChatLoadStatements,
 ):
-    def __init__(self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None):
+    def __init__(
+        self, base_url: str, provider: ScriptedProvider, clock, probe=None, fakes=None, logs=None
+    ):
         self.sessions = SessionClient(base_url, provider)
         self.documents = DocumentClient(base_url)
         self.chats = ChatClient(base_url)
         self.clock = clock
         self.probe = probe
         self.fakes = fakes
+        self.logs = logs
         self.lecture = (FIXTURES / "lecture.pdf").read_bytes()
         self.token = ""
         self.older_id = ""

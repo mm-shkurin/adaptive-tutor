@@ -50,7 +50,12 @@ def chats():
     server = AcceptanceServer()
     server.start()
     statements = ChatStatements(
-        server.base_url, server.provider, server.clock, server.probe, server.fakes
+        server.base_url,
+        server.provider,
+        server.clock,
+        server.probe,
+        server.fakes,
+        server.logs,
     )
     try:
         yield statements

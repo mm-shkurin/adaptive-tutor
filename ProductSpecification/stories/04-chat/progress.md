@@ -391,9 +391,9 @@
 ## Tier 2 — Infrastructure (04_Infrastructure_Tests.md §3.2 redaction)
 
 ### 3.2 A failure body and its log omit a secret, the document text, and another person's chat
-- [x] tests (acceptance; body keys + omit secret/piece/neighbour; log capture deferred)
+- [x] tests (acceptance; body + LogCapture omit secret/piece/neighbour)
 - [x] implementation (errors already code/message only)
-- [x] refactor (redaction_statements)
+- [x] refactor (redaction_statements; chats fixture passes server.logs)
 
 ## Tier 2 — Frontend (02_UI_Tests.md §3 modes)
 
@@ -526,5 +526,5 @@
 - [S] refactor (ChatLoadStatements already one concept; no extract)
 
 ## Next
-- [ ] Infra 3.2 log capture if needed
-- [ ] полный `/harvest` checkbox / UI-Load batch close
+- [ ] полный `/harvest` checkbox (pointwise Tier 2 UI/Load/Infra done; formal fan-out/baseline optional)
+- [ ] story close / merge order with frontend lane

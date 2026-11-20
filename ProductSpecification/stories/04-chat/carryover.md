@@ -179,3 +179,18 @@
 **Where:** `acceptance/statements/chat_screen_statements.py` (double-activate helpers)
 **Implication:** UI double-activate scenarios must not re-find between the two clicks.
 **From:** scenario 3.14 (3.14-a-double-clicked-control-stores-one-effect)
+
+## Quirk: UI not-askable needs ready-without-pieces
+
+**Quirk:** A chat is not askable in UI when the document was forced ready without pieces; failing embeddings after a real index still leaves askable true once GetChat embeds.
+**Where:** cceptance/statements/signed_in_browser_statements.py (given_a_signed_in_person_whose_chat_cannot_be_asked_yet), QdrantPieces.ready
+**Implication:** Browser not-askable setups must use move_indexing_status ready without pieces (or clear vectors + fail embed before open), not IndexProbe embedding outcome after a finished index.
+**From:** scenario 0.4 (0.4-material-cannot-be-asked-yet)
+
+## Quirk: switch double-click asserts the choice
+
+**Quirk:** Double-activating «Сменить документ» only toggles the picker; one stored switch effect is proven by double-clicking the document choice under switchLock.
+**Where:** rontend/src/features/chat/useChatScreen.js, UI 2.5 statements
+**Implication:** UI 2.5 double-clicks the choice after opening the picker.
+**From:** scenario 2.5 (2.5-double-clicked-new-chat-or-switch)
+
