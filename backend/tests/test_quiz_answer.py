@@ -38,6 +38,27 @@ def test_a_choice_is_graded_once_from_the_stored_correct_choice(pick, right):
     assert len(bundle.quiz_tutor.calls) == calls
 
 
+def test_advance_before_a_choice_is_refused():
+    bundle, token, quiz = _open()
+    calls = len(bundle.quiz_tutor.calls)
+    refused = advance(bundle, token, quiz["id"])
+    assert refused.status_code == 400
+    assert refused.json() == {"code": "unanswered", "message": "The question is not answered"}
+    stayed = read(bundle, token, quiz["id"]).json()
+    assert stayed["current_index"] == 0
+    hidden(stayed["questions"][0])
+    chosen = quiz["questions"][0]["choices"][0]["id"]
+    assert answer(bundle, token, quiz["id"], chosen).status_code == 200
+    assert advance(bundle, token, quiz["id"]).status_code == 200
+    again = advance(bundle, token, quiz["id"])
+    assert again.status_code == 400
+    assert again.json() == {"code": "unanswered", "message": "The question is not answered"}
+    later = read(bundle, token, quiz["id"]).json()
+    assert later["current_index"] == 1
+    hidden(later["questions"][1])
+    assert len(bundle.quiz_tutor.calls) == calls
+
+
 def test_next_opens_the_following_question_and_keeps_the_grade():
     bundle, token, quiz = _open()
     calls = len(bundle.quiz_tutor.calls)

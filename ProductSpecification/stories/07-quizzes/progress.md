@@ -15,7 +15,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [x] implement domain + usecase + HTTP + store (create → answer → advance → finish → resume → retry)
 - [x] tests from Tier 1 API (sanity fail once, then green)
 - [x] commit behavior + this progress
-- [ ] refactor commit
+- [x] refactor (quiz types already one concept each, files under 200 lines; no high-value smell; no separate commit)
 - [x] account Tier 1 API scenarios done
 
 ## Tier 1 — Frontend Scenarios (02_UI_Tests.md)
@@ -126,6 +126,18 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 
 ## Tier 2 — Backend Scenarios (01_API_Tests.md)
 
+Done AFK — tests from the spec, green on the backend-delivery strip. The red/green boxes under each heading stay the unused chain.
+
+- [x] 2.1 An empty quiz list is the person's own list
+- [x] 3.1 A blank topic is refused and nothing is stored
+- [x] 3.2 A question count outside 3, 5, and 8 is refused and nothing is stored
+- [x] 5.1 An empty search for the topic stores nothing
+- [x] 5.2 A reply of the wrong shape stores nothing and does not pin the attempt
+- [x] 6.1 The list is newest first and an open attempt does not change the completed score
+- [x] 8.2 Advance before a choice is refused
+- [x] Security 1.1 Another person's quiz or document is refused like a missing quiz
+- [x] Security 1.2 The quiz list does not include another person's quiz
+
 ### 1.1 A call with no session is refused like a missing quiz
 - [ ] red-acceptance
 - [ ] design
@@ -158,7 +170,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.1 An empty quiz list is the person's own list
+### 2.1 An empty quiz list is the person's own list — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -174,7 +186,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.1 A blank topic is refused and nothing is stored
+### 3.1 A blank topic is refused and nothing is stored — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -182,7 +194,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.2 A question count outside 3, 5, and 8 is refused and nothing is stored
+### 3.2 A question count outside 3, 5, and 8 is refused and nothing is stored — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -222,7 +234,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 5.1 An empty search for the topic stores nothing
+### 5.1 An empty search for the topic stores nothing — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -230,7 +242,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 5.2 A reply of the wrong shape stores nothing and does not pin the attempt
+### 5.2 A reply of the wrong shape stores nothing and does not pin the attempt — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -246,7 +258,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 6.1 The list is newest first and an open attempt does not change the completed score
+### 6.1 The list is newest first and an open attempt does not change the completed score — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -278,7 +290,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 8.2 Advance before a choice is refused
+### 8.2 Advance before a choice is refused — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -498,7 +510,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 
 ## Tier 2 — Security Scenarios (05_Security_Tests.md)
 
-### 1.1 Another person's quiz or document is refused like a missing quiz
+### 1.1 Another person's quiz or document is refused like a missing quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -506,7 +518,7 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.2 The quiz list does not include another person's quiz
+### 1.2 The quiz list does not include another person's quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
