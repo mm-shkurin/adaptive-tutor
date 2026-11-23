@@ -388,29 +388,29 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 0.1 A guest sees the landing and not the quizzes
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 0.2 No ready PDF shows that a quiz cannot be created
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 0.3 A document that is not ready cannot be chosen
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -418,9 +418,9 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 1.2 A card shows the document, the topic, the count, and only the last completed score
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -428,9 +428,9 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 1.4 The result shows the score and a review of every question
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -438,9 +438,9 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 1.5 A script in the topic, the question, and a choice is shown as text
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -468,19 +468,19 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 4.1 A blank topic leaves the list unchanged
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 4.2 A failed generation shows that the quiz could not be assembled
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -498,11 +498,11 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 6.2 Cancel and back return to the list
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.5 Reload resumes the saved question and does not grade again

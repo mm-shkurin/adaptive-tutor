@@ -6,7 +6,7 @@
 
 ## In Progress
 
-История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): спека + api + test-spec (T1 16 / T2 56 / T3 1). Tier 1 API зелёный; часть Tier 2 API (отказы/список/IDOR, новый и одновременный ключ, choose/advance без захода, стирание викторин) и интеграция канала (пустой поиск, плохой канал, resume/retry без модели); `/quizzes` UI вместо SoonPage (vitest). Spec-skeptic ещё `block` — `stories/07-quizzes/AFK_BLOCKERS.md`. В `dev` не вливать, пока человек не вольёт чат.
+История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): Tier 1 API + UI selenium зелёные; почти весь Tier 2 API/security/infra/integration закрыт pytest; часть Tier 2 UI (guest, no-PDF, blank topic, cancel). Demo и полный harvest ещё открыты. Spec-skeptic `block` — `stories/07-quizzes/AFK_BLOCKERS.md`. В `dev` не вливать, пока человек не вольёт чат.
 
 История 4 «Чат»: Tier 1+Tier 2 сданы; harvest закрыт. Merge `features/chat` → `dev` — вручную.
 
@@ -17,7 +17,7 @@
 | # | Story | Spec | Back | Intg | Front | Sec | Load | Infra | Tests | % |
 |---|-------|------|------|------|-------|-----|------|-------|-------|---|
 | 4 | Чат | ✅ | · | · | · | · | · | · | 97/101 | 96% |
-| 7 | Викторины | ✅ | ✅/— | · | 🔧/— | · | n/a | · | 44 pytest · vitest | ~45% |
+| 7 | Викторины | ✅ | ✅/✅ | ✅/— | 🔧/🔧 | ✅/— | n/a | ✅/— | ~90 pytest · vitest · selenium | ~70% |
 | 3 | Презентации из слайдов | · | · | · | · | · | · | · | 0/0 | 0% |
 | 8 | Прогресс | · | · | · | · | · | · | · | 0/0 | 0% |
 

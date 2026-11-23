@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from clients.application.quiz_client import QuizClient
 from statements.signed_in_browser_statements import READY_NAME, SECOND_NAME
 

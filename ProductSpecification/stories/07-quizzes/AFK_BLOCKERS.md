@@ -55,5 +55,6 @@ Items that need a human decision or that stopped automated delivery. Work contin
 - Tier 2 API/security/infra committed (`5783312`).
 - Selenium Tier 1: 10/10 green after fixing cite selector. Note: both `<main>` and the source cite use `data-testid="quiz-page"` — selenium scopes cite under `quiz-reveal`. Optional cleanup: rename cite to `quiz-cite-page`.
 - Demo (headed) skipped in AFK — leave for human `/demo`.
-- Harvest not auto-run: demo still open; Tier 2 frontend still unchecked. AFK default: start harvest next session without waiting on demo unless human objects.
+- Harvest (`/continue` red-agent fanout) not run in delivery-loop AFK. Next: remaining Tier 2 UI selenium (narrow, reload, progress score leak, double-generate) then `/demo` then decide harvest vs mark Tier 2 frontend done.
+- Optional cleanup: rename cite `data-testid` from `quiz-page` to `quiz-cite-page` (main also uses `quiz-page`).
 

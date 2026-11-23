@@ -172,6 +172,37 @@ describe('take view', () => {
 })
 
 describe('result view', () => {
+  it('keeps script and SQL fragments as plain topic and choice text', () => {
+    const script = '<script>alert(1)</script>'
+    const sql = "' OR 1=1"
+    const [row] = cardRows([{
+      id: 'quiz-x',
+      document_name: 'Матанализ.pdf',
+      topic: `Тема ${script} ${sql}`,
+      question_count: 3,
+      last_score: null,
+    }])
+    expect(row.topic).toContain(script)
+    expect(row.topic).toContain(sql)
+    const view = takeView(detail({
+      topic: `Тема ${script}`,
+      questions: [
+        question({
+          text: `Вопрос ${script}`,
+          choices: [
+            choice('a', `A ${script}`),
+            choice('b', `B ${sql}`),
+            choice('c', 'C'),
+            choice('d', 'D'),
+          ],
+        }),
+      ],
+    }))
+    expect(view.text).toContain(script)
+    expect(view.choices[0].text).toContain(script)
+    expect(view.choices[1].text).toContain(sql)
+  })
+
   it('shows the score and the chosen, correct, and page for every question', () => {
     const view = resultView(detail({
       status: 'result',
