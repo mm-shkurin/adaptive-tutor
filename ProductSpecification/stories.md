@@ -6,7 +6,7 @@
 
 ## In Progress
 
-История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): спека + api + test-spec (T1 16 / T2 56 / T3 1). Tier 1 API зелёный; часть Tier 2 API (отказы/список/IDOR); `/quizzes` UI вместо SoonPage (vitest). Spec-skeptic ещё `block` — `stories/07-quizzes/AFK_BLOCKERS.md`. В `dev` не вливать, пока человек не вольёт чат.
+История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): спека + api + test-spec (T1 16 / T2 56 / T3 1). Tier 1 API зелёный; часть Tier 2 API (отказы/список/IDOR, новый и одновременный ключ, choose/advance без захода, стирание викторин) и интеграция канала (пустой поиск, плохой канал, resume/retry без модели); `/quizzes` UI вместо SoonPage (vitest). Spec-skeptic ещё `block` — `stories/07-quizzes/AFK_BLOCKERS.md`. В `dev` не вливать, пока человек не вольёт чат.
 
 История 4 «Чат»: Tier 1+Tier 2 сданы; harvest закрыт. Merge `features/chat` → `dev` — вручную.
 

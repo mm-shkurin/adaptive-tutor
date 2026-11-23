@@ -72,6 +72,44 @@ def test_opening_the_quiz_again_continues_at_the_saved_question():
     assert len(bundle.quiz_tutor.calls) == calls
 
 
+def test_choose_and_advance_after_finish_are_refused():
+    bundle, token, quiz = _open(3)
+    calls = len(bundle.quiz_tutor.calls)
+    done = finish(bundle, token, quiz["id"], "right")
+    score = done["last_score"]
+    review = done["questions"][0]["chosen_choice_id"]
+    choice = done["questions"][0]["choices"][1]["id"]
+    refused = {"code": "no_open_attempt", "message": "No open attempt"}
+    answered = answer(bundle, token, quiz["id"], choice)
+    assert answered.status_code == 400
+    assert answered.json() == refused
+    advanced = advance(bundle, token, quiz["id"])
+    assert advanced.status_code == 400
+    assert advanced.json() == refused
+    later = read(bundle, token, quiz["id"]).json()
+    assert later["status"] == "result"
+    assert later["last_score"] == score
+    assert later["questions"][0]["chosen_choice_id"] == review
+    assert listed(bundle, token).json()["quizzes"][0]["last_score"] == score
+    assert len(bundle.quiz_tutor.calls) == calls
+
+
+def test_resume_and_play_again_do_not_call_the_model():
+    bundle, token, quiz = _open(3)
+    calls = len(bundle.quiz_tutor.calls)
+    stored = _marks(quiz)
+    resumed = read(bundle, token, quiz["id"]).json()
+    assert resumed["status"] == "take"
+    assert _marks(resumed) == stored
+    assert len(bundle.quiz_tutor.calls) == calls
+    finish(bundle, token, quiz["id"], "wrong")
+    again = retry(bundle, token, quiz["id"])
+    assert again.status_code == 200
+    assert again.json()["status"] == "take"
+    assert _marks(again.json()) == stored
+    assert len(bundle.quiz_tutor.calls) == calls
+
+
 def test_play_again_keeps_the_previous_score_until_the_new_finish():
     bundle, token, quiz = _open(5)
     calls = len(bundle.quiz_tutor.calls)

@@ -9,6 +9,7 @@ class MemoryMaterialSearch:
         self._pieces: dict[UUID, tuple[Source, ...]] = {}
         self._ready: set[UUID] = set()
         self._fail = False
+        self._error = None
         self.live = 0
 
     def seed(self, document_id: UUID, pieces: tuple[Source, ...]) -> None:
@@ -18,11 +19,13 @@ class MemoryMaterialSearch:
     def has(self, document_id: UUID) -> bool:
         return document_id in self._ready
 
-    def fail(self) -> None:
+    def fail(self, error=None) -> None:
         self._fail = True
+        self._error = error
 
     def clear_fail(self) -> None:
         self._fail = False
+        self._error = None
 
     async def ready(self, document_id: UUID) -> bool:
         async def action():
@@ -33,7 +36,7 @@ class MemoryMaterialSearch:
     async def matching(self, document_id: UUID, question: str) -> tuple[Source, ...]:
         async def action():
             if self._fail:
-                raise ReplyFailed()
+                raise self._error if self._error is not None else ReplyFailed()
             if question.strip() == "":
                 return ()
             return self._pieces.get(document_id, ())

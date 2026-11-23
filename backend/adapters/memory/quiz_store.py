@@ -20,6 +20,7 @@ class MemoryQuizStore:
     def __init__(self):
         self.dead = False
         self.live = 0
+        self.waiting = 0
         self._rows: list[_Stored] = []
         self._key_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
         self._quiz_locks: dict[UUID, asyncio.Lock] = {}
@@ -46,7 +47,9 @@ class MemoryQuizStore:
 
     async def with_key(self, owner_id: UUID, key: str, build):
         lock = self._key_locks.setdefault((owner_id, key), asyncio.Lock())
+        self.waiting += 1
         async with lock:
+            self.waiting -= 1
             found = await self.find_by_key(owner_id, key)
             if found is not None:
                 return found

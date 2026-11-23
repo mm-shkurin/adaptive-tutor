@@ -90,7 +90,7 @@ class Bundle:
     quizzes: MemoryQuizStore
 
 
-def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
+def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bundle:
     store = MemoryAccountStore()
     clock = Clock()
     provider = ScriptedProvider()
@@ -115,7 +115,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
     chats = MemoryChatStore()
     search = MemoryMaterialSearch()
     quizzes = MemoryQuizStore()
-    quiz_tutor = ScriptedQuizTutor()
+    quiz_tutor = quiz_tutor or ScriptedQuizTutor()
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
         sign_in,

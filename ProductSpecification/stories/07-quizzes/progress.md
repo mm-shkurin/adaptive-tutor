@@ -136,7 +136,11 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [x] 5.1 An empty search for the topic stores nothing
 - [x] 5.2 A reply of the wrong shape stores nothing and does not pin the attempt
 - [x] 6.1 The list is newest first and an open attempt does not change the completed score
+- [x] 4.4 The same create attempt stores one quiz and a new attempt may store another
+- [x] 4.5 Two creates in flight with the same attempt store one quiz
 - [x] 8.2 Advance before a choice is refused
+- [x] 8.4 Choose and advance after finish are refused
+- [x] 11.1 Deleting the account removes that person's quizzes and attempts
 - [x] Security 1.1 Another person's quiz or document is refused like a missing quiz
 - [x] Security 1.2 The quiz list does not include another person's quiz
 
@@ -220,7 +224,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 4.4 The same create attempt stores one quiz and a new attempt may store another
+### 4.4 The same create attempt stores one quiz and a new attempt may store another — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -228,7 +232,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 4.5 Two creates in flight with the same attempt store one quiz
+### 4.5 Two creates in flight with the same attempt store one quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -300,7 +304,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 8.4 Choose and advance after finish are refused
+### 8.4 Choose and advance after finish are refused — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -308,7 +312,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 11.1 Deleting the account removes that person's quizzes and attempts
+### 11.1 Deleting the account removes that person's quizzes and attempts — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -326,6 +330,12 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 
 ## Tier 2 — Integration Scenarios (06_Integration_Tests.md)
 
+Done AFK — tests from the spec, green on the backend-delivery strip. Empty search does not call the model: API 5.1.
+
+- [x] 1.2 Resume and play again do not call the model
+- [x] 2.1 A failed completions call stores nothing and does not pin the attempt
+- [x] 3.1 A failed search stores nothing and does not call the model
+
 ### 1.1 A valid completions body creates one quiz and the live model is not called
 - [ ] red-acceptance
 - [ ] design
@@ -334,7 +344,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.2 Resume and play again do not call the model
+### 1.2 Resume and play again do not call the model — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -342,7 +352,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.1 A failed completions call stores nothing and does not pin the attempt
+### 2.1 A failed completions call stores nothing and does not pin the attempt — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -350,7 +360,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.1 A failed search stores nothing and does not call the model
+### 3.1 A failed search stores nothing and does not call the model — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase

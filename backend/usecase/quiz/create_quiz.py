@@ -1,10 +1,12 @@
 from uuid import UUID
 
 from domain.chat.source import Source
-from domain.quiz.errors import EmptyRetrieval
+from domain.quiz.errors import EmptyRetrieval, GenerationFailed
 from domain.quiz.question import Question
 from domain.quiz.quiz import Quiz
 from domain.quiz.topic import Topic, require_count
+from usecase.chat.errors import ReplyFailed
+from usecase.document.errors import StoreUnavailable as SearchUnavailable
 from usecase.document.ports import DocumentIntake
 from usecase.quiz.errors import DuplicateQuizKey, QuizNotFound
 from usecase.quiz.ports import MaterialSearch, QuizStore, QuizTutor
@@ -27,7 +29,7 @@ class CreateQuiz:
         topic = Topic.parse(topic_raw)
         asked = require_count(count_raw)
         document = await self._document(owner_id, document_id)
-        pieces = Source.cite(await self.search.matching(document.id, topic.text))
+        pieces = await self._pieces(document.id, topic)
         if not pieces:
             raise EmptyRetrieval()
         payload = await self.tutor.compose("auto", topic.text, asked, pieces)
@@ -37,6 +39,13 @@ class CreateQuiz:
         except DuplicateQuizKey:
             return await self._replay(owner_id, key)
         return quiz
+
+    async def _pieces(self, document_id, topic):
+        try:
+            found = await self.search.matching(document_id, topic.text)
+        except (ReplyFailed, SearchUnavailable) as error:
+            raise GenerationFailed() from error
+        return Source.cite(found)
 
     async def _document(self, owner_id, document_id):
         found = await self.documents.get(owner_id, document_id)
