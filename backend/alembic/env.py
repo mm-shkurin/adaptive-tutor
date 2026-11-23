@@ -4,6 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
+import adapters.persistence.quiz_tables  # noqa: F401
 from adapters.persistence.tables import Base
 from application.settings import load_settings
 

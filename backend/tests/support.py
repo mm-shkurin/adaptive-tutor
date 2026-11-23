@@ -8,6 +8,9 @@ from adapters.document_status.notifying_intake import NotifyingDocumentIntake
 from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.chat_store import MemoryChatStore
+from adapters.memory.material_search import MemoryMaterialSearch
+from adapters.memory.quiz_store import MemoryQuizStore
+from adapters.memory.quiz_tutor import ScriptedQuizTutor
 from adapters.search.unready_material_search import UnreadyMaterialSearch
 from adapters.tutor.refusing_tutor import RefusingTutor
 from adapters.memory.document_intake import MemoryDocumentIntake
@@ -20,6 +23,7 @@ from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
+from application.quiz_wiring import wire_quizzes
 from domain.account.identity import ProviderIdentity
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -29,6 +33,7 @@ from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
+from usecase.quiz.wipe import QuizWipe
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -79,6 +84,10 @@ class Bundle:
     clock: Clock
     provider: ScriptedProvider
     rates: MemoryUploadRateLimit
+    intake: NotifyingDocumentIntake
+    search: MemoryMaterialSearch
+    quiz_tutor: ScriptedQuizTutor
+    quizzes: MemoryQuizStore
 
 
 def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
@@ -104,11 +113,14 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
     pieces = MemoryPieceIndex()
     reader = PyPdfReader()
     chats = MemoryChatStore()
+    search = MemoryMaterialSearch()
+    quizzes = MemoryQuizStore()
+    quiz_tutor = ScriptedQuizTutor()
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
         sign_in,
         SessionService(store, tokens, MemoryRevocations()),
-        ProfileService(store, "http://testserver"),
+        ProfileService(store, "http://testserver", (QuizWipe(quizzes),)),
         store,
         SubmitDocument(intake, rates, FakeVirusCheck()),
         ReadDocument(intake),
@@ -120,9 +132,10 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120) -> Bundle:
         ListChats(chats),
         GetChat(chats, pieces, UnreadyMaterialSearch()),
         SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
+        **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
-    return Bundle(client, store, clock, provider, rates)
+    return Bundle(client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes)
 
 
 def allow(bundle: Bundle, code: str, subject: str, email: str, name: str) -> None:

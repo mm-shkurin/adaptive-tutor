@@ -11,6 +11,7 @@ from adapters.http.documents import router as documents_router
 from adapters.http.errors import register_errors
 from adapters.http.media import router as media_router
 from adapters.http.profile import router as profile_router
+from adapters.http.quizzes import router as quizzes_router
 from application.context import AppContext, build_production_context
 
 
@@ -49,6 +50,7 @@ def create_app(context: AppContext | None = None) -> FastAPI:
     app.include_router(documents_router, prefix="/api/v1/documents")
     app.include_router(chat_router, prefix="/api/v1/chat")
     app.include_router(chats_router, prefix="/api/v1/chats")
+    app.include_router(quizzes_router, prefix="/api/v1/quizzes")
     return app
 
 

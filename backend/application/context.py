@@ -21,9 +21,12 @@ from adapters.search.http_qdrant import HttpQdrant
 from adapters.search.qdrant_pieces import QdrantPieces
 from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
+from adapters.storage.quiz_store import PostgresQuizStore
+from adapters.tutor.http_quiz import HttpQuiz
 from adapters.tutor.http_tutor import HttpTutor
 from adapters.tokens.jwt_tokens import JwtTokens
 from adapters.virus.clamav import ClamavVirusCheck
+from application.quiz_wiring import wire_quizzes
 from application.settings import Settings, load_settings
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -33,6 +36,10 @@ from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
+from usecase.quiz.create_quiz import CreateQuiz
+from usecase.quiz.play import AdvanceQuiz, AnswerQuiz, RetryQuiz
+from usecase.quiz.read import GetQuiz, ListQuizzes
+from usecase.quiz.wipe import QuizWipe
 from usecase.document.index_documents import IndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -63,6 +70,12 @@ class AppContext:
     get_chat: GetChat
     send_message: SendMessage
     _indexing: asyncio.Event | None = None
+    create_quiz: CreateQuiz | None = None
+    list_quizzes: ListQuizzes | None = None
+    get_quiz: GetQuiz | None = None
+    answer_quiz: AnswerQuiz | None = None
+    advance_quiz: AdvanceQuiz | None = None
+    retry_quiz: RetryQuiz | None = None
 
     def schedule_indexing(self) -> None:
         if self._indexing is None:
@@ -96,6 +109,7 @@ def _context(settings: Settings) -> AppContext:
     reader = PyPdfReader()
     clock = _WallClock()
     chats = PostgresChatStore(sessions)
+    quizzes = PostgresQuizStore(sessions)
     vectors = QdrantPieces(
         HttpEmbeddings(settings.free_llm_api_url, settings.free_llm_api_key),
         HttpQdrant(settings.qdrant_url, settings.qdrant_api_key),
@@ -114,7 +128,7 @@ def _context(settings: Settings) -> AppContext:
             settings.frontend_callback_url,
         ),
         session=SessionService(accounts, tokens, RedisRevocations(redis)),
-        profile=ProfileService(accounts, settings.public_base_url),
+        profile=ProfileService(accounts, settings.public_base_url, (QuizWipe(quizzes),)),
         accounts=accounts,
         submit_document=SubmitDocument(
             intake,
@@ -139,6 +153,17 @@ def _context(settings: Settings) -> AppContext:
             ),
             clock,
             latency=timedelta(seconds=int(os.environ.get("CHAT_LATENCY_SECONDS", "5"))),
+        ),
+        **wire_quizzes(
+            intake,
+            vectors,
+            HttpQuiz(
+                settings.free_llm_chat_url,
+                settings.free_llm_api_key,
+                timeout=float(os.environ.get("CHAT_LATENCY_SECONDS", "5")),
+            ),
+            quizzes,
+            clock,
         ),
     )
 

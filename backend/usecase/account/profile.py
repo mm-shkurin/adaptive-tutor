@@ -9,9 +9,10 @@ from usecase.account.ports import AccountStore
 
 
 class ProfileService:
-    def __init__(self, accounts: AccountStore, public_base_url: str):
+    def __init__(self, accounts: AccountStore, public_base_url: str, wipes: tuple = ()):
         self.accounts = accounts
         self.public_base_url = public_base_url.rstrip("/")
+        self.wipes = wipes
 
     def view(self, account: Account) -> dict:
         return {
@@ -36,6 +37,8 @@ class ProfileService:
         return self.view(await self._present(updated))
 
     async def remove_account(self, account: Account) -> None:
+        for wipe in self.wipes:
+            await wipe.wipe(account.id)
         await self.accounts.delete(account.id)
 
     def _url(self, key: UUID | None) -> str | None:

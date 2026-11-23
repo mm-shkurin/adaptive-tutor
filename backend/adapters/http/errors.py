@@ -12,12 +12,17 @@ from domain.chat.chat import (
     TellUnavailable,
 )
 from domain.chat.learning import EmptyQuestion, ModeNotListed, ModelNotListed
+from domain.quiz.errors import DocumentNotReady as QuizDocumentNotReady
+from domain.quiz.errors import EmptyRetrieval, EmptyTopic, GenerationFailed, InvalidChoice
+from domain.quiz.errors import InvalidQuestionCount, NoOpenAttempt, Unanswered
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
 from usecase.chat.errors import ChatNotFound
 from usecase.chat.errors import NoReadyDocument
 from usecase.chat.errors import StoreUnavailable as ChatStoreUnavailable
 from usecase.document.errors import DocumentNotFound, InvalidDocument, RateLimited, RateUnavailable
+from usecase.quiz.errors import QuizNotFound
+from usecase.quiz.errors import StoreUnavailable as QuizStoreUnavailable
 from usecase.document.errors import StoreUnavailable as DocumentStoreUnavailable
 
 _UNAUTHORIZED = {"code": "unauthorized", "message": "Credentials are not valid"}
@@ -39,6 +44,15 @@ _NOT_ASKABLE = {"code": "not_askable", "message": "Material cannot be asked yet"
 _TELL = {"code": "tell_unavailable", "message": "Nothing is withheld"}
 _CHOICE_REQUIRED = {"code": "choice_required", "message": "Choice is required"}
 _CHOICE_UNKNOWN = {"code": "choice_unknown", "message": "Choice is not on the question"}
+_QUIZ_MISSING = {"code": "quiz_not_found", "message": "Quiz was not found"}
+_EMPTY_TOPIC = {"code": "empty_topic", "message": "Topic is empty"}
+_BAD_COUNT = {"code": "invalid_question_count", "message": "Question count is not allowed"}
+_EMPTY_RETRIEVAL = {"code": "empty_retrieval", "message": "Nothing was found for the topic"}
+_GENERATION = {"code": "generation_failed", "message": "Quiz could not be assembled"}
+_QUIZ_CHOICE = {"code": "invalid_choice", "message": "Choice is not on the question"}
+_NO_ATTEMPT = {"code": "no_open_attempt", "message": "No open attempt"}
+_UNANSWERED = {"code": "unanswered", "message": "The question is not answered"}
+_QUIZ_STORE = {"code": "unavailable", "message": "Quiz store is unavailable"}
 
 
 def register_errors(app: FastAPI) -> None:
@@ -55,6 +69,16 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(TellUnavailable, _status(400, _TELL))
     app.add_exception_handler(ChoiceRequired, _status(400, _CHOICE_REQUIRED))
     app.add_exception_handler(ChoiceUnknown, _status(400, _CHOICE_UNKNOWN))
+    app.add_exception_handler(QuizNotFound, _status(404, _QUIZ_MISSING))
+    app.add_exception_handler(QuizDocumentNotReady, _status(400, _NOT_READY))
+    app.add_exception_handler(EmptyTopic, _status(400, _EMPTY_TOPIC))
+    app.add_exception_handler(InvalidQuestionCount, _status(400, _BAD_COUNT))
+    app.add_exception_handler(EmptyRetrieval, _status(400, _EMPTY_RETRIEVAL))
+    app.add_exception_handler(GenerationFailed, _status(400, _GENERATION))
+    app.add_exception_handler(InvalidChoice, _status(400, _QUIZ_CHOICE))
+    app.add_exception_handler(NoOpenAttempt, _status(400, _NO_ATTEMPT))
+    app.add_exception_handler(Unanswered, _status(400, _UNANSWERED))
+    app.add_exception_handler(QuizStoreUnavailable, _status(503, _QUIZ_STORE))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)
     app.add_exception_handler(RateUnavailable, _rate_refusal)

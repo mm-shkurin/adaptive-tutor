@@ -20,6 +20,8 @@ from adapters.memory.material_search import MemoryMaterialSearch
 from adapters.search.http_qdrant import HttpQdrant
 from adapters.search.prefer_seeded_search import PreferSeededSearch
 from adapters.search.qdrant_pieces import QdrantPieces
+from adapters.memory.quiz_store import MemoryQuizStore
+from adapters.memory.quiz_tutor import ScriptedQuizTutor
 from adapters.memory.scripted_tutor import ScriptedTutor
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
@@ -34,6 +36,7 @@ from adapters.tokens.jwt_tokens import JwtTokens
 from domain.document.document import InvalidStatusTransition
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
+from application.quiz_wiring import wire_quizzes
 from clients.application.index_probe import IndexProbe
 from clients.application.peak_chat_hold import PeakChatHold
 from clients.application.session_client import ScriptedProvider
@@ -47,6 +50,7 @@ from usecase.chat.get_chat import GetChat
 from usecase.chat.list_chats import ListChats
 from usecase.chat.open_chat import OpenChat
 from usecase.chat.send_message import SendMessage
+from usecase.quiz.wipe import QuizWipe
 from clients.application.probe_index_documents import ProbeIndexDocuments
 from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
@@ -125,11 +129,13 @@ class AcceptanceServer:
         self._vectors = vectors
         self._tutor = tutor
         self._chats = chats
+        quizzes = MemoryQuizStore()
+        quiz_tutor = ScriptedQuizTutor()
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
             SessionService(store, tokens, MemoryRevocations()),
-            ProfileService(store, self.base_url),
+            ProfileService(store, self.base_url, (QuizWipe(quizzes),)),
             store,
             SubmitDocument(intake, self.rates, ProbeVirusCheck(self.probe)),
             ReadDocument(intake),
@@ -142,6 +148,7 @@ class AcceptanceServer:
             GetChat(chats, pieces, vectors),
             SendMessage(chats, search, tutor, self.clock, latency=timedelta(milliseconds=50)),
             self._indexing,
+            **wire_quizzes(intake, search, quiz_tutor, quizzes, self.clock),
         )
 
     def _sign_in(self, store: MemoryAccountStore, tokens: JwtTokens) -> SignIn:
