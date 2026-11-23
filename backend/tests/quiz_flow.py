@@ -1,6 +1,8 @@
 import asyncio
 from uuid import UUID, uuid4
 
+from dataclasses import replace
+
 from domain.chat.source import Source
 from domain.document.document import Document
 from tests.support import auth_profile, bearer, build, sign_in
@@ -35,6 +37,19 @@ def ready_pdf(bundle, owner, name, seed=True):
     asyncio.run(bundle.intake.store(owner, document, b"%PDF-1.4", str(uuid4())))
     if seed:
         bundle.search.seed(document.id, (Source(page=2, text="alpha"), Source(page=4, text="beta")))
+    return document
+
+
+def unready_pdf(bundle, owner, name, state):
+    document = Document.accepted(name, 128)
+    if state == "indexing":
+        document = document.indexing()
+    elif state == "failed":
+        document = document.indexing().failed("forced")
+    asyncio.run(bundle.intake.store(owner, document, b"%PDF-1.4", str(uuid4())))
+    if state == "a status that is not a known document status":
+        document = replace(document, status="corrupted")
+        asyncio.run(bundle.intake.save(document))
     return document
 
 

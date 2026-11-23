@@ -1,11 +1,11 @@
 from uuid import UUID
 
 from domain.chat.source import Source
-from domain.quiz.errors import EmptyRetrieval, GenerationFailed
+from domain.quiz.errors import DocumentNotReady, EmptyRetrieval, GenerationFailed
 from domain.quiz.question import Question
 from domain.quiz.quiz import Quiz
 from domain.quiz.topic import Topic, require_count
-from usecase.chat.errors import ReplyFailed
+from usecase.chat.errors import NoReadyDocument, ReplyFailed
 from usecase.document.errors import StoreUnavailable as SearchUnavailable
 from usecase.document.ports import DocumentIntake
 from usecase.quiz.errors import DuplicateQuizKey, QuizNotFound
@@ -51,8 +51,15 @@ class CreateQuiz:
         found = await self.documents.get(owner_id, document_id)
         if found is None:
             raise QuizNotFound()
-        Quiz.require_ready(found)
+        if not found.is_ready():
+            if not await self._any_ready(owner_id):
+                raise NoReadyDocument()
+            raise DocumentNotReady()
         return found
+
+    async def _any_ready(self, owner_id):
+        page, _ = await self.documents.list_page(owner_id, 1, None)
+        return any(document.is_ready() for document in page)
 
     async def _replay(self, owner_id, key):
         found = await self.quizzes.find_by_key(owner_id, key)

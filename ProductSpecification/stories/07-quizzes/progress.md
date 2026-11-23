@@ -143,8 +143,11 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [x] 11.1 Deleting the account removes that person's quizzes and attempts
 - [x] Security 1.1 Another person's quiz or document is refused like a missing quiz
 - [x] Security 1.2 The quiz list does not include another person's quiz
+- [x] 1.1 A call with no session is refused like a missing quiz
+- [x] 1.3 A document that is not ready cannot start a quiz
+- [x] 1.4 A person with no ready PDF cannot start a quiz
 
-### 1.1 A call with no session is refused like a missing quiz
+### 1.1 A call with no session is refused like a missing quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -160,7 +163,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.3 A document that is not ready cannot start a quiz
+### 1.3 A document that is not ready cannot start a quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -168,7 +171,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.4 A person with no ready PDF cannot start a quiz
+### 1.4 A person with no ready PDF cannot start a quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
