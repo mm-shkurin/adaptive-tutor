@@ -36,7 +36,9 @@ class QuizScreenStatements:
         self.wait = WebDriverWait(driver, WAIT_SECONDS)
 
     def when_the_person_opens_the_quizzes(self) -> None:
-        self.wait.until(lambda d: d.find_elements(*QUIZZES_TAB), "no quizzes-tab")[0].click()
+        tabs = self.wait.until(lambda d: d.find_elements(*QUIZZES_TAB), "no quizzes-tab")
+        visible = next((tab for tab in tabs if tab.is_displayed()), tabs[0])
+        visible.click()
         self.wait.until(self._page_ready, "quizzes not ready")
 
     def when_the_person_opens_create(self) -> None:

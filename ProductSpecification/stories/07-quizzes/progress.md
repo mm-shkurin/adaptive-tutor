@@ -448,11 +448,11 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 1.6 The list and the question stay reachable on a narrow window
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 3.2 A second press while generating stores one quiz
@@ -488,11 +488,11 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 4.3 Leaving the form before generate stores nothing
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.2 Cancel and back return to the list
@@ -508,31 +508,31 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 ### 6.5 Reload resumes the saved question and does not grade again
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.6 Back to the list from the result shows the completed score
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.7 The progress screen does not show the quiz score
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ## Tier 2 — Security Scenarios (05_Security_Tests.md)
