@@ -35,3 +35,7 @@ Items that need a human decision or that stopped automated delivery. Work contin
 - Story 8 reads last completed score later.
 - Live freellmapi poke out of green pipeline.
 - Account delete today only wipes account+avatar for docs/chats (pre-existing); this story still wipes quizzes/attempts for that owner and must not touch other owners'.
+
+## AFK stop (~15:15 local, budget remaining for human)
+
+Done on `features/quizzes` (pushed): story/api/test-spec; Tier 1 API; large Tier 2 API/integration slice; frontend screens + align-design; vitest green. Still open: Selenium/demo for UI Tier 1, harvest, remaining Tier 2 (session/no-session, security XSS, infra), re-run `/spec-skeptic 7 spec`, merge chat→dev then quizzes.
