@@ -24,4 +24,4 @@ Cause and draft fix already known from live poke (HttpTutor English system promp
 
 ### Account + branch backup
 - [x] progress — tick story 4 `## Next` UX items; point memory-bank / stories.md at merge-ready chat
-- [ ] push — `git push -u origin HEAD` on `features/chat` (backup only; **do not** `*:dev`)
+- [x] push — `git push -u origin HEAD` on `features/chat` (backup only; **do not** `*:dev`) → `ef1749e`
