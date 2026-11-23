@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { ChatDocumentPicker } from './ChatDocumentPicker'
 import { ChatList } from './ChatList'
+import { ChatPanelHead } from './ChatPanelHead'
 import { ChatThread } from './ChatThread'
 import { Composer } from './Composer'
 import { SourcesPanel } from './SourcesPanel'
@@ -14,6 +16,16 @@ export function ChatScreen({ screen }) {
     setSourcesOpen(false)
   }
 
+  function toggleList() {
+    setSourcesOpen(false)
+    setListOpen((open) => !open)
+  }
+
+  function toggleSources() {
+    setListOpen(false)
+    setSourcesOpen((open) => !open)
+  }
+
   function selectChat(id) {
     screen.selectChat(id)
     setListOpen(false)
@@ -21,74 +33,21 @@ export function ChatScreen({ screen }) {
 
   return (
     <main className="chat-page" data-testid="chat-page">
-      <div className="panel-head">
-        <h1 data-testid="chat-heading">{view.heading}</h1>
-        <div className="panel-actions">
-          <button
-            type="button"
-            className="btn btn-outline chat-drawer-toggle"
-            data-testid="chat-list-open"
-            aria-expanded={listOpen}
-            onClick={() => {
-              setSourcesOpen(false)
-              setListOpen((v) => !v)
-            }}
-          >
-            Чаты
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline chat-drawer-toggle"
-            data-testid="chat-sources-open"
-            aria-expanded={sourcesOpen}
-            onClick={() => {
-              setListOpen(false)
-              setSourcesOpen((v) => !v)
-            }}
-          >
-            Источники
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline"
-            data-testid="chat-switch-document"
-            onClick={screen.beginSwitchDocument}
-          >
-            Сменить документ
-          </button>
-          <button
-            type="button"
-            className="btn btn-dark"
-            data-testid="chat-new"
-            onClick={screen.startNewChat}
-          >
-            Новый чат
-          </button>
-        </div>
-      </div>
+      <ChatPanelHead
+        heading={view.heading}
+        listOpen={listOpen}
+        sourcesOpen={sourcesOpen}
+        onToggleList={toggleList}
+        onToggleSources={toggleSources}
+        onSwitchDocument={screen.beginSwitchDocument}
+        onNewChat={screen.startNewChat}
+      />
       {screen.documentChoices ? (
-        <div className="chat-document-picker" data-testid="chat-document-picker">
-          {screen.documentChoices.map((doc) => (
-            <button
-              key={doc.id}
-              type="button"
-              className="btn btn-outline"
-              data-testid="chat-document-choice"
-              data-document-name={doc.name}
-              onClick={() => screen.chooseDocument(doc.id)}
-            >
-              {doc.name}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="btn"
-            data-testid="chat-document-picker-cancel"
-            onClick={screen.cancelSwitchDocument}
-          >
-            Отмена
-          </button>
-        </div>
+        <ChatDocumentPicker
+          choices={screen.documentChoices}
+          onChoose={screen.chooseDocument}
+          onCancel={screen.cancelSwitchDocument}
+        />
       ) : null}
       {view.emptyReason === 'no_ready' ? (
         <p className="chat-empty-state" data-testid="chat-empty-state">

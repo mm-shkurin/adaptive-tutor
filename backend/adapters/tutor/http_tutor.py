@@ -45,48 +45,81 @@ class HttpTutor:
             raise ReplyFailed()
         self.live += 1
         try:
-            response = await self._post(model, mode, question, sources)
-            if response.status_code < 200 or response.status_code >= 300:
-                if model != "auto":
-                    response = await self._post("auto", mode, question, sources)
-                if response.status_code < 200 or response.status_code >= 300:
-                    raise ReplyFailed()
-            try:
-                return _assistant_text(response.json())
-            except (KeyError, TypeError, ValueError, IndexError) as error:
-                raise ReplyFailed() from error
+            return await self._completion(model, mode, question, sources)
         finally:
             self.live -= 1
+
+    async def _completion(
+        self, model: str, mode: str, question: str, sources: tuple[Source, ...]
+    ) -> str:
+        try:
+            response = await self._posted_or_auto(model, mode, question, sources)
+            return _assistant_text(response.json())
+        except (KeyError, TypeError, ValueError, IndexError) as error:
+            raise ReplyFailed() from error
+
+    async def _posted_or_auto(
+        self, model: str, mode: str, question: str, sources: tuple[Source, ...]
+    ) -> httpx.Response:
+        response = await self._post(model, mode, question, sources)
+        if not _http_ok(response) and model != "auto":
+            response = await self._post("auto", mode, question, sources)
+        if not _http_ok(response):
+            raise ReplyFailed()
+        return response
 
     async def _post(
         self, model: str, mode: str, question: str, sources: tuple[Source, ...]
     ) -> httpx.Response:
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self._api_key}"}
-        body = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": _MODE_SYSTEM.get(mode, _MODE_SYSTEM["professor"])},
-                {"role": "user", "content": _user_content(question, sources)},
-            ],
-        }
         try:
-            async with httpx.AsyncClient(timeout=self._timeout, transport=self._transport) as client:
-                return await client.post(self._url, headers=headers, json=body)
+            return await self._request(_completion_body(model, mode, question, sources))
         except httpx.HTTPError as error:
             raise ReplyFailed() from error
 
+    async def _request(self, body: dict) -> httpx.Response:
+        async with httpx.AsyncClient(timeout=self._timeout, transport=self._transport) as client:
+            return await client.post(
+                self._url, headers=_auth_headers(self._api_key), json=body
+            )
+
+
+def _http_ok(response: httpx.Response) -> bool:
+    return 200 <= response.status_code < 300
+
+
+def _auth_headers(api_key: str) -> dict[str, str]:
+    return {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+
+
+def _completion_body(
+    model: str, mode: str, question: str, sources: tuple[Source, ...]
+) -> dict:
+    return {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": _MODE_SYSTEM.get(mode, _MODE_SYSTEM["professor"])},
+            {"role": "user", "content": _user_content(question, sources)},
+        ],
+    }
+
 
 def _user_content(question: str, sources: tuple[Source, ...]) -> str:
-    pieces = []
-    for source in sources:
-        page = f"page {source.page}" if source.page is not None else "no page"
-        pieces.append(f"[{page}] {source.text}")
-    material = "\n".join(pieces) if pieces else "(no material)"
     return (
-        f"Material:\n{material}\n\n"
+        f"Material:\n{_material(sources)}\n\n"
         f"Question:\n{question}\n\n"
         "Reply in the same language as the Question."
     )
+
+
+def _material(sources: tuple[Source, ...]) -> str:
+    if not sources:
+        return "(no material)"
+    return "\n".join(_source_line(source) for source in sources)
+
+
+def _source_line(source: Source) -> str:
+    page = f"page {source.page}" if source.page is not None else "no page"
+    return f"[{page}] {source.text}"
 
 
 def _assistant_text(body: object) -> str:

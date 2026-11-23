@@ -1,4 +1,5 @@
 import time
+from functools import partial
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -43,6 +44,19 @@ LANDING = (By.CSS_SELECTOR, "[data-testid='landing']")
 CHAT_MODE_PREFIX = "chat-mode-"
 WAIT_SECONDS = 20
 
+_NARROW_SCROLL_METRICS = """
+const page = arguments[0];
+const thread = arguments[1];
+const pageStyle = getComputedStyle(page);
+const threadStyle = getComputedStyle(thread);
+return {
+  pageHeight: page.getBoundingClientRect().height,
+  viewport: window.innerHeight,
+  pageOverflow: pageStyle.overflow + pageStyle.overflowY,
+  threadOverflow: threadStyle.overflowY,
+};
+"""
+
 PERSON_QUESTION = "Что такое собственное число матрицы?"
 TUTOR_ANSWER = "Собственное число — скаляр λ, для которого Av = λv."
 SOURCE_TEXT_VALUE = "Число λ называется собственным числом квадратной матрицы A."
@@ -51,6 +65,17 @@ EXAMINER_QUESTION = "Which process uses light?"
 RELEASE = "Photosynthesis needs light, water, and carbon dioxide."
 MODEL = "qwen/qwen3-32b"
 PAGE = 5
+
+
+def _open_drawer_element(panel_locator, driver):
+    return next(
+        (
+            el
+            for el in driver.find_elements(*panel_locator)
+            if "is-open" in (el.get_attribute("class") or "")
+        ),
+        False,
+    )
 
 
 class ChatScreenStatements:
@@ -299,46 +324,25 @@ class ChatScreenStatements:
 
     def then_history_and_sources_can_be_reached(self) -> None:
         self._then_the_thread_owns_narrow_scroll()
-        self._open_drawer_if_needed(CHAT_LIST_OPEN)
-        history = self.wait.until(lambda driver: driver.find_element(*CHAT_LIST))
-        assert history.is_displayed()
-        assert "is-open" in (history.get_attribute("class") or "")
-        assert history.value_of_css_property("display") != "none"
+        self._then_drawer_is_open(CHAT_LIST_OPEN, CHAT_LIST, "history drawer not open")
+        self._then_drawer_is_open(CHAT_SOURCES_OPEN, CHAT_SOURCES, "sources drawer not open")
 
-        self._open_drawer_if_needed(CHAT_SOURCES_OPEN)
-        sources = self.wait.until(
-            lambda driver: next(
-                (
-                    el
-                    for el in driver.find_elements(*CHAT_SOURCES)
-                    if "is-open" in (el.get_attribute("class") or "")
-                ),
-                False,
-            ),
-            "sources drawer not open",
-        )
-        assert sources.is_displayed()
-        assert sources.value_of_css_property("display") != "none"
+    def _then_drawer_is_open(self, open_locator, panel_locator, message: str) -> None:
+        self._open_drawer_if_needed(open_locator)
+        panel = self.wait.until(partial(_open_drawer_element, panel_locator), message)
+        self._assert_drawer_visible(panel)
+
+    def _assert_drawer_visible(self, panel) -> None:
+        assert panel.is_displayed()
+        assert panel.value_of_css_property("display") != "none"
 
     def _then_the_thread_owns_narrow_scroll(self) -> None:
         page = self.wait.until(lambda driver: driver.find_element(*CHAT_PAGE))
         thread = self.wait.until(lambda driver: driver.find_element(*CHAT_THREAD))
-        metrics = self.driver.execute_script(
-            """
-            const page = arguments[0];
-            const thread = arguments[1];
-            const pageStyle = getComputedStyle(page);
-            const threadStyle = getComputedStyle(thread);
-            return {
-              pageHeight: page.getBoundingClientRect().height,
-              viewport: window.innerHeight,
-              pageOverflow: pageStyle.overflow + pageStyle.overflowY,
-              threadOverflow: threadStyle.overflowY,
-            };
-            """,
-            page,
-            thread,
-        )
+        metrics = self.driver.execute_script(_NARROW_SCROLL_METRICS, page, thread)
+        self._assert_narrow_scroll(metrics)
+
+    def _assert_narrow_scroll(self, metrics: dict) -> None:
         assert metrics["pageHeight"] <= metrics["viewport"] + 1, metrics
         assert "hidden" in metrics["pageOverflow"], metrics
         assert metrics["threadOverflow"] in ("auto", "scroll"), metrics
