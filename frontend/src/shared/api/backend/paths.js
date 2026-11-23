@@ -23,4 +23,11 @@ export const BACKEND = {
     item: (id) => `${V1}/chats/${id}`,
     messages: (id) => `${V1}/chats/${id}/messages`,
   },
+  quizzes: {
+    list: `${V1}/quizzes`,
+    item: (id) => `${V1}/quizzes/${id}`,
+    answers: (id) => `${V1}/quizzes/${id}/answers`,
+    advance: (id) => `${V1}/quizzes/${id}/advance`,
+    retries: (id) => `${V1}/quizzes/${id}/retries`,
+  },
 }

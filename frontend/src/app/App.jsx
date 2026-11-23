@@ -5,6 +5,7 @@ import { ChatPage } from '../features/chat/ChatPage'
 import { DocumentsPage } from '../features/documents/DocumentsPage'
 import { LandingPage } from '../features/landing/LandingPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
+import { QuizzesPage } from '../features/quizzes/QuizzesPage'
 import { AppShell } from '../features/shell/AppShell'
 import { SoonPage } from '../features/shell/SoonPage'
 import { useSession } from '../shared/session/useSession'
@@ -19,7 +20,7 @@ export function App() {
         <Route element={<AppShell />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/chat" element={<ChatPage />} />
-          <Route path="/quizzes" element={<SoonPage title="Викторины" />} />
+          <Route path="/quizzes/*" element={<QuizzesPage />} />
           <Route path="/progress" element={<SoonPage title="Прогресс" />} />
           <Route path="/documents" element={<DocumentsPage />} />
         </Route>

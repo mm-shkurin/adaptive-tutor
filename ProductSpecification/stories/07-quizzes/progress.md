@@ -10,6 +10,8 @@
 
 Default strip: `/backend-delivery` (code → tests from test-spec → refactor). Spec-skeptic still open — see `AFK_BLOCKERS.md`.
 
+Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume) and talks to `/api/v1/quizzes`. Vitest covers the view and create logic. Selenium, align-design, and demo stay open, so those boxes are still clear. `green-frontend` and `green-frontend-api` are checked for the Tier 1 scenarios the screens and client implement.
+
 ## Tier 1 — Backend (API 4.1, 7.1, 8.1, 8.3, 9.1, 10.1)
 
 - [x] implement domain + usecase + HTTP + store (create → answer → advance → finish → resume → retry)
@@ -23,9 +25,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 1.1 An empty list shows the create entry
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -33,9 +35,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 1.3 An unanswered question hides the page and does not offer skip
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -43,9 +45,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 1.7 The create form lists ready PDFs and defaults the count to five
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -53,9 +55,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 2.1 A choice shows right or wrong and reveals the page
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -63,9 +65,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 3.1 Generate and start locks the control and opens the first question
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -73,9 +75,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 5.1 Finish shows the score and the review
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -83,9 +85,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 5.2 Play again returns to the first question and the card keeps the previous score
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -93,9 +95,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 6.1 Create opens the form
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -103,9 +105,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 6.3 Back to the list during a quiz leaves the attempt open
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo
@@ -113,9 +115,9 @@ Default strip: `/backend-delivery` (code → tests from test-spec → refactor).
 ### 6.4 Opening the card resumes the saved question
 - [ ] red-selenium
 - [ ] red-frontend
-- [ ] green-frontend
+- [x] green-frontend
 - [ ] red-frontend-api
-- [ ] green-frontend-api
+- [x] green-frontend-api
 - [ ] align-design
 - [ ] green-selenium
 - [ ] demo

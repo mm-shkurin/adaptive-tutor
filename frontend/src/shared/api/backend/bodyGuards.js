@@ -117,6 +117,54 @@ export function isChatBody(value) {
   )
 }
 
+const QUIZ_COUNTS = new Set([3, 5, 8])
+
+function isNullableString(value) {
+  return value === undefined || value === null || typeof value === 'string'
+}
+
+function isQuizScoreBody(value) {
+  return isRecord(value) && typeof value.correct === 'number' && QUIZ_COUNTS.has(value.total)
+}
+
+export function isQuizCardBody(value) {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.document_id === 'string' &&
+    typeof value.document_name === 'string' &&
+    typeof value.topic === 'string' &&
+    QUIZ_COUNTS.has(value.question_count) &&
+    (value.last_score === null || isQuizScoreBody(value.last_score))
+  )
+}
+
+export function isQuizListBody(value) {
+  return isRecord(value) && Array.isArray(value.quizzes) && value.quizzes.every(isQuizCardBody)
+}
+
+function isQuizQuestionBody(value) {
+  if (!isRecord(value) || typeof value.id !== 'string' || typeof value.text !== 'string') return false
+  if (!Array.isArray(value.choices) || value.choices.length !== 4 || !value.choices.every(isChoiceBody)) {
+    return false
+  }
+  if (!isNullableString(value.chosen_choice_id) || !isNullableString(value.correct_choice_id)) return false
+  if (value.correct !== undefined && value.correct !== null && typeof value.correct !== 'boolean') return false
+  if (value.page !== undefined && value.page !== null && typeof value.page !== 'number') return false
+  return true
+}
+
+export function isQuizDetailBody(value) {
+  if (!isQuizCardBody(value)) return false
+  if (value.status !== 'take' && value.status !== 'result') return false
+  if (!Array.isArray(value.questions) || value.questions.length < 3 || value.questions.length > 8) {
+    return false
+  }
+  if (!value.questions.every(isQuizQuestionBody)) return false
+  if (value.status === 'take') return typeof value.current_index === 'number'
+  return value.current_index === undefined || value.current_index === null || typeof value.current_index === 'number'
+}
+
 export function isSendResultBody(value) {
   if (
     !(
