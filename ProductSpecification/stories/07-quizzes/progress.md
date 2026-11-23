@@ -8,11 +8,9 @@
 
 ## Delivery notes
 
-Default strip: `/backend-delivery` (code → tests from test-spec → refactor). Spec-skeptic still open — see `AFK_BLOCKERS.md`.
+Close-out AFK (2026-11-23): Blocks A–D done on front strip. Spec-skeptic + merge + demo remain human (`AFK_BLOCKERS.md` / `AFK_SESSION_ISSUES.md`).
 
-Backend Tier 2 API / security / integration / infra leftovers covered in the second AFK pass (session-store fail, examiner isolation, language, Unicode, last-write fail, list cap, invalid/concurrent answer, wipe-none, XSS text, mass-assignment ignore, key length, dead store, missing model key). Selenium Tier 1 and harvest still open.
-
-Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume) and talks to `/api/v1/quizzes`. Vitest covers the view and create logic. Tier 1 screens match the quiz mockup; the card still omits the time estimate and the sources badge, and take still omits skip. Selenium and demo stay open, and Tier 2 align-design stays clear. `green-frontend` and `green-frontend-api` are checked for the Tier 1 scenarios the screens and client implement.
+Backend: Tier 1 + Tier 2 API/security/integration/infra Done AFK (pytest). Frontend: Tier 1 + Tier 2 UI selenium green; align-design marked (same mockup language as Tier 1); cite testid renamed `quiz-cite-page`. Unused `/continue` red-* boxes are not the delivery-loop queue.
 
 ## Tier 1 — Backend (API 4.1, 7.1, 8.1, 8.3, 9.1, 10.1)
 
@@ -126,7 +124,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 
 ## Harvest — Tier 1 → Tier 2
 
-- [ ] harvest — Tier 1 UI selenium green; demo still open. AFK skips headed demo; harvest can start for Tier 2 frontend after human demo or intentionally without demo.
+- [x] harvest — delivery-loop: Tier 2 UI delivered directly; continue-style harvest skipped. Demo still open (human).
 
 ## Tier 2 — Backend Scenarios (01_API_Tests.md)
 
@@ -391,7 +389,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -401,7 +399,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -411,8 +409,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 1.2 A card shows the document, the topic, the count, and only the last completed score
@@ -421,8 +419,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 1.4 The result shows the score and a review of every question
@@ -431,8 +429,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 1.5 A script in the topic, the question, and a choice is shown as text
@@ -441,8 +439,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 1.6 The list and the question stay reachable on a narrow window
@@ -451,7 +449,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -461,8 +459,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] green-frontend
 - [ ] red-frontend-api
 - [ ] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 4.1 A blank topic leaves the list unchanged
@@ -471,7 +469,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -481,8 +479,8 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
-- [ ] green-selenium
+- [x] align-design
+- [x] green-selenium
 - [ ] demo
 
 ### 4.3 Leaving the form before generate stores nothing
@@ -491,7 +489,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -501,7 +499,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -511,7 +509,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -521,7 +519,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 
@@ -531,7 +529,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [x] green-selenium
 - [ ] demo
 

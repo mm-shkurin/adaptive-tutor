@@ -6,7 +6,7 @@
 
 ## In Progress
 
-История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): Tier 1 API + UI selenium зелёные; почти весь Tier 2 API/security/infra/integration закрыт pytest; часть Tier 2 UI (guest, no-PDF, blank topic, cancel). Demo и полный harvest ещё открыты. Spec-skeptic `block` — `stories/07-quizzes/AFK_BLOCKERS.md`. В `dev` не вливать, пока человек не вольёт чат.
+История 7 «Викторины» на `features/quizzes` (ветка от `features/chat`): Tier 1+Tier 2 API/UI selenium зелёные; harvest отмечен (delivery-loop, без continue-fanout). Demo + merge + spec-skeptic — человек (`stories/07-quizzes/AFK_BLOCKERS.md`, `AFK_SESSION_ISSUES.md`). В `dev` не вливать, пока человек не вольёт чат.
 
 История 4 «Чат»: Tier 1+Tier 2 сданы; harvest закрыт. Merge `features/chat` → `dev` — вручную.
 
@@ -17,7 +17,7 @@
 | # | Story | Spec | Back | Intg | Front | Sec | Load | Infra | Tests | % |
 |---|-------|------|------|------|-------|-----|------|-------|-------|---|
 | 4 | Чат | ✅ | · | · | · | · | · | · | 97/101 | 96% |
-| 7 | Викторины | ✅ | ✅/✅ | ✅/— | 🔧/🔧 | ✅/— | n/a | ✅/— | ~90 pytest · vitest · selenium | ~70% |
+| 7 | Викторины | ✅ | ✅/✅ | ✅/— | ✅/✅ | ✅/— | n/a | ✅/— | pytest · vitest · selenium | ~95% |
 | 3 | Презентации из слайдов | · | · | · | · | · | · | · | 0/0 | 0% |
 | 8 | Прогресс | · | · | · | · | · | · | · | 0/0 | 0% |
 

@@ -55,6 +55,34 @@ class QuizClient:
         )
         return read_result(response)
 
+    def fail_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/quiz-tutor/fail",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def hold_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/quiz-tutor/hold",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def release_tutor(self, token: str) -> HttpResult:
+        response = self.http.post(
+            "/acceptance/quiz-tutor/release",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
+    def tutor_holds(self, token: str) -> HttpResult:
+        response = self.http.get(
+            "/acceptance/quiz-tutor/holds",
+            headers=self._bearer(token),
+        )
+        return read_result(response)
+
     def seed_pieces(self, token: str, document_id: str, pieces: list[dict]) -> HttpResult:
         response = self.http.post(
             f"/acceptance/documents/{document_id}/search-pieces",

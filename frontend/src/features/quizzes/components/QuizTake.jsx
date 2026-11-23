@@ -47,7 +47,7 @@ export function QuizTake({ screen }) {
           <div className="quiz-cite" data-testid="quiz-reveal">
             {take.grade ? <p data-testid="quiz-grade">{take.grade}</p> : null}
             {take.page ? (
-              <p data-testid="quiz-page">
+              <p data-testid="quiz-cite-page">
                 Источник: <strong>{take.page}</strong>
               </p>
             ) : null}
