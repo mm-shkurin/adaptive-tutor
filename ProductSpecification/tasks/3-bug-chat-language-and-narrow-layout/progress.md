@@ -15,13 +15,13 @@ Cause and draft fix already known from live poke (HttpTutor English system promp
 
 ### Land language
 - [x] green-adapter tutor — `pytest backend/tests/test_http_tutor.py` green with same-language assertion (sanity fail once on HEAD prompts)
-- [ ] refactor (cleanup) — only if green left a smell
+- [x] refactor (cleanup) — HttpTutor completion helpers (`c7cee4d`)
 
 ### Land layout + drawers
 - [x] green-frontend — chat components/CSS; thread scrolls inside `.messages` (vitest chat green)
 - [x] green-selenium — `test_history_and_sources_reachable_on_narrow_window` green (drawers via toggles + page height ≤ viewport / overflow hidden / `.messages` overflow-y auto)
-- [ ] refactor (cleanup) — only if needed
+- [x] refactor (cleanup) — ChatPanelHead / ChatDocumentPicker + drawer statement helpers (`c7cee4d`)
 
 ### Account + branch backup
-- [ ] progress — tick story 4 `## Next` UX items; point memory-bank / stories.md at merge-ready chat
+- [x] progress — tick story 4 `## Next` UX items; point memory-bank / stories.md at merge-ready chat
 - [ ] push — `git push -u origin HEAD` on `features/chat` (backup only; **do not** `*:dev`)

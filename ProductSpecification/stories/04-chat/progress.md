@@ -534,6 +534,6 @@
 - [x] cleanup (removed draft `domain/llm`, `infrastructure/llm`, examples, and obsolete LLM guides; live path is `HttpTutor`)
 
 ## Next
-- [ ] Task 3 `3-bug-chat-language-and-narrow-layout` — land Russian replies + narrow drawers/scroll (AFK: `/delivery-loop afk` or `/continue task 3`)
+- [x] Task 3 `3-bug-chat-language-and-narrow-layout` — Russian replies prompt + narrow drawers/scroll landed (`8d10999` / `c7cee4d`); Selenium narrow-window green
 - [ ] story close / merge `features/chat` → `dev` (human; after Task 3 push)
 - [ ] optional: earned-red baseline of Tier 1 acceptance against `429fee1` (pre-chat) if still wanted
