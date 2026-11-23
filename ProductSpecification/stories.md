@@ -6,7 +6,7 @@
 
 ## In Progress
 
-История 4 «Чат»: спека открыта. Tier 1+Tier 2 pointwise сданы; harvest checkbox закрыт (fan-out empty; baseline optional). Live send: `HttpTutor` + `FREE_LLM_CHAT_URL`. Дальше merge с фронт-полосой. Tier 2 — 95.
+История 4 «Чат»: Tier 1+Tier 2 pointwise сданы; harvest закрыт. Live `HttpTutor` + `FREE_LLM_CHAT_URL`. Перед merge — **Task 3** (`ProductSpecification/tasks/3-bug-chat-language-and-narrow-layout`): язык ответа, скролл viewport, выезжающие Чаты/Источники. AFK: `/delivery-loop afk` (или `/continue task 3`). После Task 3 — merge `features/chat` → `dev` вручную, затем история 7.
 
 Порядок сдачи с 2026-11-14: **4 Чат → 7 Викторины → 3 Презентации → 8 Прогресс**. Номера не меняются. Интервью 4 (2026-11-14): в чат входят цитаты, панель «Источники», четыре режима, эмбеддинги и Qdrant. Скрепка пока только открывает вкладку «Документы». Истории 5 и 6 отдельно не сдаются.
 

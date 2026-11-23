@@ -534,5 +534,6 @@
 - [x] cleanup (removed draft `domain/llm`, `infrastructure/llm`, examples, and obsolete LLM guides; live path is `HttpTutor`)
 
 ## Next
-- [ ] story close / merge order with frontend lane
+- [ ] Task 3 `3-bug-chat-language-and-narrow-layout` — land Russian replies + narrow drawers/scroll (AFK: `/delivery-loop afk` or `/continue task 3`)
+- [ ] story close / merge `features/chat` → `dev` (human; after Task 3 push)
 - [ ] optional: earned-red baseline of Tier 1 acceptance against `429fee1` (pre-chat) if still wanted
