@@ -10,7 +10,7 @@
 
 Default strip: `/backend-delivery` (code → tests from test-spec → refactor). Spec-skeptic still open — see `AFK_BLOCKERS.md`.
 
-Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume) and talks to `/api/v1/quizzes`. Vitest covers the view and create logic. Selenium, align-design, and demo stay open, so those boxes are still clear. `green-frontend` and `green-frontend-api` are checked for the Tier 1 scenarios the screens and client implement.
+Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume) and talks to `/api/v1/quizzes`. Vitest covers the view and create logic. Tier 1 screens match the quiz mockup; the card still omits the time estimate and the sources badge, and take still omits skip. Selenium and demo stay open, and Tier 2 align-design stays clear. `green-frontend` and `green-frontend-api` are checked for the Tier 1 scenarios the screens and client implement.
 
 ## Tier 1 — Backend (API 4.1, 7.1, 8.1, 8.3, 9.1, 10.1)
 
@@ -28,7 +28,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -38,7 +38,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -48,7 +48,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -58,7 +58,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -68,7 +68,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -78,7 +78,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -88,7 +88,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -98,7 +98,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -108,7 +108,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
@@ -118,7 +118,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [x] green-frontend
 - [ ] red-frontend-api
 - [x] green-frontend-api
-- [ ] align-design
+- [x] align-design
 - [ ] green-selenium
 - [ ] demo
 
