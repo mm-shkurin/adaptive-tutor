@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ChatList } from './ChatList'
 import { ChatThread } from './ChatThread'
 import { Composer } from './Composer'
@@ -5,11 +6,48 @@ import { SourcesPanel } from './SourcesPanel'
 
 export function ChatScreen({ screen }) {
   const { view, chat } = screen
+  const [listOpen, setListOpen] = useState(false)
+  const [sourcesOpen, setSourcesOpen] = useState(false)
+
+  function closeDrawers() {
+    setListOpen(false)
+    setSourcesOpen(false)
+  }
+
+  function selectChat(id) {
+    screen.selectChat(id)
+    setListOpen(false)
+  }
+
   return (
     <main className="chat-page" data-testid="chat-page">
       <div className="panel-head">
         <h1 data-testid="chat-heading">{view.heading}</h1>
         <div className="panel-actions">
+          <button
+            type="button"
+            className="btn btn-outline chat-drawer-toggle"
+            data-testid="chat-list-open"
+            aria-expanded={listOpen}
+            onClick={() => {
+              setSourcesOpen(false)
+              setListOpen((v) => !v)
+            }}
+          >
+            Чаты
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline chat-drawer-toggle"
+            data-testid="chat-sources-open"
+            aria-expanded={sourcesOpen}
+            onClick={() => {
+              setListOpen(false)
+              setSourcesOpen((v) => !v)
+            }}
+          >
+            Источники
+          </button>
           <button
             type="button"
             className="btn btn-outline"
@@ -61,7 +99,9 @@ export function ChatScreen({ screen }) {
           <ChatList
             rows={view.rows}
             activeId={chat?.id}
-            onSelect={screen.selectChat}
+            open={listOpen}
+            onClose={closeDrawers}
+            onSelect={selectChat}
           />
           <div className="chat-main">
             {view.notice ? (
@@ -104,7 +144,21 @@ export function ChatScreen({ screen }) {
               onAttach={screen.openDocuments}
             />
           </div>
-          <SourcesPanel title={view.sourcesTitle} sources={view.sources} />
+          <SourcesPanel
+            title={view.sourcesTitle}
+            sources={view.sources}
+            open={sourcesOpen}
+            onClose={closeDrawers}
+          />
+          {listOpen || sourcesOpen ? (
+            <button
+              type="button"
+              className="chat-drawer-backdrop"
+              data-testid="chat-drawer-backdrop"
+              aria-label="Закрыть панель"
+              onClick={closeDrawers}
+            />
+          ) : null}
         </div>
       )}
       {view.documentName ? (

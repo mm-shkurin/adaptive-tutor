@@ -1,7 +1,20 @@
-export function SourcesPanel({ title, sources }) {
+export function SourcesPanel({ title, sources, open, onClose }) {
   return (
-    <aside className="source-side" data-testid="chat-sources">
-      <div className="source-title">{title}</div>
+    <aside
+      className={open ? 'source-side is-open' : 'source-side'}
+      data-testid="chat-sources"
+    >
+      <div className="chat-drawer-head">
+        <span className="chat-drawer-title">{title}</span>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm chat-drawer-close"
+          data-testid="chat-sources-close"
+          onClick={onClose}
+        >
+          Закрыть
+        </button>
+      </div>
       {sources.map((source) => (
         <div key={source.key} className="source-card" data-testid="chat-source-card">
           {source.pageLabel ? (

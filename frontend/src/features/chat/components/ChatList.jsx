@@ -1,6 +1,20 @@
-export function ChatList({ rows, activeId, onSelect }) {
+export function ChatList({ rows, activeId, onSelect, open, onClose }) {
   return (
-    <aside className="chat-side" data-testid="chat-list">
+    <aside
+      className={open ? 'chat-side is-open' : 'chat-side'}
+      data-testid="chat-list"
+    >
+      <div className="chat-drawer-head">
+        <span className="chat-drawer-title">Чаты</span>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm chat-drawer-close"
+          data-testid="chat-list-close"
+          onClick={onClose}
+        >
+          Закрыть
+        </button>
+      </div>
       {rows.map((row) => (
         <button
           key={row.id}

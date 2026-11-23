@@ -88,11 +88,15 @@ def test_five_year_old_uses_the_plain_words_system_prompt():
     captured = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
-        captured["system"] = json.loads(request.content.decode())["messages"][0]["content"]
+        messages = json.loads(request.content.decode())["messages"]
+        captured["system"] = messages[0]["content"]
+        captured["user"] = messages[1]["content"]
         return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
 
     asyncio.run(_tutor(handler).answer("auto", "five_year_old", "Q?", ()))
     assert "five-year-old" in captured["system"]
+    assert "same language" in captured["system"]
+    assert "same language" in captured["user"]
 
 
 def test_an_unknown_listed_model_falls_back_to_auto():

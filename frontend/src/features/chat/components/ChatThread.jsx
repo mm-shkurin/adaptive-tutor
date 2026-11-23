@@ -1,7 +1,17 @@
+import { useEffect, useRef } from 'react'
+
 export function ChatThread({ lines, emptyLabel, onChoice, sending }) {
+  const threadRef = useRef(null)
+
+  useEffect(() => {
+    const root = threadRef.current
+    if (!root) return
+    root.scrollTop = root.scrollHeight
+  }, [lines.length, sending])
+
   if (lines.length === 0) {
     return (
-      <div className="messages" data-testid="chat-thread">
+      <div className="messages" data-testid="chat-thread" ref={threadRef}>
         <p className="chat-empty" data-testid="chat-thread-empty">
           {emptyLabel}
         </p>
@@ -9,7 +19,7 @@ export function ChatThread({ lines, emptyLabel, onChoice, sending }) {
     )
   }
   return (
-    <div className="messages" data-testid="chat-thread">
+    <div className="messages" data-testid="chat-thread" ref={threadRef}>
       {lines.map((line) => (
         <div
           key={line.id}

@@ -6,8 +6,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 CHAT_TAB = (By.CSS_SELECTOR, "[data-testid='chat-tab']")
 CHAT_PAGE = (By.CSS_SELECTOR, "[data-testid='chat-page']")
 CHAT_LIST = (By.CSS_SELECTOR, "[data-testid='chat-list']")
+CHAT_LIST_OPEN = (By.CSS_SELECTOR, "[data-testid='chat-list-open']")
 CHAT_LIST_DOCUMENT = (By.CSS_SELECTOR, "[data-testid='chat-list-document']")
 CHAT_LIST_PREVIEW = (By.CSS_SELECTOR, "[data-testid='chat-list-preview']")
+CHAT_SOURCES = (By.CSS_SELECTOR, "[data-testid='chat-sources']")
+CHAT_SOURCES_OPEN = (By.CSS_SELECTOR, "[data-testid='chat-sources-open']")
 CHAT_THREAD = (By.CSS_SELECTOR, "[data-testid='chat-thread']")
 CHAT_THREAD_EMPTY = (By.CSS_SELECTOR, "[data-testid='chat-thread-empty']")
 PERSON_LINE = (By.CSS_SELECTOR, "[data-testid='chat-person-line']")
@@ -36,7 +39,6 @@ CHAT_ATTACH = (By.CSS_SELECTOR, "[data-testid='chat-attach']")
 DOCUMENTS_HEADING = (By.CSS_SELECTOR, "[data-testid='documents-heading']")
 CHAT_MODEL = (By.CSS_SELECTOR, "[data-testid='chat-model']")
 CHAT_NOTICE = (By.CSS_SELECTOR, "[data-testid='chat-notice']")
-CHAT_SOURCES = (By.CSS_SELECTOR, "[data-testid='chat-sources']")
 LANDING = (By.CSS_SELECTOR, "[data-testid='landing']")
 CHAT_MODE_PREFIX = "chat-mode-"
 WAIT_SECONDS = 20
@@ -290,13 +292,56 @@ class ChatScreenStatements:
         self.driver.set_window_size(800, 900)
         self.when_the_person_opens_the_chat()
 
+    def _open_drawer_if_needed(self, open_locator) -> None:
+        buttons = self.driver.find_elements(*open_locator)
+        if buttons and buttons[0].is_displayed():
+            buttons[0].click()
+
     def then_history_and_sources_can_be_reached(self) -> None:
+        self._then_the_thread_owns_narrow_scroll()
+        self._open_drawer_if_needed(CHAT_LIST_OPEN)
         history = self.wait.until(lambda driver: driver.find_element(*CHAT_LIST))
-        sources = self.wait.until(lambda driver: driver.find_element(*CHAT_SOURCES))
         assert history.is_displayed()
-        assert sources.is_displayed()
+        assert "is-open" in (history.get_attribute("class") or "")
         assert history.value_of_css_property("display") != "none"
+
+        self._open_drawer_if_needed(CHAT_SOURCES_OPEN)
+        sources = self.wait.until(
+            lambda driver: next(
+                (
+                    el
+                    for el in driver.find_elements(*CHAT_SOURCES)
+                    if "is-open" in (el.get_attribute("class") or "")
+                ),
+                False,
+            ),
+            "sources drawer not open",
+        )
+        assert sources.is_displayed()
         assert sources.value_of_css_property("display") != "none"
+
+    def _then_the_thread_owns_narrow_scroll(self) -> None:
+        page = self.wait.until(lambda driver: driver.find_element(*CHAT_PAGE))
+        thread = self.wait.until(lambda driver: driver.find_element(*CHAT_THREAD))
+        metrics = self.driver.execute_script(
+            """
+            const page = arguments[0];
+            const thread = arguments[1];
+            const pageStyle = getComputedStyle(page);
+            const threadStyle = getComputedStyle(thread);
+            return {
+              pageHeight: page.getBoundingClientRect().height,
+              viewport: window.innerHeight,
+              pageOverflow: pageStyle.overflow + pageStyle.overflowY,
+              threadOverflow: threadStyle.overflowY,
+            };
+            """,
+            page,
+            thread,
+        )
+        assert metrics["pageHeight"] <= metrics["viewport"] + 1, metrics
+        assert "hidden" in metrics["pageOverflow"], metrics
+        assert metrics["threadOverflow"] in ("auto", "scroll"), metrics
 
     def then_script_texts_are_shown_as_text_not_elements(self, script: str) -> None:
         self.wait.until(
@@ -335,6 +380,7 @@ class ChatScreenStatements:
         field.send_keys(text)
 
     def when_the_person_returns_to_the_left_chat(self, document_name: str) -> None:
+        self._open_drawer_if_needed(CHAT_LIST_OPEN)
         row = self.wait.until(
             lambda driver: next(
                 (
