@@ -6,11 +6,14 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from adapters.http.auth import _bearer
+from domain.quiz.errors import InvalidIdempotencyKey
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
 from usecase.quiz.errors import QuizNotFound
 
 router = APIRouter()
+
+_KEY_LIMIT = 128
 
 
 class CreateQuizBody(BaseModel):
@@ -36,11 +39,12 @@ async def list_quizzes(request: Request):
 async def create_quiz(
     body: CreateQuizBody,
     request: Request,
-    idempotency_key: str = Header(min_length=1, max_length=128, alias="Idempotency-Key"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
+    key = _idempotency_key(idempotency_key)
     account = await _caller(request)
     quiz = await request.app.state.ctx.create_quiz.create(
-        account.id, body.document_id, body.topic, body.question_count, idempotency_key
+        account.id, body.document_id, body.topic, body.question_count, key
     )
     return JSONResponse(status_code=201, content=quiz.detail())
 
@@ -71,6 +75,12 @@ async def retry_quiz(id: UUID, request: Request):
     account = await _caller(request)
     quiz = await request.app.state.ctx.retry_quiz.retry(account.id, id)
     return quiz.detail()
+
+
+def _idempotency_key(raw: str | None) -> str:
+    if not isinstance(raw, str) or raw == "" or len(raw) > _KEY_LIMIT:
+        raise InvalidIdempotencyKey()
+    return raw
 
 
 async def _caller(request: Request):

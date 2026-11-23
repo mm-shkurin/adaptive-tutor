@@ -22,6 +22,10 @@ class InvalidChoice(Exception):
     """The choice is not one of the open question's four choices."""
 
 
+class InvalidIdempotencyKey(Exception):
+    """Idempotency-Key is missing, empty, or longer than the allowed maximum."""
+
+
 class NoOpenAttempt(Exception):
     """Choose and advance need an open attempt."""
 

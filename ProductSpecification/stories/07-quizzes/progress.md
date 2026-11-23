@@ -10,6 +10,8 @@
 
 Default strip: `/backend-delivery` (code → tests from test-spec → refactor). Spec-skeptic still open — see `AFK_BLOCKERS.md`.
 
+Backend Tier 2 API / security / integration / infra leftovers covered in the second AFK pass (session-store fail, examiner isolation, language, Unicode, last-write fail, list cap, invalid/concurrent answer, wipe-none, XSS text, mass-assignment ignore, key length, dead store, missing model key). Selenium Tier 1 and harvest still open.
+
 Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume) and talks to `/api/v1/quizzes`. Vitest covers the view and create logic. Tier 1 screens match the quiz mockup; the card still omits the time estimate and the sources badge, and take still omits skip. Selenium and demo stay open, and Tier 2 align-design stays clear. `green-frontend` and `green-frontend-api` are checked for the Tier 1 scenarios the screens and client implement.
 
 ## Tier 1 — Backend (API 4.1, 7.1, 8.1, 8.3, 9.1, 10.1)
@@ -144,8 +146,17 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [x] Security 1.1 Another person's quiz or document is refused like a missing quiz
 - [x] Security 1.2 The quiz list does not include another person's quiz
 - [x] 1.1 A call with no session is refused like a missing quiz
+- [x] 1.2 A session store failure is refused like a missing quiz
 - [x] 1.3 A document that is not ready cannot start a quiz
 - [x] 1.4 A person with no ready PDF cannot start a quiz
+- [x] 2.2 An examiner series does not appear on the quiz list
+- [x] 4.2 The questions and the choices follow the topic's language
+- [x] 4.3 Topic, questions, and choices round-trip as Unicode
+- [x] 5.3 A failed last write leaves no quiz, no questions, and no attempt
+- [x] 6.2 The list returns at most the declared cap
+- [x] 7.2 A choice that is not on the question is refused
+- [x] 7.3 Two answers at the same moment leave one grade
+- [x] 11.2 A delete with no account removes nothing
 
 ### 1.1 A call with no session is refused like a missing quiz — Done AFK
 - [ ] red-acceptance
@@ -155,7 +166,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.2 A session store failure is refused like a missing quiz
+### 1.2 A session store failure is refused like a missing quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -187,7 +198,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.2 An examiner series does not appear on the quiz list
+### 2.2 An examiner series does not appear on the quiz list — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -211,7 +222,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 4.2 The questions and the choices follow the topic's language
+### 4.2 The questions and the choices follow the topic's language — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -219,7 +230,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 4.3 Topic, questions, and choices round-trip as Unicode
+### 4.3 Topic, questions, and choices round-trip as Unicode — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -259,7 +270,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 5.3 A failed last write leaves no quiz, no questions, and no attempt
+### 5.3 A failed last write leaves no quiz, no questions, and no attempt — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -275,7 +286,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 6.2 The list returns at most the declared cap
+### 6.2 The list returns at most the declared cap — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -283,7 +294,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 7.2 A choice that is not on the question is refused
+### 7.2 A choice that is not on the question is refused — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -291,7 +302,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 7.3 Two answers at the same moment leave one grade
+### 7.3 Two answers at the same moment leave one grade — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -323,7 +334,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 11.2 A delete with no account removes nothing
+### 11.2 A delete with no account removes nothing — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -335,11 +346,12 @@ Done AFK — tests from the spec, green on the backend-delivery strip. The red/g
 
 Done AFK — tests from the spec, green on the backend-delivery strip. Empty search does not call the model: API 5.1.
 
+- [x] 1.1 A valid completions body creates one quiz and the live model is not called
 - [x] 1.2 Resume and play again do not call the model
 - [x] 2.1 A failed completions call stores nothing and does not pin the attempt
 - [x] 3.1 A failed search stores nothing and does not call the model
 
-### 1.1 A valid completions body creates one quiz and the live model is not called
+### 1.1 A valid completions body creates one quiz and the live model is not called — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -541,7 +553,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.1 A script and a SQL fragment round-trip as the person's own text
+### 2.1 A script and a SQL fragment round-trip as the person's own text — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -549,7 +561,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.1 Server-owned fields on create are ignored
+### 3.1 Server-owned fields on create are ignored — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -557,7 +569,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.2 Server-owned fields on an answer are ignored
+### 3.2 Server-owned fields on an answer are ignored — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -565,7 +577,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 4.1 A topic or an idempotency key past its maximum is refused
+### 4.1 A topic or an idempotency key past its maximum is refused — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -575,7 +587,9 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 
 ## Tier 2 — Infrastructure Scenarios (04_Infrastructure_Tests.md)
 
-### 1.1 A dead quiz store refuses a read
+Done AFK — dead store, recovery, connection baseline, missing model key, redacted failure body.
+
+### 1.1 A dead quiz store refuses a read — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -583,7 +597,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.2 A dead quiz store refuses a write and stores nothing
+### 1.2 A dead quiz store refuses a write and stores nothing — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -591,7 +605,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.3 The list reads back after the store recovers
+### 1.3 The list reads back after the store recovers — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -599,7 +613,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.4 One quiz is stored after the store recovers
+### 1.4 One quiz is stored after the store recovers — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -607,7 +621,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 1.5 Repeated failed creates return the store connections to baseline
+### 1.5 Repeated failed creates return the store connections to baseline — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -615,7 +629,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.1 A missing model key does not stop startup
+### 2.1 A missing model key does not stop startup — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -623,7 +637,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 2.2 A missing model key fails the create and stores nothing
+### 2.2 A missing model key fails the create and stores nothing — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase
@@ -631,7 +645,7 @@ Done AFK — tests from the spec, green on the backend-delivery strip. Empty sea
 - [ ] adapters-discovery
 - [ ] green-acceptance
 
-### 3.1 A failure body and its log omit the document text, a secret, and another person's quiz
+### 3.1 A failure body and its log omit the document text, a secret, and another person's quiz — Done AFK
 - [ ] red-acceptance
 - [ ] design
 - [ ] red-usecase

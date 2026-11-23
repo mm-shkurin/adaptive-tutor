@@ -19,6 +19,7 @@ class _Stored:
 class MemoryQuizStore:
     def __init__(self):
         self.dead = False
+        self.fail_next_add = False
         self.live = 0
         self.waiting = 0
         self._rows: list[_Stored] = []
@@ -39,6 +40,9 @@ class MemoryQuizStore:
 
     async def add(self, owner_id: UUID, quiz: Quiz, created_at: datetime, key: str) -> None:
         async def action():
+            if self.fail_next_add:
+                self.fail_next_add = False
+                raise StoreUnavailable()
             if self._by_key(owner_id, key) is not None:
                 raise DuplicateQuizKey()
             self._rows.append(_Stored(owner_id, quiz, created_at, key))

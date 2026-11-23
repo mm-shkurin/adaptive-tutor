@@ -88,6 +88,7 @@ class Bundle:
     search: MemoryMaterialSearch
     quiz_tutor: ScriptedQuizTutor
     quizzes: MemoryQuizStore
+    chats: MemoryChatStore
 
 
 def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bundle:
@@ -135,7 +136,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
-    return Bundle(client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes)
+    return Bundle(client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes, chats)
 
 
 def allow(bundle: Bundle, code: str, subject: str, email: str, name: str) -> None:

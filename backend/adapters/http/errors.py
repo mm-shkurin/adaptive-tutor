@@ -14,7 +14,7 @@ from domain.chat.chat import (
 from domain.chat.learning import EmptyQuestion, ModeNotListed, ModelNotListed
 from domain.quiz.errors import DocumentNotReady as QuizDocumentNotReady
 from domain.quiz.errors import EmptyRetrieval, EmptyTopic, GenerationFailed, InvalidChoice
-from domain.quiz.errors import InvalidQuestionCount, NoOpenAttempt, Unanswered
+from domain.quiz.errors import InvalidIdempotencyKey, InvalidQuestionCount, NoOpenAttempt, Unanswered
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
 from usecase.chat.errors import ChatNotFound
@@ -50,6 +50,7 @@ _BAD_COUNT = {"code": "invalid_question_count", "message": "Question count is no
 _EMPTY_RETRIEVAL = {"code": "empty_retrieval", "message": "Nothing was found for the topic"}
 _GENERATION = {"code": "generation_failed", "message": "Quiz could not be assembled"}
 _QUIZ_CHOICE = {"code": "invalid_choice", "message": "Choice is not on the question"}
+_QUIZ_KEY = {"code": "invalid_idempotency_key", "message": "Idempotency key is not allowed"}
 _NO_ATTEMPT = {"code": "no_open_attempt", "message": "No open attempt"}
 _UNANSWERED = {"code": "unanswered", "message": "The question is not answered"}
 _QUIZ_STORE = {"code": "unavailable", "message": "Quiz store is unavailable"}
@@ -76,6 +77,7 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(EmptyRetrieval, _status(400, _EMPTY_RETRIEVAL))
     app.add_exception_handler(GenerationFailed, _status(400, _GENERATION))
     app.add_exception_handler(InvalidChoice, _status(400, _QUIZ_CHOICE))
+    app.add_exception_handler(InvalidIdempotencyKey, _status(400, _QUIZ_KEY))
     app.add_exception_handler(NoOpenAttempt, _status(400, _NO_ATTEMPT))
     app.add_exception_handler(Unanswered, _status(400, _UNANSWERED))
     app.add_exception_handler(QuizStoreUnavailable, _status(503, _QUIZ_STORE))
