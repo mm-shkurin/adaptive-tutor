@@ -13,6 +13,7 @@ const TABS = [
 function tabTestId(to) {
   if (to === '/documents') return 'documents-tab'
   if (to === '/chat') return 'chat-tab'
+  if (to === '/quizzes') return 'quizzes-tab'
   return undefined
 }
 

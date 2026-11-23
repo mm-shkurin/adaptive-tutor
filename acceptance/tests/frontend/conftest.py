@@ -12,10 +12,13 @@ from selenium.webdriver.chrome.options import Options
 
 pytest.register_assert_rewrite("statements.chat_screen_statements")
 pytest.register_assert_rewrite("statements.document_library_statements")
+pytest.register_assert_rewrite("statements.quiz_screen_statements")
 pytest.register_assert_rewrite("statements.signed_in_browser_statements")
 
 from statements.chat_screen_statements import ChatScreenStatements
 from statements.document_library_statements import DocumentLibraryStatements
+from statements.quiz_browser_statements import QuizBrowserStatements
+from statements.quiz_screen_statements import QuizScreenStatements
 from statements.signed_in_browser_statements import SignedInBrowserStatements
 from support.acceptance_server import AcceptanceServer
 
@@ -113,7 +116,9 @@ def ui():
         )
         library = DocumentLibraryStatements(driver, app_url)
         chat_screen = ChatScreenStatements(driver, app_url)
-        yield signed_in, library, chat_screen
+        quiz_screen = QuizScreenStatements(driver, app_url)
+        quiz_browser = QuizBrowserStatements(signed_in)
+        yield signed_in, library, chat_screen, quiz_screen, quiz_browser
     finally:
         if signed_in is not None:
             signed_in.close()
@@ -139,3 +144,13 @@ def document_library(ui):
 @pytest.fixture
 def chat_screen(ui):
     return ui[2]
+
+
+@pytest.fixture
+def quiz_screen(ui):
+    return ui[3]
+
+
+@pytest.fixture
+def quiz_browser(ui):
+    return ui[4]

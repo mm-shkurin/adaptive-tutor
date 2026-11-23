@@ -131,6 +131,8 @@ class AcceptanceServer:
         self._chats = chats
         quizzes = MemoryQuizStore()
         quiz_tutor = ScriptedQuizTutor()
+        self._quizzes = quizzes
+        self._quiz_tutor = quiz_tutor
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
@@ -177,6 +179,9 @@ class AcceptanceServer:
 
         app = create_app(ctx)
         register_chat_probe(app, self._search, self._tutor, self._intake, self._vectors)
+        from support.quiz_probe import register_quiz_probe
+
+        register_quiz_probe(app, self._quiz_tutor)
         app.router.lifespan_context = lifespan
         app.state.index_probe = self.probe
         app.state.peak_chat_hold = self.peak_chat_hold

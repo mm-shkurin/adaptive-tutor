@@ -31,7 +31,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 1.3 An unanswered question hides the page and does not offer skip
@@ -41,7 +41,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 1.7 The create form lists ready PDFs and defaults the count to five
@@ -51,7 +51,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 2.1 A choice shows right or wrong and reveals the page
@@ -61,7 +61,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 3.1 Generate and start locks the control and opens the first question
@@ -71,7 +71,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 5.1 Finish shows the score and the review
@@ -81,7 +81,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 5.2 Play again returns to the first question and the card keeps the previous score
@@ -91,7 +91,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.1 Create opens the form
@@ -101,7 +101,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.3 Back to the list during a quiz leaves the attempt open
@@ -111,7 +111,7 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ### 6.4 Opening the card resumes the saved question
@@ -121,12 +121,12 @@ Frontend lane: `/quizzes` replaces SoonPage (list, create, take, result, resume)
 - [ ] red-frontend-api
 - [x] green-frontend-api
 - [x] align-design
-- [ ] green-selenium
+- [x] green-selenium
 - [ ] demo
 
 ## Harvest — Tier 1 → Tier 2
 
-- [ ] harvest
+- [ ] harvest — Tier 1 UI selenium green; demo still open. AFK skips headed demo; harvest can start for Tier 2 frontend after human demo or intentionally without demo.
 
 ## Tier 2 — Backend Scenarios (01_API_Tests.md)
 
