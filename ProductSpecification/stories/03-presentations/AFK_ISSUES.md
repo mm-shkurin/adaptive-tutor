@@ -48,3 +48,4 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | ~22:45 | Integration §2.1/§2.3: chat `Source.slide`, piece index + Qdrant payload, `test_presentation_chat`, chatView «Слайд N» |
 | ~23:30 | Integration §2.2: quiz `Question.slide` + `0016`, `test_presentation_quiz`, `quizView` / `quiz-cite-slide` |
 | 2026-11-25 | Progress API real read: `GetProgress` + `test_progress.py`; `0017_quiz_finished_at`; P8 parked for prod chat session days |
+| 2026-11-25 | Progress frontend: `/progress` → `ProgressPage` + `GET /api/v1/progress`; UI 3.1 stats/nodes/weak; vitest guards + view |

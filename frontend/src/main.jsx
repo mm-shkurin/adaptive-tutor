@@ -10,6 +10,7 @@ import './styles/profile.css'
 import './styles/documents.css'
 import './styles/chat.css'
 import './styles/quiz.css'
+import './styles/progress.css'
 
 initTheme()
 

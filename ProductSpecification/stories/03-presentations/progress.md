@@ -30,6 +30,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] gallery add + slide cards (UI 1.2 — addSlides, slide-from-gallery, slide-card)
 - [x] index no_slides refusal (UI 1.3 — indexPresentation, pres-index, pres-refusal)
 - [ ] index → list row (UI 1.4 — selenium / reconcile after index)
+- [x] Progress panel from GET `/api/v1/progress` (UI 3.1 — four stats, topic nodes, weak list; vitest `progressView` + `progressBody`)
 
 ## Integration seam (chat slide citation)
 
