@@ -331,7 +331,13 @@ components:
           minimum: 1
           description: |
             Страница куска. null, пока на этом вопросе нет выбора и status=take.
-            На result всегда задан.
+            На result задан для PDF и pdf_page-слайдов; null для чисто слайдовых кусков.
+        slide:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: |
+            Позиция слайда в презентации. null для обычного PDF и до ответа при status=take.
     Choice:
       type: object
       required: [id, text]

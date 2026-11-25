@@ -25,7 +25,8 @@ class QuizQuestionRow(Base):
     quiz_id: Mapped[UUID] = mapped_column(ForeignKey("quizzes.id", ondelete="CASCADE"), index=True)
     position: Mapped[int] = mapped_column(Integer)
     body: Mapped[str] = mapped_column(Text)
-    page: Mapped[int] = mapped_column(Integer)
+    page: Mapped[int | None] = mapped_column(Integer)
+    slide: Mapped[int | None] = mapped_column(Integer)
     correct_choice_id: Mapped[str] = mapped_column(String(64))
     choices: Mapped[list[QuizChoiceRow]] = relationship(
         order_by=QuizChoiceRow.position,

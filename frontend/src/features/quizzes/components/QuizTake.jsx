@@ -46,9 +46,9 @@ export function QuizTake({ screen }) {
         {take.answered ? (
           <div className="quiz-cite" data-testid="quiz-reveal">
             {take.grade ? <p data-testid="quiz-grade">{take.grade}</p> : null}
-            {take.page ? (
-              <p data-testid="quiz-cite-page">
-                Источник: <strong>{take.page}</strong>
+            {take.cite ? (
+              <p data-testid={take.citeTestId}>
+                Источник: <strong>{take.cite}</strong>
               </p>
             ) : null}
           </div>

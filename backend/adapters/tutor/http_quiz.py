@@ -15,7 +15,7 @@ _SYSTEM = (
     "Write exactly the requested number of questions. "
     "Each question has exactly four non-empty choice strings. "
     "correct_index is an integer 0..3. "
-    "page must be one of the page numbers listed in the material lines."
+    "page must be one of the page or slide numbers listed in the material lines."
 )
 
 
@@ -63,9 +63,9 @@ def normalize_quiz_payload(payload: object, count: int, pieces: tuple[Source, ..
     questions = payload.get("questions")
     if not isinstance(questions, list) or len(questions) < count:
         raise ValueError("count")
-    pages = _pages(pieces)
-    default_page = pages[0] if pages else None
-    fixed = [_normalize_question(item, pages, default_page) for item in questions[:count]]
+    refs = _refs(pieces)
+    default_ref = refs[0] if refs else None
+    fixed = [_normalize_question(item, refs, default_ref) for item in questions[:count]]
     return {"questions": fixed}
 
 
@@ -87,21 +87,32 @@ def _body(
 
 def _user(topic: str, count: int, pieces: tuple[Source, ...]) -> str:
     material = "\n".join(_line(piece) for piece in pieces) if pieces else "(no material)"
-    pages = ", ".join(str(page) for page in _pages(pieces)) or "(none)"
+    refs = ", ".join(str(ref) for ref in _refs(pieces)) or "(none)"
     return (
         f"Topic:\n{topic}\n\nQuestion count:\n{count}\n\n"
-        f"Allowed pages:\n{pages}\n\nMaterial:\n{material}\n\n"
-        "Return only the JSON object. Every page must be one of the Allowed pages."
+        f"Allowed citation numbers:\n{refs}\n\nMaterial:\n{material}\n\n"
+        "Return only the JSON object. Every page field must be one of the Allowed citation numbers."
     )
 
 
 def _line(piece: Source) -> str:
-    page = f"page {piece.page}" if piece.page is not None else "no page"
-    return f"[{page}] {piece.text}"
+    labels: list[str] = []
+    if type(piece.slide) is int and piece.slide >= 1:
+        labels.append(f"slide {piece.slide}")
+    if type(piece.page) is int and piece.page >= 1:
+        labels.append(f"page {piece.page}")
+    tag = ", ".join(labels) if labels else "no citation"
+    return f"[{tag}] {piece.text}"
 
 
-def _pages(pieces: tuple[Source, ...]) -> list[int]:
-    return sorted({piece.page for piece in pieces if type(piece.page) is int and piece.page >= 1})
+def _refs(pieces: tuple[Source, ...]) -> list[int]:
+    refs: set[int] = set()
+    for piece in pieces:
+        if type(piece.page) is int and piece.page >= 1:
+            refs.add(piece.page)
+        if type(piece.slide) is int and piece.slide >= 1:
+            refs.add(piece.slide)
+    return sorted(refs)
 
 
 def _ok(response: httpx.Response) -> bool:
@@ -133,15 +144,15 @@ def _json_object(content: str) -> dict:
     return parsed
 
 
-def _normalize_question(item: object, pages: list[int], default_page: int | None) -> dict:
+def _normalize_question(item: object, refs: list[int], default_ref: int | None) -> dict:
     if not isinstance(item, dict):
         raise ValueError("item")
     index = _as_int(item.get("correct_index"))
     page = _as_int(item.get("page"))
-    if page not in pages:
-        if default_page is None:
+    if page not in refs:
+        if default_ref is None:
             raise ValueError("page")
-        page = default_page
+        page = default_ref
     return {
         "text": item.get("text"),
         "choices": item.get("choices"),

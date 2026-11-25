@@ -101,6 +101,7 @@ def _question_row(quiz_id: UUID, position: int, question: Question) -> QuizQuest
         position=position,
         body=question.text,
         page=question.page,
+        slide=question.slide,
         correct_choice_id=question.correct_choice_id,
     )
     row.choices = [
@@ -117,6 +118,7 @@ def _question(row: QuizQuestionRow) -> Question:
         tuple(Choice(item.id, item.body) for item in row.choices),
         row.correct_choice_id,
         row.page,
+        row.slide,
     )
 
 

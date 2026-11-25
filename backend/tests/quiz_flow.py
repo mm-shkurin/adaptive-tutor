@@ -53,9 +53,9 @@ def unready_pdf(bundle, owner, name, state):
     return document
 
 
-def post_quiz(bundle, token, document_id, count=None, topic="cells", key=None):
+def post_quiz(bundle, token, document_id, count=None, topic="cells", key=None, page=2):
     stored = 5 if count is None else count
-    bundle.quiz_tutor.script(valid_body(stored))
+    bundle.quiz_tutor.script(valid_body(stored, page=page))
     body = {"document_id": str(document_id), "topic": topic}
     if count is not None:
         body["question_count"] = count
@@ -92,6 +92,7 @@ def listed(bundle, token):
 
 def hidden(question) -> None:
     assert question["page"] is None
+    assert question.get("slide") is None
     assert question["correct_choice_id"] is None
     assert question["correct"] is None
     assert question["chosen_choice_id"] is None

@@ -5,6 +5,20 @@ export function pageCitation(page) {
   return `страница ${page}`
 }
 
+export function quizCitation(question) {
+  if (question == null) return null
+  if (question.slide != null) {
+    if (question.page != null) return `Слайд ${question.slide}, стр. ${question.page}`
+    return `Слайд ${question.slide}`
+  }
+  return pageCitation(question.page)
+}
+
+export function quizCiteTestId(question) {
+  if (question == null) return null
+  return question.slide != null ? 'quiz-cite-slide' : 'quiz-cite-page'
+}
+
 export function questionCountLabel(count) {
   if (count === 3) return '3 вопроса'
   return `${count} вопросов`
@@ -140,7 +154,8 @@ export function takeView(detail) {
     answered,
     canAdvance: shouldAdvance(question),
     grade: gradeLabel(question),
-    page: answered ? pageCitation(question.page) : null,
+    cite: answered ? quizCitation(question) : null,
+    citeTestId: answered ? quizCiteTestId(question) : null,
     advance: advanceLabel(detail),
     choices: question.choices.map((choice, choiceIndex) => {
       const mark = choiceMark(choice.id, question)
@@ -178,7 +193,7 @@ export function reviewRows(detail) {
     itemClass: reviewItemClass(question.correct === true),
     chosenText: choiceText(question, question.chosen_choice_id),
     correctText: choiceText(question, question.correct_choice_id),
-    pageLabel: pageCitation(question.page),
+    pageLabel: quizCitation(question),
   }))
 }
 

@@ -4,6 +4,8 @@ import {
   cardRows,
   choiceMark,
   pageCitation,
+  quizCitation,
+  quizCiteTestId,
   resultView,
   screenView,
   shouldAdvance,
@@ -30,6 +32,7 @@ function question(overrides = {}) {
     correct_choice_id: overrides.correct_choice_id ?? null,
     correct: overrides.correct ?? null,
     page: overrides.page ?? null,
+    slide: overrides.slide ?? null,
   }
 }
 
@@ -117,7 +120,7 @@ describe('take view', () => {
     expect(view.choices).toHaveLength(4)
     expect(view.choices.map((item) => item.key)).toEqual(['A', 'B', 'C', 'D'])
     expect(view.choices.every((item) => item.mark === null)).toBe(true)
-    expect(view.page).toBeNull()
+    expect(view.cite).toBeNull()
     expect(view.grade).toBeNull()
     expect(view.canAdvance).toBe(false)
     expect(view.advance).toBe('Далее')
@@ -144,11 +147,26 @@ describe('take view', () => {
       ],
     }))
     expect(view.grade).toBe('Неверно.')
-    expect(view.page).toBe('страница 4')
+    expect(view.cite).toBe('страница 4')
+    expect(view.citeTestId).toBe('quiz-cite-page')
     expect(view.canAdvance).toBe(true)
     expect(view.choices.find((item) => item.id === 'b').mark).toBe('wrong')
     expect(view.choices.find((item) => item.id === 'a').mark).toBe('correct')
     expect(shouldSendChoice(question({ chosen_choice_id: 'b' }))).toBe(false)
+  })
+
+  it('shows a slide citation when the question cites a deck slide', () => {
+    const stored = question({
+      chosen_choice_id: 'a',
+      correct_choice_id: 'a',
+      correct: true,
+      slide: 2,
+    })
+    const view = takeView(detail({ questions: [stored] }))
+    expect(view.cite).toBe('Слайд 2')
+    expect(view.citeTestId).toBe('quiz-cite-slide')
+    expect(quizCitation(stored)).toBe('Слайд 2')
+    expect(quizCiteTestId(stored)).toBe('quiz-cite-slide')
   })
 
   it('marks only the correct choice when the answer is right', () => {
@@ -166,7 +184,8 @@ describe('take view', () => {
     }))
     expect(view.grade).toBe('Верно.')
     expect(view.advance).toBe('Завершить')
-    expect(view.page).toBe('страница 9')
+    expect(view.cite).toBe('страница 9')
+    expect(view.citeTestId).toBe('quiz-cite-page')
     expect(advanceLabel(detail({ current_index: 0 }))).toBe('Далее')
   })
 })

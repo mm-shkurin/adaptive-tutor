@@ -45,7 +45,7 @@ def test_compose_returns_normalized_questions():
     assert payload["questions"][0]["page"] == 2
     assert captured["body"]["response_format"] == {"type": "json_object"}
     assert captured["body"]["max_tokens"] == 1800
-    assert "Allowed pages:" in captured["body"]["messages"][1]["content"]
+    assert "Allowed citation numbers:" in captured["body"]["messages"][1]["content"]
 
 
 def test_compose_retries_without_json_mode_when_json_mode_is_refused():
@@ -89,6 +89,28 @@ def test_compose_retries_without_json_mode_when_json_mode_is_refused():
 def test_json_object_extracts_object_from_prose():
     raw = 'Sure!\n```json\n{"questions":[]}\n```\nthanks'
     assert _json_object(raw) == {"questions": []}
+
+
+def test_compose_accepts_slide_only_pieces():
+    def handler(request: httpx.Request) -> httpx.Response:
+        content = json.dumps(
+            {
+                "questions": [
+                    {
+                        "text": "Q1",
+                        "choices": ["a", "b", "c", "d"],
+                        "correct_index": 0,
+                        "page": 1,
+                    }
+                ]
+            }
+        )
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    payload = asyncio.run(
+        _quiz(handler).compose("auto", "deck", 1, (Source(None, "alpha", slide=1),))
+    )
+    assert payload["questions"][0]["page"] == 1
 
 
 def test_normalize_rejects_too_few_questions():
