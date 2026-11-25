@@ -28,6 +28,20 @@ class Slide:
             pdf_page=None,
         )
 
+    @staticmethod
+    def pdf_page(position: int, pdf_document_id: UUID, page: int) -> "Slide":
+        return Slide(
+            id=uuid4(),
+            position=position,
+            source="pdf_page",
+            text="",
+            formula_phrase="",
+            formula_latex="",
+            empty=False,
+            pdf_document_id=pdf_document_id,
+            pdf_page=page,
+        )
+
     def with_position(self, position: int) -> "Slide":
         return replace(self, position=position)
 

@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { parsePdfPageList } from '../logic/presentationPdfSlides'
 import { slideCardCaption, slideCountLabel } from '../logic/presentationEditorView'
 
 const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
@@ -6,6 +7,17 @@ const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
 export function PresentationEditor({ screen }) {
   const presentation = screen.editor
   const galleryRef = useRef(null)
+  const cameraRef = useRef(null)
+  const readyPdfs = screen.readyPdfs ?? []
+  const [pdfId, setPdfId] = useState(readyPdfs[0]?.id ?? '')
+  const [pageList, setPageList] = useState('1')
+  const selectedPdf = readyPdfs.find((pdf) => pdf.id === pdfId) ?? readyPdfs[0]
+
+  function submitPdfPages(pages) {
+    if (!selectedPdf || !pages.length) return
+    screen.addPdfPages(selectedPdf.id, pages)
+  }
+
   return (
     <main className="documents-page" data-testid="docs-editor">
       <button type="button" className="pres-back" data-testid="pres-back" onClick={screen.closeEditor}>
@@ -20,14 +32,24 @@ export function PresentationEditor({ screen }) {
           defaultValue={presentation.title}
           aria-label="Название презентации"
         />
-        <button
-          type="button"
-          className="btn btn-dark"
-          data-testid="pres-index"
-          onClick={() => screen.indexPresentation()}
-        >
-          Готово · индексировать
-        </button>
+        <div className="pres-editor-actions">
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            data-testid="pres-delete"
+            onClick={() => screen.deletePresentation(presentation.id, { fromEditor: true })}
+          >
+            Удалить
+          </button>
+          <button
+            type="button"
+            className="btn btn-dark"
+            data-testid="pres-index"
+            onClick={() => screen.indexPresentation()}
+          >
+            Готово · индексировать
+          </button>
+        </div>
       </div>
       {screen.editorRefusal ? (
         <div className="refuse" role="alert" data-testid="pres-refusal">
@@ -43,6 +65,14 @@ export function PresentationEditor({ screen }) {
         >
           Из галереи
         </button>
+        <button
+          type="button"
+          className="btn btn-outline"
+          data-testid="slide-from-camera"
+          onClick={() => cameraRef.current?.click()}
+        >
+          Камера
+        </button>
         <input
           ref={galleryRef}
           type="file"
@@ -55,6 +85,60 @@ export function PresentationEditor({ screen }) {
             if (selected?.length) screen.addGallerySlides(selected)
           }}
         />
+        <input
+          ref={cameraRef}
+          type="file"
+          hidden
+          accept={GALLERY_ACCEPT}
+          capture="environment"
+          onChange={(event) => {
+            const selected = event.target.files
+            event.target.value = ''
+            if (selected?.length) screen.addGallerySlides(selected)
+          }}
+        />
+        {readyPdfs.length > 0 ? (
+          <div className="slides-pdf-add" data-testid="slide-pdf-picker">
+            <select
+              className="slides-pdf-select"
+              data-testid="slide-pdf-select"
+              value={selectedPdf?.id ?? ''}
+              onChange={(event) => setPdfId(event.target.value)}
+              aria-label="Готовый PDF"
+            >
+              {readyPdfs.map((pdf) => (
+                <option key={pdf.id} value={pdf.id}>
+                  {pdf.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="slides-pdf-pages"
+              data-testid="slide-pdf-pages"
+              type="text"
+              inputMode="numeric"
+              aria-label="Номера страниц"
+              value={pageList}
+              onChange={(event) => setPageList(event.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-outline"
+              data-testid="slide-from-pdf"
+              onClick={() => submitPdfPages(parsePdfPageList(pageList, selectedPdf?.page_count))}
+            >
+              Из PDF
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              data-testid="slide-pdf-page-1"
+              onClick={() => screen.addPdfQuickPage()}
+            >
+              Стр. 1
+            </button>
+          </div>
+        ) : null}
         <span className="slides-count" data-testid="slides-count">
           {slideCountLabel(presentation.slide_count)}
         </span>

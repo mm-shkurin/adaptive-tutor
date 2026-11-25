@@ -27,6 +27,9 @@ from domain.presentation.errors import (
     InvalidImage,
     InvalidSlideOrder,
     NoSlides,
+    PdfNotReady,
+    PdfPageMissing,
+    SlideLimit,
     TextOnDraftBytes,
     TitleTooLong,
     TooManySlides,
@@ -80,6 +83,9 @@ _UNKNOWN_SLIDE = {"code": "unknown_slide", "message": "Slide was not found"}
 _BAD_ORDER = {"code": "invalid_slide_order", "message": "Slide order is not valid"}
 _TEXT_DRAFT = {"code": "text_on_draft_bytes", "message": "Text edit waits for indexing"}
 _EMPTY_ADD = {"code": "empty_add", "message": "No slide payload was sent"}
+_PDF_NOT_READY = {"code": "pdf_not_ready", "message": "PDF is not ready"}
+_PDF_PAGE_MISSING = {"code": "pdf_page_missing", "message": "PDF page was not found"}
+_SLIDE_LIMIT = {"code": "slide_limit", "message": "More than 40 slides"}
 _PRESENTATION_STORE = {"code": "unavailable", "message": "Presentation store is unavailable"}
 
 
@@ -119,6 +125,9 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(InvalidSlideOrder, _status(400, _BAD_ORDER))
     app.add_exception_handler(TextOnDraftBytes, _status(400, _TEXT_DRAFT))
     app.add_exception_handler(EmptyAdd, _status(400, _EMPTY_ADD))
+    app.add_exception_handler(PdfNotReady, _status(400, _PDF_NOT_READY))
+    app.add_exception_handler(PdfPageMissing, _status(400, _PDF_PAGE_MISSING))
+    app.add_exception_handler(SlideLimit, _status(400, _SLIDE_LIMIT))
     app.add_exception_handler(PresentationStoreUnavailable, _status(503, _PRESENTATION_STORE))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)

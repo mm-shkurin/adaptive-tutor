@@ -17,6 +17,8 @@ const ADD_REASON = {
   virus_detected: 'Проверка не пропустила файл.',
   slide_limit: 'В презентации уже 40 слайдов.',
   empty_add: 'Файл не выбран.',
+  pdf_not_ready: 'PDF ещё не готов или недоступен.',
+  pdf_page_missing: 'Такой страницы нет в выбранном PDF.',
 }
 
 export function slideCountLabel(count) {
@@ -31,6 +33,9 @@ export function slideCountLabel(count) {
 export function slideCardCaption(slide) {
   const trimmed = slide.text?.trim()
   if (trimmed) return trimmed
+  if (slide.source === 'pdf_page' && slide.pdf_page) {
+    return `Страница PDF ${slide.pdf_page}`
+  }
   return SLIDE_PLACEHOLDER
 }
 

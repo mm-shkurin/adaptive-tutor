@@ -28,6 +28,26 @@ export function addSlides(id, files, idempotencyKey, signal) {
   })
 }
 
+export function addSlidesPdfPages(id, pdfDocumentId, pages, idempotencyKey, signal) {
+  const form = new FormData()
+  form.append('pdf_document_id', pdfDocumentId)
+  form.append('pdf_pages', JSON.stringify(pages))
+  return send(BACKEND.presentations.slides(id), {
+    method: 'POST',
+    body: form,
+    signal,
+    headers: { 'Idempotency-Key': idempotencyKey },
+    guard: isPresentationBody,
+  })
+}
+
+export function deletePresentation(id, signal) {
+  return send(BACKEND.presentations.item(id), {
+    method: 'DELETE',
+    signal,
+  })
+}
+
 export function indexPresentation(id, idempotencyKey, signal) {
   return send(BACKEND.presentations.index(id), {
     method: 'POST',

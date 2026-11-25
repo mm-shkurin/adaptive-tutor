@@ -1,3 +1,4 @@
+import json
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Request
@@ -7,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 from adapters.http.auth import _bearer
 from usecase.account.errors import StoreUnavailable as AccountStoreUnavailable
 from usecase.account.errors import Unauthorized
+from domain.presentation.errors import EmptyAdd
 from usecase.presentation.errors import PresentationNotFound
 
 router = APIRouter()
@@ -66,7 +68,17 @@ async def add_slides(
     idempotency_key: str = Header(..., alias="Idempotency-Key", min_length=1, max_length=_KEY_LIMIT),
 ):
     account = await _caller(request)
-    uploads = (await request.form()).getlist("images")
+    form = await request.form()
+    pdf_id = form.get("pdf_document_id")
+    if pdf_id:
+        pages = _pdf_pages(form.get("pdf_pages"))
+        item = await request.app.state.ctx.add_slides.pdf_pages(
+            account.id, id, idempotency_key, UUID(str(pdf_id)), pages
+        )
+        return item.json()
+    uploads = form.getlist("images")
+    if not uploads:
+        raise EmptyAdd()
     payload = tuple([await upload.read() for upload in uploads])
     item = await request.app.state.ctx.add_slides.images(account.id, id, idempotency_key, payload)
     return item.json()
@@ -89,6 +101,23 @@ async def index_presentation(
     item, replayed = await request.app.state.ctx.index_presentation.index(account.id, id, idempotency_key)
     status = 200 if replayed else 202
     return JSONResponse(status_code=status, content=item.json())
+
+
+def _pdf_pages(raw: object) -> tuple[int, ...]:
+    if raw is None or str(raw).strip() == "":
+        raise EmptyAdd()
+    try:
+        parsed = json.loads(str(raw))
+    except json.JSONDecodeError as error:
+        raise EmptyAdd() from error
+    if not isinstance(parsed, list) or not parsed:
+        raise EmptyAdd()
+    pages: list[int] = []
+    for item in parsed:
+        if not isinstance(item, int) or isinstance(item, bool):
+            raise EmptyAdd()
+        pages.append(item)
+    return tuple(pages)
 
 
 async def _caller(request: Request):

@@ -34,6 +34,14 @@ class TextOnDraftBytes(Exception):
     """Text patch on a draft slide that still has image bytes."""
 
 
+class PdfNotReady(Exception):
+    """PDF is missing, foreign, not kind pdf, or not ready."""
+
+
+class PdfPageMissing(Exception):
+    """Page number is missing, invalid, or beyond the PDF page count."""
+
+
 class EmptyAdd(Exception):
     """No images or office payload in the add request."""
 

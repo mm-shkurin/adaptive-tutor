@@ -72,7 +72,11 @@ export function DocumentsLibrary({ screen, fileRef }) {
           </p>
         ) : null}
         {view.rows.map((row) => (
-          <DocumentRow key={row.id} row={row} />
+          <DocumentRow
+            key={row.id}
+            row={row}
+            onDeletePresentation={(id) => screen.deletePresentation(id)}
+          />
         ))}
       </div>
     </main>

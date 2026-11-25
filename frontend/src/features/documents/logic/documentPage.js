@@ -1,5 +1,13 @@
 const STATUS_RANK = { waiting: 0, indexing: 1, ready: 2, failed: 2 }
 
+export function pageWithoutDocument(page, documentId) {
+  if (!page) return page
+  return {
+    documents: page.documents.filter((document) => document.id !== documentId),
+    has_next: page.has_next,
+  }
+}
+
 export function pageWithUploaded(page, uploaded) {
   const rest = page.documents.filter((document) => document.id !== uploaded.id)
   return { documents: [uploaded, ...rest], has_next: page.has_next }

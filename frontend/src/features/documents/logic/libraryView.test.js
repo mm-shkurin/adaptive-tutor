@@ -47,7 +47,9 @@ describe('libraryView', () => {
         meta: '8.3 MB · 98 стр. · 67 чанков',
         statusLabel: 'Готов',
         statusPill: 'ready',
+        kind: 'pdf',
         failureReason: null,
+        canDelete: false,
       },
     ])
   })
@@ -71,7 +73,9 @@ describe('libraryView', () => {
       meta: 'Не удалось прочитать страницу 12',
       statusLabel: 'Не удалось',
       statusPill: 'failed',
+      kind: 'pdf',
       failureReason: 'Не удалось прочитать страницу 12',
+      canDelete: false,
     })
   })
 
@@ -83,7 +87,9 @@ describe('libraryView', () => {
       meta: '4.1 MB · ждёт индексации',
       statusLabel: 'Ждёт',
       statusPill: 'waiting',
+      kind: 'pdf',
       failureReason: null,
+      canDelete: false,
     })
   })
 })

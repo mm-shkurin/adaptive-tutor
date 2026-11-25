@@ -5,6 +5,7 @@ import {
   fresherPage,
   needsStatusStream,
   pageWithStatusEvent,
+  pageWithoutDocument,
   pageWithUploaded,
   shouldApplyUpload,
 } from './documentPage'
@@ -32,6 +33,12 @@ const waiting = {
 }
 
 describe('documentPage', () => {
+  it('pageWithoutDocument drops one row by id', () => {
+    const presentation = { ...ready, id: '99999999-9999-9999-9999-999999999999', kind: 'presentation' }
+    const page = { documents: [ready, presentation], has_next: false }
+    expect(pageWithoutDocument(page, presentation.id).documents).toEqual([ready])
+  })
+
   it('An accepted PDF appears at the top as waiting', () => {
     const page = pageWithUploaded({ documents: [ready], has_next: false }, waiting)
     expect(page.documents.map((document) => document.id)).toEqual([waiting.id, ready.id])

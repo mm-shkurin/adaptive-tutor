@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 from domain.presentation.errors import (
     InvalidSlideOrder,
     NoSlides,
+    SlideLimit,
     TitleTooLong,
     TooManySlides,
     UnknownSlide,
@@ -36,9 +37,18 @@ class Presentation:
         )
 
     def add_image(self, content: bytes) -> tuple["Presentation", Slide]:
+        self._ensure_room(1)
         slide = Slide.image(len(self.slides) + 1)
         updated = replace(self, slides=self.slides + (slide,))
         return updated, slide
+
+    def add_pdf_pages(self, pdf_document_id: UUID, pages: tuple[int, ...]) -> "Presentation":
+        self._ensure_room(len(pages))
+        updated = self
+        for page in pages:
+            slide = Slide.pdf_page(len(updated.slides) + 1, pdf_document_id, page)
+            updated = replace(updated, slides=updated.slides + (slide,))
+        return updated
 
     def remove_slide(self, slide_id: UUID) -> "Presentation":
         kept = tuple(slide for slide in self.slides if slide.id != slide_id)
@@ -89,6 +99,10 @@ class Presentation:
             "error": self.error or None,
             "slides": [slide.json() for slide in self.slides],
         }
+
+    def _ensure_room(self, adding: int) -> None:
+        if len(self.slides) + adding > _MAX_SLIDES:
+            raise SlideLimit()
 
     def _map_slide(self, slide_id: UUID, change) -> "Presentation":
         updated: list[Slide] = []

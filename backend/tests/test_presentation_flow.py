@@ -75,17 +75,20 @@ def test_index_with_zero_slides_is_refused():
     assert bundle.client.get(f"/api/v1/presentations/{presentation_id}", headers=bearer(access)).json()["status"] == "draft"
 
 
-def test_index_with_more_than_forty_slides_is_refused():
+def test_more_than_forty_slides_cannot_be_added():
     bundle = build()
     access = token(bundle)
     presentation_id = create(bundle, access).json()["id"]
-    for slide_index in range(41):
+    for slide_index in range(40):
         added = add_image(bundle, access, presentation_id, key=f"k-{slide_index}")
         assert added.status_code == 200
-    response = index(bundle, access, presentation_id)
-    assert response.status_code == 400
-    assert response.json() == {"code": "too_many_slides", "message": "More than 40 slides"}
-    assert bundle.client.get(f"/api/v1/presentations/{presentation_id}", headers=bearer(access)).json()["status"] == "draft"
+    refused = add_image(bundle, access, presentation_id, key="k-40")
+    assert refused.status_code == 400
+    assert refused.json() == {"code": "slide_limit", "message": "More than 40 slides"}
+    assert (
+        bundle.client.get(f"/api/v1/presentations/{presentation_id}", headers=bearer(access)).json()["slide_count"]
+        == 40
+    )
 
 
 def test_successful_index_reaches_ready_with_searchable_pieces():

@@ -1,6 +1,12 @@
 from uuid import UUID
 
-from domain.presentation.errors import FileTooLarge, InvalidImage
+from domain.presentation.errors import (
+    EmptyAdd,
+    FileTooLarge,
+    InvalidImage,
+    PdfNotReady,
+    PdfPageMissing,
+)
 from domain.presentation.presentation import Presentation
 from usecase.presentation.errors import PresentationNotFound
 from usecase.presentation.materials import material_row
@@ -28,14 +34,10 @@ class AddSlides:
 
     async def images(self, owner_id: UUID, presentation_id: UUID, key: str, images: tuple[bytes, ...]):
         if not images:
-            from domain.presentation.errors import EmptyAdd
-
             raise EmptyAdd()
 
         async def build() -> Presentation:
-            current = await self._owned(owner_id, presentation_id)
-            if current.status != "draft":
-                raise PresentationNotFound()
+            current = await self._draft(owner_id, presentation_id)
             updated = current
             total_size = 0
             for content in images:
@@ -50,6 +52,42 @@ class AddSlides:
             return updated
 
         return await self.presentations.with_add_key(owner_id, presentation_id, key, build)
+
+    async def pdf_pages(
+        self,
+        owner_id: UUID,
+        presentation_id: UUID,
+        key: str,
+        pdf_document_id: UUID,
+        pages: tuple[int, ...],
+    ):
+        if not pages:
+            raise PdfPageMissing()
+
+        async def build() -> Presentation:
+            current = await self._draft(owner_id, presentation_id)
+            pdf = await self._ready_pdf(owner_id, pdf_document_id)
+            for page in pages:
+                if page < 1 or pdf.page_count is None or page > pdf.page_count:
+                    raise PdfPageMissing()
+            updated = current.add_pdf_pages(pdf_document_id, pages)
+            await self.presentations.save(owner_id, updated)
+            await self.intake.upsert(owner_id, material_row(updated))
+            return updated
+
+        return await self.presentations.with_add_key(owner_id, presentation_id, key, build)
+
+    async def _draft(self, owner_id: UUID, presentation_id: UUID) -> Presentation:
+        current = await self._owned(owner_id, presentation_id)
+        if current.status != "draft":
+            raise PresentationNotFound()
+        return current
+
+    async def _ready_pdf(self, owner_id: UUID, pdf_document_id: UUID):
+        found = await self.intake.get(owner_id, pdf_document_id)
+        if found is None or found.kind != "pdf" or not found.is_ready():
+            raise PdfNotReady()
+        return found
 
     async def _owned(self, owner_id: UUID, presentation_id: UUID) -> Presentation:
         found = await self.presentations.get(owner_id, presentation_id)

@@ -1,6 +1,6 @@
 import { StrokeIcon } from '../../../shared/icons'
 
-export function DocumentRow({ row }) {
+export function DocumentRow({ row, onDeletePresentation }) {
   return (
     <div className="doc-row" data-testid="document-row">
       <div className="doc-icon">
@@ -23,6 +23,16 @@ export function DocumentRow({ row }) {
       <span className={`status-pill ${row.statusPill}`} data-testid="document-status">
         {row.statusLabel}
       </span>
+      {row.canDelete ? (
+        <button
+          type="button"
+          className="btn btn-outline btn-sm doc-delete"
+          data-testid="presentation-delete"
+          onClick={() => onDeletePresentation?.(row.id)}
+        >
+          Удалить
+        </button>
+      ) : null}
     </div>
   )
 }

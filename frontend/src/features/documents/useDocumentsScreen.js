@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
-import { addSlides, createPresentation, indexPresentation as postPresentationIndex } from '../../shared/api/backend/presentationApi'
+import {
+  addSlides,
+  addSlidesPdfPages,
+  createPresentation,
+  deletePresentation as removePresentation,
+  indexPresentation as postPresentationIndex,
+} from '../../shared/api/backend/presentationApi'
 import { presentationErrorMessage } from './logic/presentationEditorView'
 import {
   isStreamOpenError,
@@ -15,9 +21,12 @@ import {
   fresherPage,
   needsStatusStream,
   pageWithStatusEvent,
+  pageWithoutDocument,
   pageWithUploaded,
   shouldApplyUpload,
 } from './logic/documentPage'
+import { presentationDeleteConfirmed } from './logic/presentationDelete'
+import { readyPdfMaterials } from './logic/presentationPdfSlides'
 import { libraryView } from './logic/libraryView'
 import { FALLBACK_POLL_LIMIT, FALLBACK_POLL_MS } from './logic/statusStreamPolicy'
 import { uploadErrorMessage, uploadRefusal } from './logic/uploadFile'
@@ -178,6 +187,64 @@ export function useDocumentsScreen() {
     reconcileList()
   }
 
+  async function addPdfPages(pdfDocumentId, pages) {
+    if (!editor || !pdfDocumentId || !pages?.length) return
+    const key = submission.current.begin(crypto.randomUUID())
+    if (!key) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await addSlidesPdfPages(editor.id, pdfDocumentId, pages, key, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    } finally {
+      submission.current.finish()
+    }
+  }
+
+  function addPdfQuickPage() {
+    const materials = readyPdfMaterials(pageRef.current?.documents ?? [])
+    const first = materials[0]
+    if (!first) {
+      setEditorRefusal('Нет готовых PDF — загрузите и дождитесь индексации.')
+      return
+    }
+    addPdfPages(first.id, [1])
+  }
+
+  async function deletePresentation(presentationId, { fromEditor = false } = {}) {
+    const confirm =
+      typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm.bind(window)
+        : null
+    if (!presentationDeleteConfirmed(confirm)) return
+    const controller = new AbortController()
+    if (fromEditor) setEditorRefusal(null)
+    try {
+      await removePresentation(presentationId, controller.signal)
+      if (controller.signal.aborted) return
+      if (fromEditor) {
+        setEditor(null)
+      }
+      const next = pageWithoutDocument(pageRef.current, presentationId)
+      pageRef.current = next
+      if (next) {
+        setScreen({ status: 'ready', view: libraryView(next), page: next })
+      }
+      void reconcileList()
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      const message = presentationErrorMessage(error)
+      if (fromEditor) setEditorRefusal(message)
+      else setRefusal(message)
+    }
+  }
+
   async function addGallerySlides(files) {
     if (!editor || !files?.length) return
     const key = submission.current.begin(crypto.randomUUID())
@@ -249,14 +316,20 @@ export function useDocumentsScreen() {
     }
   }
 
+  const readyPdfs = readyPdfMaterials(pageRef.current?.documents ?? screen.page?.documents ?? [])
+
   return {
     ...screen,
     editor,
     editorRefusal,
+    readyPdfs,
     uploading,
     refusal,
     uploadPdf,
     addGallerySlides,
+    addPdfPages,
+    addPdfQuickPage,
+    deletePresentation,
     indexPresentation,
     openPresentationEditor,
     closeEditor,

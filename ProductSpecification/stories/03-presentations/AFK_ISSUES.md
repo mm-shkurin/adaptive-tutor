@@ -49,3 +49,4 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | ~23:30 | Integration §2.2: quiz `Question.slide` + `0016`, `test_presentation_quiz`, `quizView` / `quiz-cite-slide` |
 | 2026-11-25 | Progress API real read: `GetProgress` + `test_progress.py`; `0017_quiz_finished_at`; P8 parked for prod chat session days |
 | 2026-11-25 | Progress frontend: `/progress` → `ProgressPage` + `GET /api/v1/progress`; UI 3.1 stats/nodes/weak; vitest guards + view |
+| 2026-11-25 | Chunk A+B: PDF page add (API 1.3 + editor picker), delete presentation UI 2.2, camera `capture=environment`; PPTX/DOCX still out |

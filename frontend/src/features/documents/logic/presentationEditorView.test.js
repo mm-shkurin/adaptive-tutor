@@ -26,6 +26,7 @@ describe('presentationEditorView', () => {
   it('slideCardCaption shows recognized text or a draft placeholder', () => {
     expect(slideCardCaption({ text: '  Hello  ', position: 1 })).toBe('Hello')
     expect(slideCardCaption({ text: '   ', position: 2 })).toMatch(/индексации/)
+    expect(slideCardCaption({ source: 'pdf_page', pdf_page: 3, text: '' })).toBe('Страница PDF 3')
   })
 
   it('presentationErrorMessage maps index refusal codes', () => {

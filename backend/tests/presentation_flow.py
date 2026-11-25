@@ -1,4 +1,5 @@
 import asyncio
+import json
 from uuid import UUID, uuid4
 
 from tests.support import JPEG, bearer, build, sign_in
@@ -25,6 +26,21 @@ def add_image(bundle, token, presentation_id, key=None):
         f"/api/v1/presentations/{presentation_id}/slides",
         headers={**bearer(token), "Idempotency-Key": key},
         files=[("images", ("slide.jpg", JPEG, "image/jpeg"))],
+    )
+
+
+PDF_NOT_READY = {"code": "pdf_not_ready", "message": "PDF is not ready"}
+
+
+def add_pdf_pages(bundle, token, presentation_id, pdf_document_id, pages, key=None):
+    key = key or str(uuid4())
+    return bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers={**bearer(token), "Idempotency-Key": key},
+        data={
+            "pdf_document_id": str(pdf_document_id),
+            "pdf_pages": json.dumps(pages),
+        },
     )
 
 

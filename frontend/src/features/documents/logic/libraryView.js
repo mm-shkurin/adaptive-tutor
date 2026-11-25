@@ -32,11 +32,13 @@ function documentRow(document) {
   const status = STATUS[document.status]
   return {
     id: document.id,
+    kind: document.kind,
     name: document.name,
     meta: documentMeta(document),
     statusLabel: status.label,
     statusPill: status.pill,
     failureReason: document.status === 'failed' ? document.error : null,
+    canDelete: document.kind === 'presentation',
   }
 }
 
