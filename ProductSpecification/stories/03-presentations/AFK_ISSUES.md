@@ -30,6 +30,7 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | P2 | Spec-skeptic `block` / second `revise` | Fold safe findings; leave remainder here — do not wait in AFK. |
 | P3 | Live OCR / Tesseract / real camera | Tests use fakes; **production still wires `FakeOcr`** until live Tesseract lands — human poke for real OCR. |
 | P7 | Postgres presentation store | Migration `0014_presentation_store_support` + `PostgresPresentationStore` wired in `context_build.py`; requires `alembic upgrade head` before presentations persist in prod. |
+| P8 | Progress chat sessions in Postgres | `GET /api/v1/progress` records chat send days in memory (`MemoryChatStore` + clock). `PostgresChatStore.person_send_times` returns empty until line timestamps exist — prod `sessions_this_week` counts quiz finishes only until P8. Run migration `0017_quiz_finished_at` for quiz finish times in prod. |
 | P4 | Formula LLM quality | Prompt + store phrase+LaTeX; no language refuse rule. |
 | P5 | Mockups HTML screenshots / align-design | Frontend strip; after api-spec exists. |
 | P6 | Merging `features/presentations` → `dev` | Human order; AFK only `git push -u origin HEAD`. |
@@ -46,3 +47,4 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | 22:18 | Tier-1 frontend UI 1.2–1.3: gallery addSlides, slide cards, index no_slides → pres-refusal |
 | ~22:45 | Integration §2.1/§2.3: chat `Source.slide`, piece index + Qdrant payload, `test_presentation_chat`, chatView «Слайд N» |
 | ~23:30 | Integration §2.2: quiz `Question.slide` + `0016`, `test_presentation_quiz`, `quizView` / `quiz-cite-slide` |
+| 2026-11-25 | Progress API real read: `GetProgress` + `test_progress.py`; `0017_quiz_finished_at`; P8 parked for prod chat session days |

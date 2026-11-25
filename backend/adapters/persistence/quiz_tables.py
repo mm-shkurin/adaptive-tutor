@@ -63,6 +63,7 @@ class QuizRow(Base):
     topic: Mapped[str] = mapped_column(Text)
     idempotency_key: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_correct: Mapped[int | None] = mapped_column(Integer)
     last_total: Mapped[int | None] = mapped_column(Integer)
     questions: Mapped[list[QuizQuestionRow]] = relationship(

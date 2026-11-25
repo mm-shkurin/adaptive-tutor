@@ -14,10 +14,12 @@ class _Stored:
     quiz: Quiz
     created_at: datetime
     key: str
+    finished_at: datetime | None = None
 
 
 class MemoryQuizStore:
-    def __init__(self):
+    def __init__(self, clock=None):
+        self._clock = clock
         self.dead = False
         self.fail_next_add = False
         self.live = 0
@@ -93,6 +95,18 @@ class MemoryQuizStore:
 
         await self._guard(action)
 
+    async def finishes_for(self, owner_id: UUID) -> tuple[tuple[Quiz, datetime], ...]:
+        async def action():
+            rows = [
+                (row.quiz, row.finished_at or row.created_at)
+                for row in self._rows
+                if row.owner_id == owner_id and row.quiz.last_score is not None
+            ]
+            rows.sort(key=lambda item: item[1], reverse=True)
+            return tuple(rows)
+
+        return await self._guard(action)
+
     def _by_key(self, owner_id: UUID, key: str) -> Quiz | None:
         for row in self._rows:
             if row.owner_id == owner_id and row.key == key:
@@ -108,7 +122,12 @@ class MemoryQuizStore:
     def _replace(self, owner_id: UUID, quiz: Quiz) -> None:
         for index, row in enumerate(self._rows):
             if row.owner_id == owner_id and row.quiz.id == quiz.id:
-                self._rows[index] = _Stored(owner_id, quiz, row.created_at, row.key)
+                finished_at = row.finished_at
+                if quiz.last_score is not None and quiz.open_attempt is None and self._clock is not None:
+                    finished_at = self._clock.now()
+                self._rows[index] = _Stored(
+                    owner_id, quiz, row.created_at, row.key, finished_at
+                )
                 return
         raise QuizNotFound()
 

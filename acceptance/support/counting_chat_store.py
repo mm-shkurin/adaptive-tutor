@@ -63,6 +63,9 @@ class CountingChatStore:
     ) -> Attempt:
         return await self._inner.commit_attempt(owner_id, chat_id, attempt_key, attempt)
 
+    async def person_send_times(self, owner_id: UUID) -> tuple[datetime, ...]:
+        return await self._inner.person_send_times(owner_id)
+
     def arm_thread_interleave(self, latch) -> None:
         self._inner.arm_thread_interleave(latch)
 

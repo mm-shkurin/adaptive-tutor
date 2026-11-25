@@ -8,10 +8,12 @@ from usecase.chat.send_message import Attempt
 
 
 class MemoryChatStore:
-    def __init__(self):
+    def __init__(self, clock=None):
+        self._clock = clock
         self.dead = False
         self.live = 0
         self._rows: list[tuple[UUID, Chat, datetime]] = []
+        self._person_sends: list[tuple[UUID, datetime]] = []
         self._attempts: dict[tuple[UUID, UUID, str], Attempt] = {}
         self._write_lock = asyncio.Lock()
         self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
@@ -117,11 +119,25 @@ class MemoryChatStore:
                 if current is None:
                     raise ChatNotFound()
                 if attempt.persist and attempt.lines:
+                    self._record_person_sends(owner_id, attempt.lines)
                     await self._save_unlocked(owner_id, current.with_appended(attempt.lines))
                 self._attempts[(owner_id, chat_id, attempt_key)] = attempt
                 return attempt
 
             return await self._guard(action)
+
+    async def person_send_times(self, owner_id: UUID) -> tuple[datetime, ...]:
+        async def action():
+            return tuple(at for owner, at in self._person_sends if owner == owner_id)
+
+        return await self._guard(action)
+
+    def _record_person_sends(self, owner_id: UUID, lines) -> None:
+        if self._clock is None:
+            return
+        for line in lines:
+            if line.role == "person":
+                self._person_sends.append((owner_id, self._clock.now()))
 
     async def _save_unlocked(self, owner_id: UUID, chat: Chat) -> None:
         for index, (owner, stored, created) in enumerate(self._rows):

@@ -64,7 +64,7 @@ def production_context(settings: Settings) -> AppContext:
     reader = PyPdfReader()
     clock = _WallClock()
     chats = PostgresChatStore(sessions)
-    quizzes = PostgresQuizStore(sessions)
+    quizzes = PostgresQuizStore(sessions, clock)
     presentations = PostgresPresentationStore(sessions)
     vectors = QdrantPieces(
         HttpEmbeddings(settings.free_llm_api_url, settings.free_llm_api_key),
@@ -128,6 +128,8 @@ def production_context(settings: Settings) -> AppContext:
             _noop_ocr(),
             ClamavVirusCheck(settings.clamav_host, settings.clamav_port),
             clock,
+            quizzes,
+            chats,
         ),
     )
 

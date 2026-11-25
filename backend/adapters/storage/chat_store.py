@@ -176,6 +176,9 @@ class PostgresChatStore:
         lines = tuple(line.to_domain() for line in chat_row.lines)
         return Chat.stored(chat_row.id, chat_row.document_id, name, lines)
 
+    async def person_send_times(self, owner_id: UUID) -> tuple[datetime, ...]:
+        return ()
+
     async def _run(self, work):
         try:
             async with self._sessions() as session:

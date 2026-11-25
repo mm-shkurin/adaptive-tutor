@@ -32,9 +32,11 @@ def new_row(owner_id: UUID, quiz: Quiz, created_at: datetime, key: str) -> QuizR
     return row
 
 
-def apply_state(row: QuizRow, quiz: Quiz) -> None:
+def apply_state(row: QuizRow, quiz: Quiz, now: datetime | None = None) -> None:
     row.last_correct = None if quiz.last_score is None else quiz.last_score.correct
     row.last_total = None if quiz.last_score is None else quiz.last_score.total
+    if quiz.last_score is not None and quiz.open_attempt is None and now is not None:
+        row.finished_at = now
     _apply_attempt(row, quiz)
     _apply_answers(row, quiz)
 

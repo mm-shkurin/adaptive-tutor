@@ -13,8 +13,9 @@ from usecase.quiz.ports import LIST_CAP
 
 
 class PostgresQuizStore:
-    def __init__(self, sessions):
+    def __init__(self, sessions, clock=None):
         self._sessions = sessions
+        self._clock = clock
         self._key_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
         self._quiz_locks: dict[UUID, asyncio.Lock] = {}
 
@@ -71,10 +72,30 @@ class PostgresQuizStore:
                 if row is None:
                     raise QuizNotFound()
                 updated = change(quiz_from_row(row))
-                apply_state(row, updated)
+                now = None if self._clock is None else self._clock.now()
+                apply_state(row, updated, now)
                 return updated
 
             return await self._run(work)
+
+    async def finishes_for(self, owner_id: UUID) -> tuple[tuple[object, datetime], ...]:
+        async def work(session):
+            rows = (
+                await session.scalars(
+                    self._select()
+                    .where(QuizRow.owner_id == owner_id, QuizRow.last_total.is_not(None))
+                    .order_by(QuizRow.finished_at.desc().nullslast(), QuizRow.created_at.desc())
+                )
+            ).all()
+            return tuple(
+                (
+                    quiz_from_row(row),
+                    row.finished_at or row.created_at,
+                )
+                for row in rows
+            )
+
+        return await self._run(work)
 
     async def delete_owned(self, owner_id: UUID) -> None:
         async def work(session):

@@ -123,9 +123,9 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     pieces = MemoryPieceIndex()
     virus = FakeVirusCheck()
     reader = PyPdfReader()
-    chats = MemoryChatStore()
+    chats = MemoryChatStore(clock)
     search = MemoryMaterialSearch()
-    quizzes = MemoryQuizStore()
+    quizzes = MemoryQuizStore(clock)
     presentations = MemoryPresentationStore()
     ocr = FakeOcr()
     quiz_tutor = quiz_tutor or ScriptedQuizTutor()
@@ -149,7 +149,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         GetChat(chats, pieces, vectors),
         SendMessage(chats, search, tutor, clock),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
-        **wire_presentations(intake, pieces, presentations, ocr, virus, clock),
+        **wire_presentations(intake, pieces, presentations, ocr, virus, clock, quizzes, chats),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(
