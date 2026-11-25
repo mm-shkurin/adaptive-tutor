@@ -25,6 +25,7 @@ from domain.presentation.errors import (
     EmptyAdd,
     FileTooLarge,
     InvalidImage,
+    InvalidOffice,
     InvalidSlideOrder,
     NoSlides,
     PdfNotReady,
@@ -78,6 +79,7 @@ _TOO_MANY = {"code": "too_many_slides", "message": "More than 40 slides"}
 _TOO_LARGE = {"code": "file_too_large", "message": "File is too large"}
 _VIRUS = {"code": "virus_detected", "message": "Virus detected"}
 _BAD_IMAGE = {"code": "invalid_image", "message": "Image is not supported"}
+_BAD_OFFICE = {"code": "invalid_office", "message": "Office file is not supported"}
 _TITLE_LONG = {"code": "title_too_long", "message": "Title is too long"}
 _UNKNOWN_SLIDE = {"code": "unknown_slide", "message": "Slide was not found"}
 _BAD_ORDER = {"code": "invalid_slide_order", "message": "Slide order is not valid"}
@@ -120,6 +122,7 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(TooManySlides, _status(400, _TOO_MANY))
     app.add_exception_handler(FileTooLarge, _status(400, _TOO_LARGE))
     app.add_exception_handler(InvalidImage, _status(400, _BAD_IMAGE))
+    app.add_exception_handler(InvalidOffice, _status(400, _BAD_OFFICE))
     app.add_exception_handler(TitleTooLong, _status(400, _TITLE_LONG))
     app.add_exception_handler(UnknownSlide, _status(400, _UNKNOWN_SLIDE))
     app.add_exception_handler(InvalidSlideOrder, _status(400, _BAD_ORDER))

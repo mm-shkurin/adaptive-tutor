@@ -28,6 +28,19 @@ export function addSlides(id, files, idempotencyKey, signal) {
   })
 }
 
+export function addSlidesOfficeFile(id, file, idempotencyKey, signal) {
+  const form = new FormData()
+  form.append('file', file)
+  return send(BACKEND.presentations.slides(id), {
+    method: 'POST',
+    body: form,
+    signal,
+    timeoutMs: UPLOAD_TIMEOUT_MS,
+    headers: { 'Idempotency-Key': idempotencyKey },
+    guard: isPresentationBody,
+  })
+}
+
 export function addSlidesPdfPages(id, pdfDocumentId, pages, idempotencyKey, signal) {
   const form = new FormData()
   form.append('pdf_document_id', pdfDocumentId)

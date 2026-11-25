@@ -30,6 +30,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] gallery add + slide cards (UI 1.2 — addSlides, slide-from-gallery, slide-card)
 - [x] camera capture=environment (UI — slide-from-camera, same addSlides path as gallery)
 - [x] PDF page slides (API 1.3 — add_slides pdf_document_id/pdf_pages; UI pdf picker + стр. 1 quick; `test_presentation_pdf_slides.py`)
+- [x] PPTX/DOCX import (P10 — multipart `file`, `PythonOfficeParser` + injectable fake; `AddSlides.office_file`; editor `slide-from-office`; `test_presentation_office_slides.py`)
 - [x] delete presentation (UI 2.2 — `deletePresentation` list row + editor confirm; backend DELETE already wired)
 - [x] index no_slides refusal (UI 1.3 — indexPresentation, pres-index, pres-refusal)
 - [ ] index → list row (UI 1.4 — selenium / reconcile after index)

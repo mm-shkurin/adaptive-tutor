@@ -28,6 +28,7 @@ from application.main import create_app
 from application.presentation_wiring import wire_presentations
 from application.quiz_wiring import wire_quizzes
 from usecase.tests.fake.presentation.fake_ocr import FakeOcr
+from usecase.tests.fake.presentation.fake_office_parser import FakeOfficeParser
 from domain.account.identity import ProviderIdentity
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -97,6 +98,7 @@ class Bundle:
     presentations: MemoryPresentationStore
     pieces: MemoryPieceIndex
     ocr: FakeOcr
+    office: FakeOfficeParser
     virus: FakeVirusCheck
 
 
@@ -128,6 +130,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     quizzes = MemoryQuizStore(clock)
     presentations = MemoryPresentationStore()
     ocr = FakeOcr()
+    office = FakeOfficeParser()
     quiz_tutor = quiz_tutor or ScriptedQuizTutor()
     tutor = ScriptedTutor()
     vectors = MemoryPieceVectors(pieces)
@@ -149,11 +152,11 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         GetChat(chats, pieces, vectors),
         SendMessage(chats, search, tutor, clock),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
-        **wire_presentations(intake, pieces, presentations, ocr, virus, clock, quizzes, chats, files, reader),
+        **wire_presentations(intake, pieces, presentations, ocr, virus, clock, quizzes, chats, files, reader, office),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(
-        client, store, clock, provider, rates, intake, search, tutor, quiz_tutor, quizzes, chats, presentations, pieces, ocr, virus
+        client, store, clock, provider, rates, intake, search, tutor, quiz_tutor, quizzes, chats, presentations, pieces, ocr, office, virus
     )
 
 

@@ -4,13 +4,14 @@ from domain.presentation.errors import (
     EmptyAdd,
     FileTooLarge,
     InvalidImage,
+    InvalidOffice,
     PdfNotReady,
     PdfPageMissing,
 )
 from domain.presentation.presentation import Presentation
 from usecase.presentation.errors import PresentationNotFound
 from usecase.presentation.materials import material_row
-from usecase.presentation.ports import PresentationStore, VirusCheck
+from usecase.presentation.ports import OfficeParser, PresentationStore, VirusCheck
 from usecase.document.ports import DocumentIntake
 
 _MAX_BYTES = 52_428_800
@@ -27,10 +28,12 @@ class AddSlides:
         presentations: PresentationStore,
         intake: DocumentIntake,
         virus: VirusCheck,
+        office: OfficeParser,
     ):
         self.presentations = presentations
         self.intake = intake
         self.virus = virus
+        self.office = office
 
     async def images(self, owner_id: UUID, presentation_id: UUID, key: str, images: tuple[bytes, ...]):
         if not images:
@@ -49,6 +52,30 @@ class AddSlides:
                 await self.presentations.put_bytes(owner_id, presentation_id, slide.id, content)
             await self.presentations.save(owner_id, updated)
             await self.intake.upsert(owner_id, material_row(updated, total_size))
+            return updated
+
+        return await self.presentations.with_add_key(owner_id, presentation_id, key, build)
+
+    async def office_file(self, owner_id: UUID, presentation_id: UUID, key: str, content: bytes):
+        if not content:
+            raise EmptyAdd()
+
+        async def build() -> Presentation:
+            current = await self._draft(owner_id, presentation_id)
+            self._size(content)
+            await self.virus.clear(content)
+            source, parsed = self.office.parse(content)
+            if not parsed:
+                raise InvalidOffice()
+            updated, slides = current.add_office_slides(source, parsed)
+            for slide, item in zip(slides, parsed, strict=True):
+                if item.image is None:
+                    continue
+                self._kind(item.image)
+                await self.virus.clear(item.image)
+                await self.presentations.put_bytes(owner_id, presentation_id, slide.id, item.image)
+            await self.presentations.save(owner_id, updated)
+            await self.intake.upsert(owner_id, material_row(updated, len(content)))
             return updated
 
         return await self.presentations.with_add_key(owner_id, presentation_id, key, build)

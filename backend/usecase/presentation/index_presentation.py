@@ -62,7 +62,13 @@ class IndexPresentation:
 
     async def _slide_text(self, owner_id: UUID, slide: Slide, content: bytes | None) -> str:
         if content:
-            return await self.ocr.read(slide.id, content)
+            read = await self.ocr.read(slide.id, content)
+            text = slide.text.strip()
+            if text and read.strip():
+                return f"{text}\n\n{read}".strip()
+            return read if read.strip() else text
+        if slide.text.strip():
+            return slide.text
         if slide.source != "pdf_page" or slide.pdf_document_id is None or slide.pdf_page is None:
             return ""
         owned = await self.intake.get(owner_id, slide.pdf_document_id)

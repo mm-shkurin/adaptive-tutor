@@ -9,6 +9,7 @@ from domain.presentation.errors import (
     TooManySlides,
     UnknownSlide,
 )
+from domain.presentation.parsed_office import ParsedOfficeSlide
 from domain.presentation.slide import Slide
 
 _DEFAULT_TITLE = "Новая презентация"
@@ -49,6 +50,18 @@ class Presentation:
             slide = Slide.pdf_page(len(updated.slides) + 1, pdf_document_id, page)
             updated = replace(updated, slides=updated.slides + (slide,))
         return updated
+
+    def add_office_slides(
+        self, source: str, parsed: tuple[ParsedOfficeSlide, ...]
+    ) -> tuple["Presentation", tuple[Slide, ...]]:
+        self._ensure_room(len(parsed))
+        updated = self
+        added: list[Slide] = []
+        for item in parsed:
+            slide = Slide.office(len(updated.slides) + 1, source, item.text)
+            updated = replace(updated, slides=updated.slides + (slide,))
+            added.append(slide)
+        return updated, tuple(added)
 
     def remove_slide(self, slide_id: UUID) -> "Presentation":
         kept = tuple(slide for slide in self.slides if slide.id != slide_id)

@@ -76,6 +76,13 @@ async def add_slides(
             account.id, id, idempotency_key, UUID(str(pdf_id)), pages
         )
         return item.json()
+    office_upload = form.get("file")
+    if office_upload is not None:
+        content = await office_upload.read()
+        item = await request.app.state.ctx.add_slides.office_file(
+            account.id, id, idempotency_key, content
+        )
+        return item.json()
     uploads = form.getlist("images")
     if not uploads:
         raise EmptyAdd()

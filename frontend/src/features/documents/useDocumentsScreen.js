@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
 import {
   addSlides,
+  addSlidesOfficeFile,
   addSlidesPdfPages,
   createPresentation,
   deletePresentation as removePresentation,
@@ -245,6 +246,25 @@ export function useDocumentsScreen() {
     }
   }
 
+  async function addOfficeFile(file) {
+    if (!editor || !file) return
+    const key = submission.current.begin(crypto.randomUUID())
+    if (!key) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await addSlidesOfficeFile(editor.id, file, key, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    } finally {
+      submission.current.finish()
+    }
+  }
+
   async function addGallerySlides(files) {
     if (!editor || !files?.length) return
     const key = submission.current.begin(crypto.randomUUID())
@@ -327,6 +347,7 @@ export function useDocumentsScreen() {
     refusal,
     uploadPdf,
     addGallerySlides,
+    addOfficeFile,
     addPdfPages,
     addPdfQuickPage,
     deletePresentation,

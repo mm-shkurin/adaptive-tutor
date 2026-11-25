@@ -42,6 +42,10 @@ class PdfPageMissing(Exception):
     """Page number is missing, invalid, or beyond the PDF page count."""
 
 
+class InvalidOffice(Exception):
+    """Bytes are not a supported PPTX or DOCX deck."""
+
+
 class EmptyAdd(Exception):
     """No images or office payload in the add request."""
 

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from domain.presentation.parsed_office import ParsedOfficeSlide
 from domain.presentation.presentation import Presentation
 
 
@@ -33,3 +34,7 @@ class Ocr(Protocol):
 
 class VirusCheck(Protocol):
     async def clear(self, content: bytes) -> None: ...
+
+
+class OfficeParser(Protocol):
+    def parse(self, content: bytes) -> tuple[str, tuple[ParsedOfficeSlide, ...]]: ...

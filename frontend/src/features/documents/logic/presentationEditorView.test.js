@@ -32,5 +32,6 @@ describe('presentationEditorView', () => {
   it('presentationErrorMessage maps index refusal codes', () => {
     expect(presentationErrorMessage(coded('no_slides', 'Presentation has no slides'))).toBe(NO_SLIDES_INDEX)
     expect(presentationErrorMessage(coded('invalid_image', 'Image is not supported'))).toMatch(/jpeg/)
+    expect(presentationErrorMessage(coded('invalid_office', 'Office file is not supported'))).toMatch(/pptx/i)
   })
 })

@@ -42,6 +42,20 @@ class Slide:
             pdf_page=page,
         )
 
+    @staticmethod
+    def office(position: int, source: str, text: str = "") -> "Slide":
+        return Slide(
+            id=uuid4(),
+            position=position,
+            source=source,
+            text=text,
+            formula_phrase="",
+            formula_latex="",
+            empty=False,
+            pdf_document_id=None,
+            pdf_page=None,
+        )
+
     def with_position(self, position: int) -> "Slide":
         return replace(self, position=position)
 

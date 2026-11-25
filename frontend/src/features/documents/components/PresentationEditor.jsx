@@ -3,11 +3,14 @@ import { parsePdfPageList } from '../logic/presentationPdfSlides'
 import { slideCardCaption, slideCountLabel } from '../logic/presentationEditorView'
 
 const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
+const OFFICE_ACCEPT =
+  '.pptx,.docx,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 export function PresentationEditor({ screen }) {
   const presentation = screen.editor
   const galleryRef = useRef(null)
   const cameraRef = useRef(null)
+  const officeRef = useRef(null)
   const readyPdfs = screen.readyPdfs ?? []
   const [pdfId, setPdfId] = useState(readyPdfs[0]?.id ?? '')
   const [pageList, setPageList] = useState('1')
@@ -73,6 +76,14 @@ export function PresentationEditor({ screen }) {
         >
           Камера
         </button>
+        <button
+          type="button"
+          className="btn btn-outline"
+          data-testid="slide-from-office"
+          onClick={() => officeRef.current?.click()}
+        >
+          PPTX / DOCX
+        </button>
         <input
           ref={galleryRef}
           type="file"
@@ -95,6 +106,17 @@ export function PresentationEditor({ screen }) {
             const selected = event.target.files
             event.target.value = ''
             if (selected?.length) screen.addGallerySlides(selected)
+          }}
+        />
+        <input
+          ref={officeRef}
+          type="file"
+          hidden
+          accept={OFFICE_ACCEPT}
+          onChange={(event) => {
+            const selected = event.target.files?.[0]
+            event.target.value = ''
+            if (selected) screen.addOfficeFile(selected)
           }}
         />
         {readyPdfs.length > 0 ? (

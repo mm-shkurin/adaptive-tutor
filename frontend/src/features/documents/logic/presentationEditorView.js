@@ -19,6 +19,7 @@ const ADD_REASON = {
   empty_add: 'Файл не выбран.',
   pdf_not_ready: 'PDF ещё не готов или недоступен.',
   pdf_page_missing: 'Такой страницы нет в выбранном PDF.',
+  invalid_office: 'Нужен файл PowerPoint (.pptx) или Word (.docx).',
 }
 
 export function slideCountLabel(count) {

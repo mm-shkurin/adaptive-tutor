@@ -35,7 +35,7 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | P5 | Mockups HTML screenshots / align-design | Frontend strip; after api-spec exists. |
 | P6 | Merging `features/presentations` → `dev` | Human order; AFK only `git push -u origin HEAD`. |
 | P9 | PDF-page slides index without PyMuPDF text yet | Add path stores metadata; index/OCR may leave those slides empty until text extract lands. |
-| P10 | PPTX/DOCX import | Not started this AFK. |
+| P10 | PPTX/DOCX import | **Done this AFK** — `PythonOfficeParser`, multipart `file`, virus gate, 40-slide cap, editor picker; tests use `FakeOfficeParser`. |
 | P11 | Formal hazard-scan + tiering-agent + spec-skeptic | Parked; Notes fold + provisional Tier markers only. |
 | P12 | Selenium for presentations / progress | Not run this AFK. |
 | P13 | Live OCR (Tesseract) in production | Still FakeOcr in context_build. |
