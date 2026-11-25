@@ -52,7 +52,9 @@ export function DocumentsLibrary({ screen, fileRef }) {
           type="button"
           className="upload-zone"
           onClick={() => {
-            if (presentationDoorResult().startsPdfUpload) fileRef.current?.click()
+            const door = presentationDoorResult()
+            if (door.opensEditor) screen.openPresentationEditor()
+            else if (door.startsPdfUpload) fileRef.current?.click()
           }}
         >
           <StrokeIcon name="screen" />

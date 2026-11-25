@@ -35,7 +35,7 @@ describe('uploadFile', () => {
     expect(uploadErrorMessage(coded('rate_limited', 'Rate limited'))).toBe(RATE_LIMITED)
   })
 
-  it('The presentation door does not upload a PDF', () => {
-    expect(presentationDoorResult()).toEqual({ startsPdfUpload: false })
+  it('The presentation door opens the editor without a PDF upload', () => {
+    expect(presentationDoorResult()).toEqual({ startsPdfUpload: false, opensEditor: true })
   })
 })

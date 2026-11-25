@@ -24,7 +24,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 
 ## Tier 1 — Frontend (after backend meeting point)
 
-- [ ] door opens editor
+- [x] door opens editor (UI 1.1 — createPresentation, PresentationEditor, vitest door)
 - [ ] (more from test-spec)
 
 ## Human later

@@ -155,6 +155,60 @@
   color: var(--danger);
 }
 
+.pres-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.pres-back:hover {
+  color: var(--text);
+}
+
+.pres-title-input {
+  width: 100%;
+  max-width: 520px;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.pres-title-input:focus {
+  border-color: var(--accent);
+}
+
+.slides-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.slides-count {
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  margin-left: auto;
+}
+
 @media (max-width: 800px) {
   .documents-page { padding: 20px 16px 88px; }
   .documents-page h1 { font-size: 26px; }

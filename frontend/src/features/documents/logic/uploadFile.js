@@ -34,7 +34,7 @@ export function uploadErrorMessage(error) {
 }
 
 export function presentationDoorResult() {
-  return { startsPdfUpload: false }
+  return { startsPdfUpload: false, opensEditor: true }
 }
 
 function isPdf(file) {

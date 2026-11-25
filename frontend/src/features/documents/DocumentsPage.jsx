@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { DocumentsLibrary } from './components/DocumentsLibrary'
+import { PresentationEditor } from './components/PresentationEditor'
 import { screenPhase } from './logic/screenPhase'
 import { useDocumentsScreen } from './useDocumentsScreen'
 
@@ -25,6 +26,9 @@ export function DocumentsPage() {
         </button>
       </main>
     )
+  }
+  if (screen.editor) {
+    return <PresentationEditor screen={screen} />
   }
   return <DocumentsLibrary screen={screen} fileRef={fileRef} />
 }

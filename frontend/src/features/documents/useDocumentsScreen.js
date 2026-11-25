@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
+import { createPresentation } from '../../shared/api/backend/presentationApi'
 import {
   isStreamOpenError,
   openDocumentStatusStream,
@@ -26,6 +27,7 @@ export function useDocumentsScreen() {
   const [screen, setScreen] = useState({ status: 'loading' })
   const [uploading, setUploading] = useState(false)
   const [refusal, setRefusal] = useState(null)
+  const [editor, setEditor] = useState(null)
   const lists = useRef(createListEpoch())
   const submission = useRef(createSubmission())
   const uploadAbort = useRef(null)
@@ -152,6 +154,26 @@ export function useDocumentsScreen() {
     }
   }
 
+  async function openPresentationEditor() {
+    if (screen.status !== 'ready' || editor) return
+    const controller = new AbortController()
+    try {
+      const presentation = await createPresentation(undefined, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(presentation)
+      setRefusal(null)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setRefusal(uploadErrorMessage(error))
+    }
+  }
+
+  function closeEditor() {
+    setEditor(null)
+    reconcileList()
+  }
+
   async function uploadPdf(file) {
     if (!file || screen.status !== 'ready') return
     const refused = uploadRefusal(file)
@@ -186,9 +208,12 @@ export function useDocumentsScreen() {
 
   return {
     ...screen,
+    editor,
     uploading,
     refusal,
     uploadPdf,
+    openPresentationEditor,
+    closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }
 }

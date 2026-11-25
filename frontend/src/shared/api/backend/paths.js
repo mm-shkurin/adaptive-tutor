@@ -30,4 +30,8 @@ export const BACKEND = {
     advance: (id) => `${V1}/quizzes/${id}/advance`,
     retries: (id) => `${V1}/quizzes/${id}/retries`,
   },
+  presentations: {
+    create: `${V1}/presentations`,
+    item: (id) => `${V1}/presentations/${id}`,
+  },
 }
