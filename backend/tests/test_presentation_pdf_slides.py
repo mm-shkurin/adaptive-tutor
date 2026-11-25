@@ -1,8 +1,11 @@
+import asyncio
 from uuid import uuid4
 
+import pymupdf
 import pytest
 
-from tests.presentation_flow import PDF_NOT_READY, add_pdf_pages, create
+from domain.document.document import Document
+from tests.presentation_flow import PDF_NOT_READY, add_pdf_pages, create, index, pieces
 from tests.quiz_flow import ada, neighbour, ready_pdf, unready_pdf
 from tests.support import bearer, build
 
@@ -56,6 +59,39 @@ def test_ready_pdf_pages_are_stored_as_pdf_page_slides():
     assert second["source"] == "pdf_page"
     assert second["pdf_page"] == 3
     assert second["position"] == 2
+
+
+def test_pdf_page_slide_index_yields_searchable_text():
+    bundle = build()
+    access, owner = ada(bundle)
+    content = _pdf_with_text({1: "mitochondria", 3: "chloroplast"})
+    document = Document.accepted("bio.pdf", len(content)).ready(3, 2)
+    asyncio.run(bundle.intake.store(owner, document, content, str(uuid4())))
+    presentation_id = create(bundle, access).json()["id"]
+    add_pdf_pages(bundle, access, presentation_id, document.id, [1, 3])
+    indexed = index(bundle, access, presentation_id, key="pdf-index-1")
+    assert indexed.status_code == 202
+    body = indexed.json()
+    assert body["status"] == "ready"
+    assert body["piece_count"] == 2
+    assert body["slides"][0]["empty"] is False
+    assert "mitochondria" in body["slides"][0]["text"]
+    stored = pieces(bundle, presentation_id)
+    assert "mitochondria" in stored[0]
+    assert any("chloroplast" in piece for piece in stored)
+
+
+def _pdf_with_text(page_texts: dict[int, str]) -> bytes:
+    document = pymupdf.open()
+    try:
+        last = max(page_texts)
+        for number in range(1, last + 1):
+            page = document.new_page()
+            if number in page_texts:
+                page.insert_text((72, 72), page_texts[number])
+        return document.tobytes()
+    finally:
+        document.close()
 
 
 def test_pdf_page_beyond_count_is_refused():

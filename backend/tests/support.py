@@ -149,7 +149,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         GetChat(chats, pieces, vectors),
         SendMessage(chats, search, tutor, clock),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
-        **wire_presentations(intake, pieces, presentations, ocr, virus, clock, quizzes, chats),
+        **wire_presentations(intake, pieces, presentations, ocr, virus, clock, quizzes, chats, files, reader),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(

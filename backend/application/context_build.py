@@ -130,6 +130,8 @@ def production_context(settings: Settings) -> AppContext:
             clock,
             quizzes,
             chats,
+            files,
+            reader,
         ),
     )
 

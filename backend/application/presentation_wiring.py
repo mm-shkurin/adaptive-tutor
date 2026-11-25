@@ -9,7 +9,7 @@ from usecase.presentation.patch_presentation import PatchPresentation
 from usecase.presentation.progress_materials import IntakeMaterials
 
 
-def wire_presentations(documents, pieces, presentations, ocr, virus, clock, quizzes, chats) -> dict:
+def wire_presentations(documents, pieces, presentations, ocr, virus, clock, quizzes, chats, files, reader) -> dict:
     materials = IntakeMaterials(documents)
     activity = QuizChatActivity(quizzes, chats)
     return {
@@ -18,6 +18,6 @@ def wire_presentations(documents, pieces, presentations, ocr, virus, clock, quiz
         "patch_presentation": PatchPresentation(presentations, documents),
         "delete_presentation": DeletePresentation(presentations, documents, pieces),
         "add_slides": AddSlides(presentations, documents, virus),
-        "index_presentation": IndexPresentation(presentations, documents, pieces, ocr),
+        "index_presentation": IndexPresentation(presentations, documents, pieces, ocr, files, reader),
         "get_progress": GetProgress(materials, activity, clock),
     }
