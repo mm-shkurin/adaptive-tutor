@@ -22,10 +22,10 @@ Blocks A–D done in this session. Block E: push without `:dev`.
 
 | # | Item | When |
 |---|------|------|
-| H1 | Merge `features/chat` → `dev` | Before quizzes → `dev` |
-| H2 | Merge `features/quizzes` → `dev` (after H1) | Story close |
-| H3 | `/spec-skeptic 7 spec` until not `block` | Before calling story-spec final |
-| H4 | `/demo` headed smoke on quizzes (or skip deliberately) | After A–B |
+| H1 | Merge `features/chat` → `dev` | **done** 2026-11-25 (`6fb5ac9` on `dev`) |
+| H2 | Merge `features/quizzes` → `dev` (after H1) | **done** 2026-11-25 (`a0656fb` on `dev`) |
+| H3 | `/spec-skeptic 7 spec` until not `block` | Optional before calling story-spec final |
+| H4 | `/demo` headed smoke on quizzes (or skip deliberately) | Manual poke |
 | H5 | Confirm or override AFK defaults table below | Anytime |
 
 If H3 still blocks: keep AFK defaults; do not invent new product rules.
