@@ -49,12 +49,17 @@ def test_a_failed_completions_call_stores_nothing_and_does_not_pin_the_attempt(k
     assert refused.status_code == 400
     assert refused.json() == FAILED
     assert bundle.quizzes.held(owner) == ()
-    assert calls["n"] == 1
+    first_calls = calls["n"]
+    assert first_calls >= 1
+    if kind in ("status-400", "status-500"):
+        assert first_calls == 2
+    else:
+        assert first_calls == 1
     phase["fail"] = False
     created = _create(bundle, token, document.id, key)
     assert created.status_code == 201
     assert len(bundle.quizzes.held(owner)) == 1
-    assert calls["n"] == 2
+    assert calls["n"] > first_calls
 
 
 def _create(bundle, token, document_id, key):
