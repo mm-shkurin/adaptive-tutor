@@ -13,6 +13,7 @@ Mode: sequential blocks A→E; no mid-loop questions. Problems land here; work c
 | P4 | `/demo` headed smoke | human | Skipped in AFK by design |
 | P5 | 3.2 `green-frontend` / `green-frontend-api` | low | Selenium covers double-generate; no separate vitest for createLock yet |
 | P6 | `check_repo_rules.py --scope front` line-cap | pre-existing | Failures include `useQuizzesScreen.js` (299), `quiz.css` (410), `quizView.test.js` (249) plus chat/docs files — not introduced by Block A; split later |
+| P7 | Docker backend image stale migrations | fixed 2026-11-25 | Rebuild `adaptive-tutor-backend:local` so alembic sees `0011`/`0012`; poke via gateway `:80` + API `:8010` |
 
 ## Session log
 
