@@ -157,6 +157,7 @@ def _json(document: Document) -> dict:
     return {
         "id": str(document.id),
         "name": document.name,
+        "kind": document.kind,
         "size_bytes": document.size_bytes,
         "page_count": document.page_count,
         "piece_count": document.piece_count,

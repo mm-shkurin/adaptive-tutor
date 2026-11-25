@@ -21,6 +21,20 @@ from usecase.chat.errors import ChatNotFound
 from usecase.chat.errors import NoReadyDocument
 from usecase.chat.errors import StoreUnavailable as ChatStoreUnavailable
 from usecase.document.errors import DocumentNotFound, InvalidDocument, RateLimited, RateUnavailable
+from domain.presentation.errors import (
+    EmptyAdd,
+    FileTooLarge,
+    InvalidImage,
+    InvalidSlideOrder,
+    NoSlides,
+    TextOnDraftBytes,
+    TitleTooLong,
+    TooManySlides,
+    UnknownSlide,
+)
+from usecase.presentation.errors import PresentationNotFound
+from usecase.presentation.errors import StoreUnavailable as PresentationStoreUnavailable
+from usecase.presentation.get_progress import ProgressNotFound
 from usecase.quiz.errors import QuizNotFound
 from usecase.quiz.errors import StoreUnavailable as QuizStoreUnavailable
 from usecase.document.errors import StoreUnavailable as DocumentStoreUnavailable
@@ -54,6 +68,19 @@ _QUIZ_KEY = {"code": "invalid_idempotency_key", "message": "Idempotency key is n
 _NO_ATTEMPT = {"code": "no_open_attempt", "message": "No open attempt"}
 _UNANSWERED = {"code": "unanswered", "message": "The question is not answered"}
 _QUIZ_STORE = {"code": "unavailable", "message": "Quiz store is unavailable"}
+_PRESENTATION_MISSING = {"code": "presentation_not_found", "message": "Presentation was not found"}
+_PROGRESS_MISSING = {"code": "progress_not_found", "message": "Progress was not found"}
+_NO_SLIDES = {"code": "no_slides", "message": "Presentation has no slides"}
+_TOO_MANY = {"code": "too_many_slides", "message": "More than 40 slides"}
+_TOO_LARGE = {"code": "file_too_large", "message": "File is too large"}
+_VIRUS = {"code": "virus_detected", "message": "Virus detected"}
+_BAD_IMAGE = {"code": "invalid_image", "message": "Image is not supported"}
+_TITLE_LONG = {"code": "title_too_long", "message": "Title is too long"}
+_UNKNOWN_SLIDE = {"code": "unknown_slide", "message": "Slide was not found"}
+_BAD_ORDER = {"code": "invalid_slide_order", "message": "Slide order is not valid"}
+_TEXT_DRAFT = {"code": "text_on_draft_bytes", "message": "Text edit waits for indexing"}
+_EMPTY_ADD = {"code": "empty_add", "message": "No slide payload was sent"}
+_PRESENTATION_STORE = {"code": "unavailable", "message": "Presentation store is unavailable"}
 
 
 def register_errors(app: FastAPI) -> None:
@@ -81,6 +108,18 @@ def register_errors(app: FastAPI) -> None:
     app.add_exception_handler(NoOpenAttempt, _status(400, _NO_ATTEMPT))
     app.add_exception_handler(Unanswered, _status(400, _UNANSWERED))
     app.add_exception_handler(QuizStoreUnavailable, _status(503, _QUIZ_STORE))
+    app.add_exception_handler(PresentationNotFound, _status(404, _PRESENTATION_MISSING))
+    app.add_exception_handler(ProgressNotFound, _status(404, _PROGRESS_MISSING))
+    app.add_exception_handler(NoSlides, _status(400, _NO_SLIDES))
+    app.add_exception_handler(TooManySlides, _status(400, _TOO_MANY))
+    app.add_exception_handler(FileTooLarge, _status(400, _TOO_LARGE))
+    app.add_exception_handler(InvalidImage, _status(400, _BAD_IMAGE))
+    app.add_exception_handler(TitleTooLong, _status(400, _TITLE_LONG))
+    app.add_exception_handler(UnknownSlide, _status(400, _UNKNOWN_SLIDE))
+    app.add_exception_handler(InvalidSlideOrder, _status(400, _BAD_ORDER))
+    app.add_exception_handler(TextOnDraftBytes, _status(400, _TEXT_DRAFT))
+    app.add_exception_handler(EmptyAdd, _status(400, _EMPTY_ADD))
+    app.add_exception_handler(PresentationStoreUnavailable, _status(503, _PRESENTATION_STORE))
     app.add_exception_handler(InvalidDocument, _invalid_document)
     app.add_exception_handler(RateLimited, _rate_refusal)
     app.add_exception_handler(RateUnavailable, _rate_refusal)

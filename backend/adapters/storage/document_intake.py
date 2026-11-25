@@ -36,6 +36,7 @@ class PostgresDocumentIntake(DocumentIntake):
                 owner_id=owner_id,
                 idempotency_key=submission_key,
                 name=document.name,
+                kind=document.kind,
                 size_bytes=document.size_bytes,
                 page_count=document.page_count,
                 piece_count=document.piece_count,
@@ -136,6 +137,40 @@ class PostgresDocumentIntake(DocumentIntake):
             return tuple(row.to_domain() for row in rows[:PAGE_SIZE]), len(rows) > PAGE_SIZE
 
         return await self._run(work)
+
+    async def upsert(self, owner_id: UUID, document: Document) -> None:
+        async def work(session):
+            row = await session.get(DocumentRow, document.id)
+            if row is None:
+                session.add(
+                    DocumentRow(
+                        id=document.id,
+                        owner_id=owner_id,
+                        idempotency_key=f"presentation:{document.id}",
+                        name=document.name,
+                        kind=document.kind,
+                        size_bytes=document.size_bytes,
+                        page_count=document.page_count,
+                        piece_count=document.piece_count,
+                        status=document.status,
+                        error=document.error,
+                        body=None,
+                        created_at=datetime.now(timezone.utc),
+                    )
+                )
+                return
+            row.apply(document)
+
+        await self._run(work)
+
+    async def remove(self, owner_id: UUID, document_id: UUID) -> None:
+        async def work(session):
+            row = await session.get(DocumentRow, document_id)
+            if row is None or row.owner_id != owner_id:
+                return
+            await session.delete(row)
+
+        await self._run(work)
 
     async def _run(self, work):
         try:

@@ -105,6 +105,34 @@ class MemoryDocumentIntake:
         self.rows[document_id] = (row[0], claimed)
         return claimed, self.bodies[document_id]
 
+    async def upsert(self, owner_id: UUID, document: Document) -> None:
+        async def action():
+            async with self._lock:
+                existing = self.rows.get(document.id)
+                if existing is None:
+                    self.rows[document.id] = (owner_id, document)
+                    self._next_seq += 1
+                    self._created_at[document.id] = self._now() + timedelta(microseconds=self._next_seq)
+                    self._order.append(document.id)
+                else:
+                    self.rows[document.id] = (owner_id, document)
+
+        await self._guard(action)
+
+    async def remove(self, owner_id: UUID, document_id: UUID) -> None:
+        async def action():
+            async with self._lock:
+                row = self.rows.get(document_id)
+                if row is None or row[0] != owner_id:
+                    return
+                del self.rows[document_id]
+                self.bodies.pop(document_id, None)
+                self._created_at.pop(document_id, None)
+                if document_id in self._order:
+                    self._order.remove(document_id)
+
+        await self._guard(action)
+
     async def list_page(
         self, owner_id: UUID, page: int, after: UUID | None = None
     ) -> tuple[tuple[Document, ...], bool]:

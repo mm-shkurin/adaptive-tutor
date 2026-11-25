@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: Presentations of the signed-in person
+  version: 1.0.0
+  description: |
+    Черновик слайдов, добавление, порядок, индексация, правка текста, удаление.
+    Байты фото/офиса после индекса не хранятся. OCR и LLM в проде; в тестах подмена.
+
+paths:
+  /api/v1/presentations:
+    post:
+      summary: Создать черновик презентации
+      operationId: createPresentation
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 80
+                  description: После trim. Пустой → «Новая презентация».
+      responses:
+        '201':
+          description: Черновик создан, status draft, слайдов 0.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '404':
+          description: Нет сессии. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/presentations/{id}:
+    get:
+      summary: Своя презентация со слайдами
+      operationId: getPresentation
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+      responses:
+        '200':
+          description: Презентация владельца.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '404':
+          description: Нет сессии, нет id или чужая. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    patch:
+      summary: Название, порядок, текст слайдов
+      operationId: patchPresentation
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PresentationPatch' }
+      responses:
+        '200':
+          description: Обновлённая презентация.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '400':
+          description: |
+            code один из: title_too_long, title_empty, invalid_slide_order,
+            unknown_slide, text_on_draft_bytes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Нет сессии / нет id / чужая. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    delete:
+      summary: Удалить презентацию, куски и векторы
+      operationId: deletePresentation
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+      responses:
+        '204':
+          description: Удалена. Чаты и попытки викторин не каскадятся.
+        '404':
+          description: Нет сессии / нет id / чужая. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/presentations/{id}/slides:
+    post:
+      summary: Добавить слайды (фото, PDF-страницы, PPTX, DOCX)
+      operationId: addPresentationSlides
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items: { type: string, format: binary }
+                  description: jpeg/png/webp, каждый ≤ 52428800 байт.
+                file:
+                  type: string
+                  format: binary
+                  description: Один PPTX или DOCX ≤ 52428800 байт.
+                pdf_document_id:
+                  type: string
+                  format: uuid
+                  description: Свой ready PDF.
+                pdf_pages:
+                  type: string
+                  description: |
+                    JSON-массив номеров страниц (1-based) этого PDF.
+                    Добавляются в конец в порядке массива.
+      responses:
+        '200':
+          description: Презентация после добавления.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '400':
+          description: |
+            code один из: file_missing, invalid_image, invalid_office,
+            file_too_large, virus_detected, pdf_not_ready, pdf_page_missing,
+            slide_limit, empty_add.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Нет сессии / нет презентации / чужая. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/presentations/{id}/slides/{slide_id}:
+    delete:
+      summary: Убрать один слайд
+      operationId: deletePresentationSlide
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+        - name: slide_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Презентация без этого слайда.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '404':
+          description: Нет сессии / нет презентации или слайда / чужая.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/presentations/{id}/index:
+    post:
+      summary: Индексировать 1–40 слайдов
+      operationId: indexPresentation
+      tags: [presentations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PresentationId'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '202':
+          description: Индексация принята; status waiting|indexing. Список материалов уже содержит строку.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '200':
+          description: Тот же Idempotency-Key — тот же прогон, без второго индекса.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Presentation' }
+        '400':
+          description: |
+            code один из: no_slides, too_many_slides, title_empty.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Нет сессии / нет id / чужая. code presentation_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  parameters:
+    PresentationId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Presentation:
+      type: object
+      required: [id, title, status, slide_count, slides, error]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, maxLength: 80 }
+        status:
+          type: string
+          enum: [draft, waiting, indexing, ready, failed]
+        slide_count: { type: integer, minimum: 0, maximum: 40 }
+        piece_count:
+          type: integer
+          nullable: true
+          description: Только у ready; иначе null.
+        error:
+          type: string
+          nullable: true
+        slides:
+          type: array
+          maxItems: 40
+          items: { $ref: '#/components/schemas/Slide' }
+    Slide:
+      type: object
+      required: [id, position, source, text, formula_phrase, formula_latex, empty]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, minimum: 1 }
+        source:
+          type: string
+          enum: [image, pdf_page, pptx, docx]
+        text:
+          type: string
+          description: Распознанный или извлечённый текст. У draft-image может быть пустым до индекса.
+        formula_phrase: { type: string, nullable: true }
+        formula_latex: { type: string, nullable: true }
+        empty:
+          type: boolean
+          description: true если после индекса в поиск не попал.
+        pdf_document_id: { type: string, format: uuid, nullable: true }
+        pdf_page: { type: integer, nullable: true, minimum: 1 }
+    PresentationPatch:
+      type: object
+      properties:
+        title: { type: string, maxLength: 80 }
+        slide_order:
+          type: array
+          items: { type: string, format: uuid }
+          description: Полный перечень id слайдов в новом порядке.
+        slides:
+          type: array
+          items:
+            type: object
+            required: [id, text]
+            properties:
+              id: { type: string, format: uuid }
+              text: { type: string }
+              formula_phrase: { type: string, nullable: true }
+              formula_latex: { type: string, nullable: true }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message:
+          type: string
+          description: Без байтов файла, чужих данных, секрета, стека и пути.

@@ -171,26 +171,36 @@ components:
   schemas:
     Document:
       type: object
-      required: [id, name, size_bytes, page_count, piece_count, status, error]
+      required: [id, name, kind, size_bytes, page_count, piece_count, status, error]
       properties:
         id: { type: string, format: uuid }
+        kind:
+          type: string
+          enum: [pdf, presentation]
+          description: |
+            pdf — обычная загрузка истории 2.
+            presentation — строка презентации (история 3); size_bytes может быть 0 у draft.
         name:
           type: string
           minLength: 1
           description: |
-            Имя файла после NFC. Лимит — 255 графемных кластеров
-            (буква с диакритикой — одна). Не режется посередине буквы.
+            Имя файла после NFC (pdf) или название презентации.
+            PDF: лимит 255 графемных кластеров. Презентация: до 80 символов.
             Показано как текст, не как разметка.
         size_bytes:
           type: integer
-          minimum: 1048576
+          minimum: 0
           maximum: 52428800
-          description: Ровно столько байт, сколько приняли. Экран сам переводит в МБ.
+          description: |
+            PDF: ровно столько байт, сколько приняли (минимум 1048576 при upload).
+            presentation: 0 у draft; иначе сумма принятых байт слайдов до стирания.
         page_count:
           type: integer
           nullable: true
           minimum: 0
-          description: null, пока страницы не прочитаны.
+          description: |
+            PDF: null, пока страницы не прочитаны.
+            presentation: число слайдов (синоним slide_count на списке), null до первого сохранения слайдов не требуется — 0 допустим.
         piece_count:
           type: integer
           nullable: true
@@ -199,9 +209,10 @@ components:
           description: Число только у ready. Иначе null. У failed кусков в поиске нет.
         status:
           type: string
-          enum: [waiting, indexing, ready, failed]
+          enum: [draft, waiting, indexing, ready, failed]
           description: |
-            Вперёд только waiting → indexing → ready или waiting → indexing → failed.
+            PDF: waiting → indexing → ready|failed (draft не используется).
+            presentation: draft → waiting → indexing → ready|failed.
         error:
           type: string
           nullable: true

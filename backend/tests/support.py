@@ -9,6 +9,7 @@ from adapters.http.document_status_hub import DocumentStatusHub
 from adapters.memory.account_store import MemoryAccountStore
 from adapters.memory.chat_store import MemoryChatStore
 from adapters.memory.material_search import MemoryMaterialSearch
+from adapters.memory.presentation_store import MemoryPresentationStore
 from adapters.memory.quiz_store import MemoryQuizStore
 from adapters.memory.quiz_tutor import ScriptedQuizTutor
 from adapters.search.unready_material_search import UnreadyMaterialSearch
@@ -23,7 +24,9 @@ from adapters.pdfreader.pdf_reader import PyPdfReader
 from adapters.tokens.jwt_tokens import JwtTokens
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
+from application.presentation_wiring import wire_presentations
 from application.quiz_wiring import wire_quizzes
+from usecase.tests.fake.presentation.fake_ocr import FakeOcr
 from domain.account.identity import ProviderIdentity
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
@@ -89,6 +92,10 @@ class Bundle:
     quiz_tutor: ScriptedQuizTutor
     quizzes: MemoryQuizStore
     chats: MemoryChatStore
+    presentations: MemoryPresentationStore
+    pieces: MemoryPieceIndex
+    ocr: FakeOcr
+    virus: FakeVirusCheck
 
 
 def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bundle:
@@ -112,10 +119,13 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     intake = NotifyingDocumentIntake(MemoryDocumentIntake(bodies), hub)
     files = MemoryFileStore(bodies)
     pieces = MemoryPieceIndex()
+    virus = FakeVirusCheck()
     reader = PyPdfReader()
     chats = MemoryChatStore()
     search = MemoryMaterialSearch()
     quizzes = MemoryQuizStore()
+    presentations = MemoryPresentationStore()
+    ocr = FakeOcr()
     quiz_tutor = quiz_tutor or ScriptedQuizTutor()
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
@@ -123,7 +133,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         SessionService(store, tokens, MemoryRevocations()),
         ProfileService(store, "http://testserver", (QuizWipe(quizzes),)),
         store,
-        SubmitDocument(intake, rates, FakeVirusCheck()),
+        SubmitDocument(intake, rates, virus),
         ReadDocument(intake),
         ListDocuments(intake),
         IndexDocuments(intake, files, reader, pieces),
@@ -134,9 +144,12 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         GetChat(chats, pieces, UnreadyMaterialSearch()),
         SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
+        **wire_presentations(intake, pieces, presentations, ocr, virus, clock),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
-    return Bundle(client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes, chats)
+    return Bundle(
+        client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes, chats, presentations, pieces, ocr, virus
+    )
 
 
 def allow(bundle: Bundle, code: str, subject: str, email: str, name: str) -> None:

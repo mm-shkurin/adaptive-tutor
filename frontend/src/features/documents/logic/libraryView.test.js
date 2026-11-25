@@ -4,6 +4,7 @@ import { libraryView } from './libraryView'
 const readyDocument = {
   id: '11111111-1111-1111-1111-111111111111',
   name: 'Матанализ.pdf',
+  kind: 'pdf',
   size_bytes: 8703180,
   page_count: 98,
   piece_count: 67,
@@ -14,6 +15,7 @@ const readyDocument = {
 const waitingDocument = {
   id: '22222222-2222-2222-2222-222222222222',
   name: 'Алгебра.pdf',
+  kind: 'pdf',
   size_bytes: 4299161,
   page_count: null,
   piece_count: null,
@@ -54,6 +56,7 @@ describe('libraryView', () => {
     const failed = {
       id: '33333333-3333-3333-3333-333333333333',
       name: 'Методичка.pdf',
+      kind: 'pdf',
       size_bytes: 2202009,
       page_count: null,
       piece_count: null,

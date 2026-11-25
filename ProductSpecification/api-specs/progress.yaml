@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Progress of the signed-in person
+  version: 1.0.0
+  description: |
+    Экран «Ваш прогресс». Узлы тем без рёбер. Weak = mastery &lt; 40%.
+    Сессия за неделю — отдельный активный день (чат-сообщение или завершённая викторина).
+
+paths:
+  /api/v1/progress:
+    get:
+      summary: Сводка прогресса владельца
+      operationId: getProgress
+      tags: [progress]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: material
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+          description: |
+            Фильтр по одному своему материалу (PDF или презентация).
+            Без параметра — все свои материалы.
+      responses:
+        '200':
+          description: Сводка для экрана прогресса.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Progress' }
+        '404':
+          description: |
+            Нет сессии, или material чужой/отсутствует.
+            code progress_not_found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  schemas:
+    Progress:
+      type: object
+      required:
+        - average_mastery
+        - weak_topic_count
+        - sessions_this_week
+        - quizzes_finished
+        - topics
+        - weak_topics
+        - activity
+        - materials
+      properties:
+        average_mastery:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Среднее усвоение по темам в фильтре; 0 если тем нет.
+        weak_topic_count:
+          type: integer
+          minimum: 0
+          description: Число тем с mastery &lt; 40.
+        sessions_this_week:
+          type: integer
+          minimum: 0
+          maximum: 7
+          description: Число различных активных дней за последние 7 локальных полуночей.
+        quizzes_finished:
+          type: integer
+          minimum: 0
+        topics:
+          type: array
+          items: { $ref: '#/components/schemas/TopicNode' }
+        weak_topics:
+          type: array
+          items: { $ref: '#/components/schemas/TopicNode' }
+          description: Только mastery &lt; 40.
+        activity:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/ActivityItem' }
+        materials:
+          type: array
+          items: { $ref: '#/components/schemas/MaterialChip' }
+    TopicNode:
+      type: object
+      required: [id, name, mastery, material_id, band]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        mastery: { type: number, minimum: 0, maximum: 100 }
+        material_id: { type: string, format: uuid }
+        band:
+          type: string
+          enum: [mastered, medium, weak]
+          description: mastered ≥70, medium 40–69, weak &lt;40.
+    ActivityItem:
+      type: object
+      required: [at, kind, title]
+      properties:
+        at: { type: string, format: date-time }
+        kind:
+          type: string
+          enum: [chat, quiz, examiner, presentation, document]
+        title: { type: string }
+    MaterialChip:
+      type: object
+      required: [id, name, kind]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind: { type: string, enum: [pdf, presentation] }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }

@@ -10,6 +10,7 @@ class InvalidStatusTransition(Exception):
 class Document:
     id: UUID
     name: str
+    kind: str
     size_bytes: int
     page_count: int | None
     piece_count: int | None
@@ -21,10 +22,26 @@ class Document:
         return Document(
             id=uuid4(),
             name=name,
+            kind="pdf",
             size_bytes=size_bytes,
             page_count=None,
             piece_count=None,
             status="waiting",
+            error=None,
+        )
+
+    @staticmethod
+    def presentation_row(
+        presentation_id: UUID, title: str, status: str, piece_count: int | None, size_bytes: int = 0
+    ) -> "Document":
+        return Document(
+            id=presentation_id,
+            name=title,
+            kind="presentation",
+            size_bytes=size_bytes,
+            page_count=None,
+            piece_count=piece_count,
+            status=status,
             error=None,
         )
 

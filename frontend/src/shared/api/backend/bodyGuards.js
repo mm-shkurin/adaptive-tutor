@@ -17,13 +17,16 @@ export function isProfileBody(value) {
   )
 }
 
-const DOCUMENT_STATUSES = new Set(['waiting', 'indexing', 'ready', 'failed'])
+const DOCUMENT_STATUSES = new Set(['waiting', 'indexing', 'ready', 'failed', 'draft'])
+const DOCUMENT_KINDS = new Set(['pdf', 'presentation'])
 
 export function isDocumentBody(value) {
   return (
     isRecord(value) &&
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
+    typeof value.kind === 'string' &&
+    DOCUMENT_KINDS.has(value.kind) &&
     typeof value.size_bytes === 'number' &&
     (value.page_count === null || typeof value.page_count === 'number') &&
     (value.piece_count === null || typeof value.piece_count === 'number') &&

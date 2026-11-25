@@ -12,6 +12,7 @@ import {
 const ready = {
   id: '11111111-1111-1111-1111-111111111111',
   name: 'Матанализ.pdf',
+  kind: 'pdf',
   size_bytes: 1048576,
   page_count: 12,
   piece_count: 4,
@@ -22,6 +23,7 @@ const ready = {
 const waiting = {
   id: '22222222-2222-2222-2222-222222222222',
   name: 'Алгебра.pdf',
+  kind: 'pdf',
   size_bytes: 2097152,
   page_count: null,
   piece_count: null,

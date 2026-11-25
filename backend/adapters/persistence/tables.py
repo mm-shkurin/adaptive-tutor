@@ -1,18 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Integer,
-    LargeBinary,
-    String,
-    Text,
-    UniqueConstraint,
-    Uuid,
-)
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -62,16 +51,13 @@ class AvatarRow(Base):
 
 class DocumentRow(Base):
     __tablename__ = "documents"
-    __table_args__ = (
-        UniqueConstraint(
-            "owner_id", "idempotency_key", name="documents_owner_idempotency_key_uq"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("owner_id", "idempotency_key", name="documents_owner_idempotency_key_uq"),)
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     owner_id: Mapped[UUID] = mapped_column(index=True)
     idempotency_key: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(String(16), server_default="pdf")
     size_bytes: Mapped[int] = mapped_column(Integer)
     page_count: Mapped[int | None] = mapped_column(Integer)
     piece_count: Mapped[int | None] = mapped_column(Integer)
@@ -86,6 +72,7 @@ class DocumentRow(Base):
         return Document(
             id=self.id,
             name=self.name,
+            kind=self.kind,
             size_bytes=self.size_bytes,
             page_count=self.page_count,
             piece_count=self.piece_count,
@@ -96,6 +83,7 @@ class DocumentRow(Base):
     def apply(self, document) -> None:
         chosen = self.to_domain().prefer_terminal(document)
         self.name = chosen.name
+        self.kind = chosen.kind
         self.size_bytes = chosen.size_bytes
         self.page_count = chosen.page_count
         self.piece_count = chosen.piece_count
