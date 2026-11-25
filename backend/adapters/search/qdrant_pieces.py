@@ -65,4 +65,9 @@ class QdrantPieces:
 def _source(hit: dict) -> Source:
     payload = hit["payload"]
     page = payload.get("page")
-    return Source(page if isinstance(page, int) else None, payload["text"])
+    slide = payload.get("slide")
+    return Source(
+        page if isinstance(page, int) else None,
+        payload["text"],
+        slide if isinstance(slide, int) else None,
+    )

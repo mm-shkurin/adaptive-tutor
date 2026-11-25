@@ -13,7 +13,12 @@ class PostgresPieceIndex(PieceIndex):
         self._sessions = sessions
 
     async def replace(
-        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+        self,
+        document_id: UUID,
+        pieces: tuple[str, ...],
+        extracted: str,
+        pages: tuple[int | None, ...] = (),
+        slides: tuple[int | None, ...] = (),
     ) -> None:
         async def work(session):
             await session.execute(delete(DocumentPieceRow).where(DocumentPieceRow.document_id == document_id))
@@ -23,7 +28,12 @@ class PostgresPieceIndex(PieceIndex):
             session.add(DocumentExtractionRow(document_id=document_id, text=extracted))
             for ordinal, body in enumerate(pieces):
                 page = pages[ordinal] if ordinal < len(pages) else None
-                session.add(DocumentPieceRow(document_id=document_id, ordinal=ordinal, body=body, page=page))
+                slide = slides[ordinal] if ordinal < len(slides) else None
+                session.add(
+                    DocumentPieceRow(
+                        document_id=document_id, ordinal=ordinal, body=body, page=page, slide=slide
+                    )
+                )
 
         await self._run(work)
 
@@ -37,7 +47,7 @@ class PostgresPieceIndex(PieceIndex):
                 .where(DocumentPieceRow.document_id == document_id)
                 .order_by(DocumentPieceRow.ordinal)
             )
-            return tuple(PlacedPiece(row.body, row.page) for row in rows)
+            return tuple(PlacedPiece(row.body, row.page, row.slide) for row in rows)
 
         return await self._run(work)
 

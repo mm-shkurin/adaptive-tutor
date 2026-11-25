@@ -62,7 +62,8 @@ export function isSourceBody(value) {
   return (
     isRecord(value) &&
     typeof value.text === 'string' &&
-    (value.page === null || value.page === undefined || typeof value.page === 'number')
+    (value.page === null || value.page === undefined || typeof value.page === 'number') &&
+    (value.slide === null || value.slide === undefined || typeof value.slide === 'number')
   )
 }
 

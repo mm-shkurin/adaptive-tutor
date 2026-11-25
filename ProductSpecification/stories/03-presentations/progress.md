@@ -30,6 +30,14 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] index no_slides refusal (UI 1.3 — indexPresentation, pres-index, pres-refusal)
 - [ ] index → list row (UI 1.4 — selenium / reconcile after index)
 
+## Integration seam (chat slide citation)
+
+- [x] `Source.slide` + piece index slide column (migration `0015`)
+- [x] presentation index stores slide position + pdf_page as `page`
+- [x] pytest `test_presentation_chat.py` (ready slide cite, draft bind refused, PDF page-only)
+- [x] frontend `chatView` / `isSourceBody` — «Слайд N» without breaking PDF
+- [ ] quiz slide citation (Story 3 §2.2 — TODO; quiz stays page-only per story 7 notes)
+
 ## Human later
 
 - [ ] Override or confirm AFK defaults D1–D5

@@ -99,6 +99,7 @@ def _point(document_id: UUID, ordinal: int, piece: PlacedPiece, vector: tuple[fl
             "ordinal": ordinal,
             "text": piece.text,
             "page": piece.page,
+            "slide": piece.slide,
         },
     }
 

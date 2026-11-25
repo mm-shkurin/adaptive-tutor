@@ -30,8 +30,20 @@ export function pageCitation(page) {
   return `страница ${page}`
 }
 
-export function sourcePageLabel(page) {
-  return pageCitation(page)
+export function sourcePageLabel(source) {
+  if (source == null) return null
+  if (typeof source === 'number') return pageCitation(source)
+  if (source.slide != null) {
+    if (source.page != null) return `Слайд ${source.slide}, стр. ${source.page}`
+    return `Слайд ${source.slide}`
+  }
+  return pageCitation(source.page ?? null)
+}
+
+export function replyCitation(line) {
+  const source = line.sources?.[0]
+  if (source?.slide != null) return sourcePageLabel(source)
+  return pageCitation(line.page ?? source?.page ?? null)
 }
 
 export function chatListRows(summaries) {
@@ -52,7 +64,7 @@ export function threadLines(lines) {
     text: line.text,
     model: line.model ?? null,
     kind: line.kind ?? null,
-    citation: line.role === 'tutor' ? pageCitation(line.page ?? null) : null,
+    citation: line.role === 'tutor' ? replyCitation(line) : null,
     page: line.page ?? null,
     choices: active && line.id === active.id ? line.choices ?? [] : [],
     gradeLabel: gradeLabel(line),
@@ -107,7 +119,7 @@ export function sourcesFromLines(lines) {
   if (!tutor?.sources?.length) return []
   return tutor.sources.map((source, index) => ({
     key: `${tutor.id}-${index}`,
-    pageLabel: sourcePageLabel(source.page ?? null),
+    pageLabel: sourcePageLabel(source),
     text: source.text,
   }))
 }

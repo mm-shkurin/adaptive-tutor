@@ -9,6 +9,7 @@ class IndexProbe:
     def __init__(self):
         self._pieces: dict[str, tuple[str, ...]] = {}
         self._pages: dict[str, tuple[int | None, ...]] = {}
+        self._slides: dict[str, tuple[int | None, ...]] = {}
         self._extracted: dict[str, str] = {}
         self._files: dict[str, bytes] = {}
         self._piece_write_counts: dict[str, int] = {}
@@ -51,10 +52,16 @@ class IndexProbe:
         return self._files.get(document_id)
 
     def replace_pieces(
-        self, document_id: str, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+        self,
+        document_id: str,
+        pieces: tuple[str, ...],
+        extracted: str,
+        pages: tuple[int | None, ...] = (),
+        slides: tuple[int | None, ...] = (),
     ) -> None:
         self._pieces[document_id] = pieces
         self._pages[document_id] = pages
+        self._slides[document_id] = slides
         self._extracted[document_id] = extracted
         self._replace_counts[document_id] = self._replace_counts.get(document_id, 0) + 1
         self._piece_write_counts[document_id] = self._piece_write_counts.get(document_id, 0) + 1

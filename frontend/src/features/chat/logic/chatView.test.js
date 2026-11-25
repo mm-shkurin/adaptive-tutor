@@ -5,6 +5,7 @@ import {
   isWithholding,
   openExaminerQuestion,
   pageCitation,
+  replyCitation,
   sourcePageLabel,
   sourcesFromLines,
   threadLines,
@@ -15,7 +16,18 @@ describe('chatView', () => {
     expect(pageCitation(5)).toBe('страница 5')
     expect(pageCitation(5)).not.toMatch(/слайд/i)
     expect(pageCitation(null)).toBeNull()
-    expect(sourcePageLabel(12)).toBe('страница 12')
+    expect(sourcePageLabel({ page: 12 })).toBe('страница 12')
+  })
+
+  it('formats slide citations for presentations', () => {
+    expect(sourcePageLabel({ slide: 1, page: null })).toBe('Слайд 1')
+    expect(sourcePageLabel({ slide: 2, page: 5 })).toBe('Слайд 2, стр. 5')
+    expect(
+      replyCitation({
+        page: null,
+        sources: [{ slide: 1, page: null, text: 't' }],
+      }),
+    ).toBe('Слайд 1')
   })
 
   it('maps person and tutor lines with model and page', () => {
@@ -43,6 +55,16 @@ describe('chatView', () => {
       model: 'qwen/qwen3-32b',
       citation: 'страница 5',
     })
+    expect(
+      threadLines([
+        {
+          id: 't2',
+          role: 'tutor',
+          text: 'Ответ',
+          sources: [{ slide: 3, page: null, text: 'deck' }],
+        },
+      ])[0].citation,
+    ).toBe('Слайд 3')
     expect(sourcesFromLines([
       { id: 'p1', role: 'person', text: 'q' },
       {

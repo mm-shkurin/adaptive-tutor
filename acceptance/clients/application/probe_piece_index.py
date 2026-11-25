@@ -10,11 +10,17 @@ class ProbePieceIndex:
         self._probe = probe
         self.stored: dict[UUID, tuple[str, ...]] = {}
         self.pages: dict[UUID, tuple[int | None, ...]] = {}
+        self.slides: dict[UUID, tuple[int | None, ...]] = {}
         self.extracted_text: dict[UUID, str] = {}
         self.dead = False
 
     async def replace(
-        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+        self,
+        document_id: UUID,
+        pieces: tuple[str, ...],
+        extracted: str,
+        pages: tuple[int | None, ...] = (),
+        slides: tuple[int | None, ...] = (),
     ) -> None:
         if self.dead:
             raise StoreUnavailable()
@@ -29,8 +35,9 @@ class ProbePieceIndex:
             raise StoreUnavailable()
         self.stored[document_id] = pieces
         self.pages[document_id] = pages
+        self.slides[document_id] = slides
         self.extracted_text[document_id] = extracted
-        self._probe.replace_pieces(str(document_id), pieces, extracted, pages)
+        self._probe.replace_pieces(str(document_id), pieces, extracted, pages, slides)
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]:
         if self.dead:
@@ -42,8 +49,14 @@ class ProbePieceIndex:
             raise StoreUnavailable()
         texts = self.stored.get(document_id, ())
         pages = self.pages.get(document_id, ())
+        slides = self.slides.get(document_id, ())
         return tuple(
-            PlacedPiece(text, pages[index] if index < len(pages) else None) for index, text in enumerate(texts)
+            PlacedPiece(
+                text,
+                pages[index] if index < len(pages) else None,
+                slides[index] if index < len(slides) else None,
+            )
+            for index, text in enumerate(texts)
         )
 
     async def extracted(self, document_id: UUID) -> str:

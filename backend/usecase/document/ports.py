@@ -55,6 +55,7 @@ class PieceIndex(Protocol):
         pieces: tuple[str, ...],
         extracted: str,
         pages: tuple[int | None, ...] = (),
+        slides: tuple[int | None, ...] = (),
     ) -> None: ...
 
     async def pieces(self, document_id: UUID) -> tuple[str, ...]: ...

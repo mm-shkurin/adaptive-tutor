@@ -44,3 +44,4 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | 22:15 | Behavior commit + continue frontend door if budget |
 | 22:20 | Tier-1 frontend UI 1.1: presentation door → POST draft → editor (title 80, 0 slides) |
 | 22:18 | Tier-1 frontend UI 1.2–1.3: gallery addSlides, slide cards, index no_slides → pres-refusal |
+| ~22:45 | Integration §2.1/§2.3: chat `Source.slide`, piece index + Qdrant payload, `test_presentation_chat`, chatView «Слайд N»; quiz slide cite still TODO |

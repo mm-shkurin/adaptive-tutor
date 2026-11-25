@@ -12,8 +12,9 @@ from adapters.memory.material_search import MemoryMaterialSearch
 from adapters.memory.presentation_store import MemoryPresentationStore
 from adapters.memory.quiz_store import MemoryQuizStore
 from adapters.memory.quiz_tutor import ScriptedQuizTutor
-from adapters.search.unready_material_search import UnreadyMaterialSearch
-from adapters.tutor.refusing_tutor import RefusingTutor
+from adapters.memory.scripted_tutor import ScriptedTutor
+from adapters.search.memory_piece_vectors import MemoryPieceVectors
+from adapters.search.prefer_seeded_search import PreferSeededSearch
 from adapters.memory.document_intake import MemoryDocumentIntake
 from adapters.memory.file_store import MemoryFileStore
 from adapters.memory.oauth_store import MemoryOAuthStore
@@ -89,6 +90,7 @@ class Bundle:
     rates: MemoryUploadRateLimit
     intake: NotifyingDocumentIntake
     search: MemoryMaterialSearch
+    tutor: ScriptedTutor
     quiz_tutor: ScriptedQuizTutor
     quizzes: MemoryQuizStore
     chats: MemoryChatStore
@@ -127,6 +129,9 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     presentations = MemoryPresentationStore()
     ocr = FakeOcr()
     quiz_tutor = quiz_tutor or ScriptedQuizTutor()
+    tutor = ScriptedTutor()
+    vectors = MemoryPieceVectors(pieces)
+    search = PreferSeededSearch(MemoryMaterialSearch(), vectors, clock)
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
         sign_in,
@@ -141,14 +146,14 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         (create := CreateChat(intake, chats, clock)),
         OpenChat(create, chats),
         ListChats(chats),
-        GetChat(chats, pieces, UnreadyMaterialSearch()),
-        SendMessage(chats, UnreadyMaterialSearch(), RefusingTutor()),
+        GetChat(chats, pieces, vectors),
+        SendMessage(chats, search, tutor, clock),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
         **wire_presentations(intake, pieces, presentations, ocr, virus, clock),
     )
     client = TestClient(create_app(context), raise_server_exceptions=False)
     return Bundle(
-        client, store, clock, provider, rates, intake, search, quiz_tutor, quizzes, chats, presentations, pieces, ocr, virus
+        client, store, clock, provider, rates, intake, search, tutor, quiz_tutor, quizzes, chats, presentations, pieces, ocr, virus
     )
 
 

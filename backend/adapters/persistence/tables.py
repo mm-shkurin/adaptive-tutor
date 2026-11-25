@@ -98,6 +98,7 @@ class DocumentPieceRow(Base):
     ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
     body: Mapped[str] = mapped_column(Text)
     page: Mapped[int | None] = mapped_column(Integer)
+    slide: Mapped[int | None] = mapped_column(Integer)
 
 
 class DocumentExtractionRow(Base):
@@ -151,7 +152,10 @@ class ChatLineRow(Base):
             mode=self.mode,
             kind=self.kind,
             page=self.page,
-            sources=tuple(Source(page=item["page"], text=item["text"]) for item in self.sources),
+            sources=tuple(
+                Source(page=item["page"], text=item["text"], slide=item.get("slide"))
+                for item in self.sources
+            ),
             choices=tuple(Choice(item["id"], item["text"]) for item in (self.choices or ())),
             choice_id=self.choice_id,
             correct=self.correct,

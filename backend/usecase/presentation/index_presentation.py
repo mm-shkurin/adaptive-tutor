@@ -32,6 +32,8 @@ class IndexPresentation:
             await self.intake.upsert(owner_id, material_row(working))
             indexed_slides: list[Slide] = []
             searchable: list[str] = []
+            pages: list[int | None] = []
+            slides: list[int] = []
             for slide in working.slides:
                 content = await self.presentations.take_bytes(owner_id, presentation_id, slide.id)
                 text = ""
@@ -41,10 +43,13 @@ class IndexPresentation:
                 indexed_slides.append(indexed)
                 if not indexed.empty and text.strip():
                     searchable.append(text.strip())
+                    pages.append(indexed.pdf_page)
+                    slides.append(indexed.position)
             ready = working.ready(tuple(indexed_slides), len(searchable))
             extracted = ExtractedText.compose("\n\n".join(searchable)).value
-            pages = tuple(index + 1 for index in range(len(searchable)))
-            await self.pieces.replace(presentation_id, tuple(searchable), extracted, pages)
+            await self.pieces.replace(
+                presentation_id, tuple(searchable), extracted, tuple(pages), tuple(slides)
+            )
             await self.presentations.clear_bytes(owner_id, presentation_id)
             await self.presentations.save(owner_id, ready)
             await self.intake.upsert(owner_id, material_row(ready))

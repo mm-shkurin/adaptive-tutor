@@ -10,6 +10,7 @@ class FakePieceIndex:
     def __init__(self):
         self.stored: dict[UUID, tuple[str, ...]] = {}
         self.pages: dict[UUID, tuple[int | None, ...]] = {}
+        self.slides: dict[UUID, tuple[int | None, ...]] = {}
         self.extracted_text: dict[UUID, str] = {}
         self._replace_counts: dict[UUID, int] = {}
         self.outcome: str | None = None
@@ -32,7 +33,12 @@ class FakePieceIndex:
         self.outcome = "times out"
 
     async def replace(
-        self, document_id: UUID, pieces: tuple[str, ...], extracted: str, pages: tuple[int | None, ...] = ()
+        self,
+        document_id: UUID,
+        pieces: tuple[str, ...],
+        extracted: str,
+        pages: tuple[int | None, ...] = (),
+        slides: tuple[int | None, ...] = (),
     ) -> None:
         delay = 0.0 if self._call_delay is None else self._call_delay
         if delay >= self._deadline:
@@ -42,6 +48,7 @@ class FakePieceIndex:
         self._replace_counts[document_id] = self._replace_counts.get(document_id, 0) + 1
         self.stored[document_id] = pieces
         self.pages[document_id] = pages
+        self.slides[document_id] = slides
         self.extracted_text[document_id] = extracted
 
     def replace_count(self, document_id: UUID) -> int:
@@ -53,8 +60,14 @@ class FakePieceIndex:
     async def placed(self, document_id: UUID) -> tuple[PlacedPiece, ...]:
         texts = self.stored.get(document_id, ())
         pages = self.pages.get(document_id, ())
+        slides = self.slides.get(document_id, ())
         return tuple(
-            PlacedPiece(text, pages[index] if index < len(pages) else None) for index, text in enumerate(texts)
+            PlacedPiece(
+                text,
+                pages[index] if index < len(pages) else None,
+                slides[index] if index < len(slides) else None,
+            )
+            for index, text in enumerate(texts)
         )
 
     async def extracted(self, document_id: UUID) -> str:

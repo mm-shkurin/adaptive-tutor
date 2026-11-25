@@ -13,6 +13,7 @@ class TextSpan:
 class PlacedPiece:
     text: str
     page: int | None
+    slide: int | None = None
 
 
 def place(spans: tuple[TextSpan, ...]) -> tuple[PlacedPiece, ...]:
