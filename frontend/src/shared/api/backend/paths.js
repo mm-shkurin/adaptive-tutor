@@ -33,5 +33,7 @@ export const BACKEND = {
   presentations: {
     create: `${V1}/presentations`,
     item: (id) => `${V1}/presentations/${id}`,
+    slides: (id) => `${V1}/presentations/${id}/slides`,
+    index: (id) => `${V1}/presentations/${id}/index`,
   },
 }

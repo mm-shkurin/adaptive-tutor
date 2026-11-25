@@ -25,7 +25,9 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 ## Tier 1 — Frontend (after backend meeting point)
 
 - [x] door opens editor (UI 1.1 — createPresentation, PresentationEditor, vitest door)
-- [ ] (more from test-spec)
+- [x] gallery add + slide cards (UI 1.2 — addSlides, slide-from-gallery, slide-card)
+- [x] index no_slides refusal (UI 1.3 — indexPresentation, pres-index, pres-refusal)
+- [ ] index → list row (UI 1.4 — selenium / reconcile after index)
 
 ## Human later
 

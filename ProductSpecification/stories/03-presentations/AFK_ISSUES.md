@@ -42,3 +42,4 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | 22:30 | Tier-1 backend slice green (20); later split to guards/flow tests; bodyGuards kind+draft |
 | 22:15 | Behavior commit + continue frontend door if budget |
 | 22:20 | Tier-1 frontend UI 1.1: presentation door → POST draft → editor (title 80, 0 slides) |
+| 22:18 | Tier-1 frontend UI 1.2–1.3: gallery addSlides, slide cards, index no_slides → pres-refusal |

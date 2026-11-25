@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
-import { createPresentation } from '../../shared/api/backend/presentationApi'
+import { addSlides, createPresentation, indexPresentation as postPresentationIndex } from '../../shared/api/backend/presentationApi'
+import { presentationErrorMessage } from './logic/presentationEditorView'
 import {
   isStreamOpenError,
   openDocumentStatusStream,
@@ -28,6 +29,7 @@ export function useDocumentsScreen() {
   const [uploading, setUploading] = useState(false)
   const [refusal, setRefusal] = useState(null)
   const [editor, setEditor] = useState(null)
+  const [editorRefusal, setEditorRefusal] = useState(null)
   const lists = useRef(createListEpoch())
   const submission = useRef(createSubmission())
   const uploadAbort = useRef(null)
@@ -161,6 +163,7 @@ export function useDocumentsScreen() {
       const presentation = await createPresentation(undefined, controller.signal)
       if (controller.signal.aborted) return
       setEditor(presentation)
+      setEditorRefusal(null)
       setRefusal(null)
     } catch (error) {
       if (controller.signal.aborted) return
@@ -171,7 +174,47 @@ export function useDocumentsScreen() {
 
   function closeEditor() {
     setEditor(null)
+    setEditorRefusal(null)
     reconcileList()
+  }
+
+  async function addGallerySlides(files) {
+    if (!editor || !files?.length) return
+    const key = submission.current.begin(crypto.randomUUID())
+    if (!key) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await addSlides(editor.id, [...files], key, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    } finally {
+      submission.current.finish()
+    }
+  }
+
+  async function indexPresentation() {
+    if (!editor) return
+    const key = submission.current.begin(crypto.randomUUID())
+    if (!key) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await postPresentationIndex(editor.id, key, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+      await reconcileList()
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    } finally {
+      submission.current.finish()
+    }
   }
 
   async function uploadPdf(file) {
@@ -209,9 +252,12 @@ export function useDocumentsScreen() {
   return {
     ...screen,
     editor,
+    editorRefusal,
     uploading,
     refusal,
     uploadPdf,
+    addGallerySlides,
+    indexPresentation,
     openPresentationEditor,
     closeEditor,
     retry: () => setAttempt((value) => value + 1),

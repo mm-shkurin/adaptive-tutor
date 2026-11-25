@@ -209,6 +209,59 @@
   margin-left: auto;
 }
 
+.pres-editor-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.pres-editor-head .pres-title-input {
+  flex: 1 1 280px;
+  margin-bottom: 0;
+}
+
+.slides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.slide-card {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+  padding: 36px 10px 10px;
+}
+
+.slide-num {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  background: rgba(11, 28, 26, 0.78);
+  color: #f3f7f5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.slide-card-text {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--text-soft);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
 @media (max-width: 800px) {
   .documents-page { padding: 20px 16px 88px; }
   .documents-page h1 { font-size: 26px; }
