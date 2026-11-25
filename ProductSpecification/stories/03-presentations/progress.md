@@ -36,7 +36,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] presentation index stores slide position + pdf_page as `page`
 - [x] pytest `test_presentation_chat.py` (ready slide cite, draft bind refused, PDF page-only)
 - [x] frontend `chatView` / `isSourceBody` — «Слайд N» without breaking PDF
-- [ ] quiz slide citation (Story 3 §2.2 — TODO; quiz stays page-only per story 7 notes)
+- [x] quiz slide citation (Story 3 §2.2 — `Question.slide`, migration `0016`, `test_presentation_quiz`, quizView «Слайд N»)
 
 ## Human later
 

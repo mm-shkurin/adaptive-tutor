@@ -155,6 +155,7 @@ function isQuizQuestionBody(value) {
   if (!isNullableString(value.chosen_choice_id) || !isNullableString(value.correct_choice_id)) return false
   if (value.correct !== undefined && value.correct !== null && typeof value.correct !== 'boolean') return false
   if (value.page !== undefined && value.page !== null && typeof value.page !== 'number') return false
+  if (value.slide !== undefined && value.slide !== null && typeof value.slide !== 'number') return false
   return true
 }
 
