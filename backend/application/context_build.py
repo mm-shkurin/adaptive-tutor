@@ -20,6 +20,7 @@ from adapters.search.http_qdrant import HttpQdrant
 from adapters.search.qdrant_pieces import QdrantPieces
 from adapters.storage.chat_store import PostgresChatStore
 from adapters.storage.document_intake import PostgresDocumentIntake
+from adapters.storage.presentation_store import PostgresPresentationStore
 from adapters.storage.quiz_store import PostgresQuizStore
 from adapters.tutor.http_quiz import HttpQuiz
 from adapters.tutor.http_tutor import HttpTutor
@@ -64,6 +65,7 @@ def production_context(settings: Settings) -> AppContext:
     clock = _WallClock()
     chats = PostgresChatStore(sessions)
     quizzes = PostgresQuizStore(sessions)
+    presentations = PostgresPresentationStore(sessions)
     vectors = QdrantPieces(
         HttpEmbeddings(settings.free_llm_api_url, settings.free_llm_api_key),
         HttpQdrant(settings.qdrant_url, settings.qdrant_api_key),
@@ -122,7 +124,7 @@ def production_context(settings: Settings) -> AppContext:
         **wire_presentations(
             intake,
             pieces,
-            _presentation_store_stub(),
+            presentations,
             _noop_ocr(),
             ClamavVirusCheck(settings.clamav_host, settings.clamav_port),
             clock,
@@ -148,12 +150,6 @@ class _WallClock:
         from datetime import datetime, timezone
 
         return datetime.now(timezone.utc)
-
-
-def _presentation_store_stub():
-    from adapters.storage.presentation_store import PostgresPresentationStore
-
-    return PostgresPresentationStore()
 
 
 def _noop_ocr():

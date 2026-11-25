@@ -28,7 +28,8 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 |---|------|-------|
 | P1 | Dirty WIP stashed from `features/quizzes` as `afk-wip-quizzes-before-story3` | Restore on quizzes branch only if still needed; origin/dev already has quiz harden tip. |
 | P2 | Spec-skeptic `block` / second `revise` | Fold safe findings; leave remainder here — do not wait in AFK. |
-| P3 | Live OCR / Tesseract / real camera | Tests use fakes; live poke is human. |
+| P3 | Live OCR / Tesseract / real camera | Tests use fakes; **production still wires `FakeOcr`** until live Tesseract lands — human poke for real OCR. |
+| P7 | Postgres presentation store | Migration `0014_presentation_store_support` + `PostgresPresentationStore` wired in `context_build.py`; requires `alembic upgrade head` before presentations persist in prod. |
 | P4 | Formula LLM quality | Prompt + store phrase+LaTeX; no language refuse rule. |
 | P5 | Mockups HTML screenshots / align-design | Frontend strip; after api-spec exists. |
 | P6 | Merging `features/presentations` → `dev` | Human order; AFK only `git push -u origin HEAD`. |

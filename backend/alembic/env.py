@@ -5,6 +5,7 @@ from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 import adapters.persistence.quiz_tables  # noqa: F401
+import adapters.persistence.tables_presentations  # noqa: F401
 from adapters.persistence.tables import Base
 from application.settings import load_settings
 

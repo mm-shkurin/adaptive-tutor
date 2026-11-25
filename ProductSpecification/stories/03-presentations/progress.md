@@ -21,6 +21,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] commit behavior + this progress
 - [x] refactor (split oversized files / bodyGuards kind+draft; folded into behavior commit for AFK)
 - [x] account Tier 1 API scenarios done (1.1–1.2, 2.1, 3.1–3.2, 3.4, 4.1–4.4, 5.2, 6.1, 7.1 stub)
+- [x] Postgres `PostgresPresentationStore` + migration `0014` (slide bytes, add/index idempotency snapshots); wired in production context (memory store unchanged for pytest)
 
 ## Tier 1 — Frontend (after backend meeting point)
 

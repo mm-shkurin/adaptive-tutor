@@ -6,7 +6,7 @@ AdaptiveTutor учит по загруженным лекциям: индекс�
 
 ## Where to resume
 
-1. `ProductSpecification/stories.md` — истории 1, 2, 4, 7 в Done (чат+квизы на `dev` с `a0656fb`, 2026-11-25). Очередь: **3 Презентации → 8 Прогресс**. Истории 5 и 6 входят в 4.
+1. `ProductSpecification/stories.md` — 1, 2, 4, 7 Done. **In Progress: 3 Презентации (+ прогресс)** на `features/presentations`. История 8 absorbed в 3. AFK defaults: `stories/03-presentations/AFK_ISSUES.md`.
 2. Режим доставки по умолчанию: `/delivery-loop` → `/backend-delivery` или `/frontend-delivery` (код → тесты из test-spec → refactor). Полный red/green `/continue` — только по явной просьбе.
 3. История 2 закрыта: PDF intake/index, куски в Postgres, live embeddings через TEI (`infra` service `embeddings`, `all-MiniLM-L6-v2`, dim 384, `--auto-truncate`). `FREE_LLM_API_URL=http://embeddings:80/v1`. Freellmapi не для embed.
 4. История 4+7 на `dev`: Live `HttpTutor` + `FREE_LLM_CHAT_URL`; викторины list/create/take/result. Ручной poke/demo ещё полезен.
