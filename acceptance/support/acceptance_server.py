@@ -36,6 +36,8 @@ from adapters.tokens.jwt_tokens import JwtTokens
 from domain.document.document import InvalidStatusTransition
 from application.context import AppContext, RuntimeConfig
 from application.main import create_app
+from adapters.memory.presentation_store import MemoryPresentationStore
+from application.presentation_wiring import wire_presentations
 from application.quiz_wiring import wire_quizzes
 from clients.application.index_probe import IndexProbe
 from clients.application.peak_chat_hold import PeakChatHold
@@ -56,6 +58,9 @@ from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
 from usecase.document.search_documents import SearchDocuments
 from usecase.document.submit_document import SubmitDocument
+from usecase.tests.fake.presentation.fake_formula_assist import FakeFormulaAssist
+from usecase.tests.fake.presentation.fake_ocr import FakeOcr
+from usecase.tests.fake.presentation.fake_office_parser import FakeOfficeParser
 from support.disclosure_constants import DISCLOSURE_KNOWN_SECRET
 from support.log_capture import LogCapture
 
@@ -133,24 +138,45 @@ class AcceptanceServer:
         quiz_tutor = ScriptedQuizTutor()
         self._quizzes = quizzes
         self._quiz_tutor = quiz_tutor
+        virus = ProbeVirusCheck(self.probe)
+        presentations = MemoryPresentationStore()
+        ocr = FakeOcr()
+        formulas = FakeFormulaAssist()
+        office = FakeOfficeParser()
+        self._presentations = presentations
+        self._ocr = ocr
         return AppContext(
             RuntimeConfig(_state_ttl(), ("http://localhost:5173",)),
             self._sign_in(store, tokens),
             SessionService(store, tokens, MemoryRevocations()),
             ProfileService(store, self.base_url, (QuizWipe(quizzes),)),
             store,
-            SubmitDocument(intake, self.rates, ProbeVirusCheck(self.probe)),
+            SubmitDocument(intake, self.rates, virus),
             ReadDocument(intake),
             ListDocuments(intake),
             ProbeIndexDocuments(intake, files, reader, pieces, self.probe, self.clock, vectors),
             hub,
             (create := CreateChat(intake, chats, self.clock)),
             OpenChat(create, chats),
-            ListChats(chats),
-            GetChat(chats, pieces, vectors),
+            ListChats(chats, intake),
+            GetChat(chats, pieces, vectors, intake),
             SendMessage(chats, search, tutor, self.clock, latency=timedelta(milliseconds=50)),
             self._indexing,
             **wire_quizzes(intake, search, quiz_tutor, quizzes, self.clock),
+            **wire_presentations(
+                intake,
+                pieces,
+                presentations,
+                ocr,
+                virus,
+                self.clock,
+                quizzes,
+                chats,
+                files,
+                reader,
+                office,
+                formulas,
+            ),
         )
 
     def _sign_in(self, store: MemoryAccountStore, tokens: JwtTokens) -> SignIn:

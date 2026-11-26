@@ -37,6 +37,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | R6 | Formal hazard-scan / tiering / spec-skeptic | Optional; Notes + provisional Tier markers exist |
 | R7 | Load 40-slide 5-min budget | Needs real OCR timing; keep Tier 2 parked or synthetic deadline test |
 | R8 | Drag-and-drop reorder | ↑↓ already shipped |
+| R9 | Docker backend image / alembic head | Container reports `0012_quizzes`; story needs `0014`–`0018` — rebuild backend image + `make migrate` before live poke |
 
 ## Session log
 
@@ -46,3 +47,6 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 09:05 | IndexPresentation fail paths (OCR / StoreUnavailable); FakeOcr.fail; virus timeout + embeddings + infra tests |
 | 09:08 | Tombstone D1: DELETED_SOURCE_NAME on quiz/chat after delete; Postgres chat outerjoin |
 | 09:10 | Split chat_store attempts + support_auth; flow/index test split; repo rules green |
+| 09:12 | material_row error + libraryView failed meta; load budget; FE tombstone vitest |
+| 09:14 | Docker Desktop up; AcceptanceServer wire presentations; Selenium UI 1.1 / 3.1 green |
+| 09:16 | Note: docker backend alembic still at `0012_quizzes` — needs image rebuild + upgrade for live poke (R9) |
