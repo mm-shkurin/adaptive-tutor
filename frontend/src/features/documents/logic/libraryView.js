@@ -10,6 +10,7 @@ const LIBRARY_COPY = {
 }
 
 const STATUS = {
+  draft: { label: 'Черновик', pill: 'draft' },
   waiting: { label: 'Ждёт', pill: 'waiting' },
   indexing: { label: 'В процессе', pill: 'processing' },
   ready: { label: 'Готов', pill: 'ready' },
@@ -29,7 +30,7 @@ function emptyListMessage(documents) {
 }
 
 function documentRow(document) {
-  const status = STATUS[document.status]
+  const status = STATUS[document.status] ?? STATUS.failed
   return {
     id: document.id,
     kind: document.kind,
@@ -44,6 +45,7 @@ function documentRow(document) {
 
 function documentMeta(document) {
   if (document.status === 'failed' && document.error) return document.error
+  if (document.kind === 'presentation') return presentationMeta(document)
   const size = formatMegabytes(document.size_bytes)
   switch (document.status) {
     case 'waiting':
@@ -54,6 +56,21 @@ function documentMeta(document) {
       return `${size} · ${document.page_count} стр. · ${document.piece_count} чанков`
     default:
       return size
+  }
+}
+
+function presentationMeta(document) {
+  switch (document.status) {
+    case 'draft':
+      return 'черновик'
+    case 'waiting':
+      return 'ждёт индексации'
+    case 'indexing':
+      return 'индексация…'
+    case 'ready':
+      return document.piece_count == null ? 'готова' : `${document.piece_count} чанков`
+    default:
+      return formatMegabytes(document.size_bytes)
   }
 }
 

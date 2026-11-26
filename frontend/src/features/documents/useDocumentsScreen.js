@@ -27,6 +27,7 @@ import {
   shouldApplyUpload,
 } from './logic/documentPage'
 import { presentationDeleteConfirmed } from './logic/presentationDelete'
+import { leaveEditorAfterIndex } from './logic/presentationIndexLeave'
 import { readyPdfMaterials } from './logic/presentationPdfSlides'
 import { libraryView } from './logic/libraryView'
 import { FALLBACK_POLL_LIMIT, FALLBACK_POLL_MS } from './logic/statusStreamPolicy'
@@ -293,8 +294,13 @@ export function useDocumentsScreen() {
     try {
       const updated = await postPresentationIndex(editor.id, key, controller.signal)
       if (controller.signal.aborted) return
-      setEditor(updated)
       await reconcileList()
+      if (leaveEditorAfterIndex(updated.status)) {
+        setEditor(null)
+        setEditorRefusal(null)
+        return
+      }
+      setEditor(updated)
     } catch (error) {
       if (controller.signal.aborted) return
       if (leaveIfExpired(error, navigate)) return

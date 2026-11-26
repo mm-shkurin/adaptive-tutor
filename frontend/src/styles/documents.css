@@ -144,6 +144,11 @@
   color: var(--warn);
 }
 
+.status-pill.draft {
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
 .status-pill.waiting {
   background: var(--surface-2);
   color: var(--text-soft);

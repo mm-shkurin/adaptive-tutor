@@ -33,7 +33,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] PPTX/DOCX import (P10 — multipart `file`, `PythonOfficeParser` + injectable fake; `AddSlides.office_file`; editor `slide-from-office`; `test_presentation_office_slides.py`)
 - [x] delete presentation (UI 2.2 — `deletePresentation` list row + editor confirm; backend DELETE already wired)
 - [x] index no_slides refusal (UI 1.3 — indexPresentation, pres-index, pres-refusal)
-- [ ] index → list row (UI 1.4 — selenium / reconcile after index)
+- [x] index → list row (UI 1.4 — libraryView draft/ready presentation meta; close editor on ready index; vitest; selenium parked Q5)
 - [x] Progress panel from GET `/api/v1/progress` (UI 3.1 — four stats, topic nodes, weak list; vitest `progressView` + `progressBody`)
 
 ## Integration seam (chat slide citation)

@@ -92,4 +92,52 @@ describe('libraryView', () => {
       canDelete: false,
     })
   })
+
+  it('A draft presentation row shows title, draft pill, and delete', () => {
+    const draft = {
+      id: '44444444-4444-4444-4444-444444444444',
+      name: 'LinAlg',
+      kind: 'presentation',
+      size_bytes: 0,
+      page_count: null,
+      piece_count: null,
+      status: 'draft',
+      error: null,
+    }
+    const view = libraryView({ documents: [draft], has_next: false })
+    expect(view.rows[0]).toEqual({
+      id: draft.id,
+      name: 'LinAlg',
+      meta: 'черновик',
+      statusLabel: 'Черновик',
+      statusPill: 'draft',
+      kind: 'presentation',
+      failureReason: null,
+      canDelete: true,
+    })
+  })
+
+  it('A ready presentation row shows title, ready pill, and piece meta without null pages', () => {
+    const readyPresentation = {
+      id: '55555555-5555-5555-5555-555555555555',
+      name: 'LinAlg',
+      kind: 'presentation',
+      size_bytes: 0,
+      page_count: null,
+      piece_count: 3,
+      status: 'ready',
+      error: null,
+    }
+    const view = libraryView({ documents: [readyPresentation], has_next: false })
+    expect(view.rows[0]).toEqual({
+      id: readyPresentation.id,
+      name: 'LinAlg',
+      meta: '3 чанков',
+      statusLabel: 'Готов',
+      statusPill: 'ready',
+      kind: 'presentation',
+      failureReason: null,
+      canDelete: true,
+    })
+  })
 })
