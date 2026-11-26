@@ -34,6 +34,7 @@ export function PresentationEditor({ screen }) {
           maxLength={80}
           defaultValue={presentation.title}
           aria-label="Название презентации"
+          onBlur={(event) => screen.renamePresentation(event.target.value)}
         />
         <div className="pres-editor-actions">
           <button
@@ -169,6 +170,24 @@ export function PresentationEditor({ screen }) {
         {presentation.slides.map((slide) => (
           <div key={slide.id} className="slide-card" data-testid="slide-card">
             <span className="slide-num">{slide.position}</span>
+            <div className="slide-card-actions">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                data-testid={`slide-up-${slide.id}`}
+                onClick={() => screen.reorderSlide(slide.id, 'up')}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                data-testid={`slide-down-${slide.id}`}
+                onClick={() => screen.reorderSlide(slide.id, 'down')}
+              >
+                ↓
+              </button>
+            </div>
             <p className="slide-card-text" data-testid="slide-card-text">
               {presentation.status === 'ready' ? readySlideCardText(slide) : slideCardCaption(slide)}
             </p>

@@ -301,6 +301,15 @@
   border-radius: 999px;
 }
 
+.slide-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+
 .slide-card-text {
   margin: 0;
   font-size: 0.75rem;

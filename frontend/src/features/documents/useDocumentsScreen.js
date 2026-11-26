@@ -9,7 +9,9 @@ import {
   deletePresentation as removePresentation,
   getPresentation,
   indexPresentation as postPresentationIndex,
+  patchPresentation,
 } from '../../shared/api/backend/presentationApi'
+import { moveSlide } from './logic/presentationOrder'
 import { presentationErrorMessage } from './logic/presentationEditorView'
 import {
   isStreamOpenError,
@@ -200,6 +202,40 @@ export function useDocumentsScreen() {
     }
   }
 
+  async function renamePresentation(title) {
+    if (!editor) return
+    const trimmed = typeof title === 'string' ? title.trim() : ''
+    if (!trimmed || trimmed === editor.title) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await patchPresentation(editor.id, { title: trimmed }, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    }
+  }
+
+  async function reorderSlide(slideId, direction) {
+    if (!editor) return
+    const order = moveSlide(editor.slides, slideId, direction)
+    if (!order) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await patchPresentation(editor.id, { slide_order: order }, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    }
+  }
+
   function closeEditor() {
     setEditor(null)
     setEditorRefusal(null)
@@ -377,6 +413,8 @@ export function useDocumentsScreen() {
     indexPresentation,
     openPresentationEditor,
     openPresentationRow,
+    renamePresentation,
+    reorderSlide,
     closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }

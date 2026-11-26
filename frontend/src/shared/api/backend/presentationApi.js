@@ -21,6 +21,15 @@ export function getPresentation(id, signal) {
   })
 }
 
+export function patchPresentation(id, body, signal) {
+  return send(BACKEND.presentations.item(id), {
+    method: 'PATCH',
+    body,
+    signal,
+    guard: isPresentationBody,
+  })
+}
+
 export function addSlides(id, files, idempotencyKey, signal) {
   const form = new FormData()
   for (const file of files) {
