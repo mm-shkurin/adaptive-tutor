@@ -24,6 +24,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | T1 | Where to show «Источник удалён» | Quiz list / chat material label when document join missing after hard-delete | Matches D1; list/editor of presentations already 404 absent |
 | T2 | Virus timeout refusal code | Same body as virus_detected (PDF pattern) | Spec says `virus_detected` on timeout |
 | T3 | OCR / embeddings index failure status | `failed`; no searchable pieces left | Spec 1.2 / 1.3 |
+| T4 | Recovery after failed index | **Re-index and add slides allowed from `failed`**; keep slide bytes on fail (erase only on ready) | Otherwise deck is stuck until delete |
 
 ## Parking lot (do not block)
 
@@ -33,7 +34,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | R2 | HttpFormulaAssist multimodal | Prod Noop; need FREE_LLM image enricher decision |
 | R3 | Merge → `dev` | Human |
 | R4 | Confirm D1–D5 | Human |
-| R5 | Docker daemon down at start | `docker info` has Client only / exit -1 — Selenium/acceptance parked |
+| R5 | Docker daemon / Selenium | Docker later up; Selenium UI 1.1/1.3/2.2/3.1 green. UI 1.4 gallery upload parked — `slide-from-gallery` is a button, hidden file input has no testid |
 | R6 | Formal hazard-scan / tiering / spec-skeptic | Optional; Notes + provisional Tier markers exist |
 | R7 | Load 40-slide 5-min budget | Needs real OCR timing; keep Tier 2 parked or synthetic deadline test |
 | R8 | Drag-and-drop reorder | ↑↓ already shipped |

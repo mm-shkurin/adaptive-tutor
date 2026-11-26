@@ -53,6 +53,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Failed index surfaces `error` on documents list (`material_row`); libraryView failed presentation meta; load budget 40-slide fake index &lt;5m; FE tombstone passthrough vitest
 - [x] AcceptanceServer wires presentations + progress; Selenium UI 1.1 editor door, UI 1.3 no-slides refusal, UI 2.2 delete, UI 3.1 progress stats
 - [x] Docker backend image rebuild → alembic `0018` head on local stack
+- [x] Failed-index recovery: re-index + add slides from `failed`; keep bytes on fail; unexpected errors → `indexing failed`
 
 ## Integration seam (chat slide citation)
 

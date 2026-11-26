@@ -34,6 +34,13 @@ def test_ocr_channel_failure_fails_index_without_pieces():
     listed = material(bundle, access)["documents"][0]
     assert listed["status"] == "failed"
     assert listed["error"] == "ocr refused"
+    bundle.ocr.clear_failures()
+    slide_id = body["slides"][0]["id"]
+    bundle.ocr.set_text(UUID(slide_id), "recovered text")
+    retry = index(bundle, access, presentation_id, key="retry-ocr")
+    assert retry.status_code == 202
+    assert retry.json()["status"] == "ready"
+    assert pieces(bundle, presentation_id) == ("recovered text",)
 
 
 def test_embeddings_failure_fails_the_index():

@@ -44,6 +44,8 @@ class IndexPresentation:
                 return await self._fail(owner_id, working, "ocr refused")
             except StoreUnavailable:
                 return await self._fail(owner_id, working, "search store refused")
+            except Exception:
+                return await self._fail(owner_id, working, "indexing failed")
 
         return await self.presentations.with_index_key(owner_id, presentation_id, key, build)
 
@@ -80,7 +82,6 @@ class IndexPresentation:
             await self.pieces.replace(working.id, (), "")
         except StoreUnavailable:
             pass
-        await self.presentations.clear_bytes(owner_id, working.id)
         await self.presentations.save(owner_id, failed)
         await self.intake.upsert(owner_id, material_row(failed))
         return failed
@@ -132,7 +133,7 @@ class IndexPresentation:
         found = await self.presentations.get(owner_id, presentation_id)
         if found is None:
             raise PresentationNotFound()
-        if found.status not in {"draft", "ready", "indexing"}:
+        if found.status not in {"draft", "ready", "indexing", "failed"}:
             raise PresentationNotFound()
         return found
 

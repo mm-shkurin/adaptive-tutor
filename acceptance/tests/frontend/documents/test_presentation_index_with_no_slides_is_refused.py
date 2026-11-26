@@ -26,4 +26,8 @@ class TestPresentationIndexWithNoSlidesIsRefused(AbstractUiTest):
             lambda d: d.find_elements(By.CSS_SELECTOR, "[data-testid='pres-refusal']")
             and d.find_element(By.CSS_SELECTOR, "[data-testid='pres-refusal']").text
         )
+        refusal = document_library.driver.find_element(
+            By.CSS_SELECTOR, "[data-testid='pres-refusal']"
+        ).text
+        assert "слайд" in refusal.lower() or "slide" in refusal.lower() or refusal.strip()
         assert document_library.driver.find_elements(By.CSS_SELECTOR, "[data-testid='pres-title']")

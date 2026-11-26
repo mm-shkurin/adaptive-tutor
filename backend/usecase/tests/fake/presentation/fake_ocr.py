@@ -13,6 +13,9 @@ class FakeOcr:
     def fail(self, slide_id: UUID | None = None) -> None:
         self._failures.add(slide_id)
 
+    def clear_failures(self) -> None:
+        self._failures.clear()
+
     async def read(self, slide_id: UUID, content: bytes) -> str:
         if None in self._failures or slide_id in self._failures:
             raise ConnectionError("ocr channel failed")

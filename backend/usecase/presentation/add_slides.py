@@ -106,7 +106,7 @@ class AddSlides:
 
     async def _draft(self, owner_id: UUID, presentation_id: UUID) -> Presentation:
         current = await self._owned(owner_id, presentation_id)
-        if current.status != "draft":
+        if current.status not in {"draft", "failed"}:
             raise PresentationNotFound()
         return current
 

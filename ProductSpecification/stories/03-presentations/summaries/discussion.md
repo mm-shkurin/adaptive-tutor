@@ -63,3 +63,9 @@
 **Surprise:** `PostgresChatStore` used an inner join on documents, so hard-deleted presentations made chats disappear from list/get instead of showing «Источник удалён».
 **Why:** Chat rows store only `document_id` and took the title from the join.
 **Impact:** Outer join + `DELETED_SOURCE_NAME` (and quiz list enrichment) keep history cards visible after D1 hard-delete.
+
+## Failed-index recovery (2026-11-26)
+
+**Decision:** After OCR/search index failure, keep slide bytes, allow re-index and add-slides from `failed`, and catch unexpected exceptions as `indexing failed`.
+**Why:** Leaving `failed` non-indexable made the editor CTA a 404 dead-end; clearing bytes on fail forced re-upload.
+**Where applied:** `index_presentation.py`, `add_slides.py`
