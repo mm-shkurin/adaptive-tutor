@@ -117,6 +117,27 @@ describe('libraryView', () => {
     })
   })
 
+  it('A failed presentation row shows the index error reason', () => {
+    const failed = {
+      id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4',
+      name: 'LinAlg',
+      kind: 'presentation',
+      size_bytes: 0,
+      page_count: null,
+      piece_count: null,
+      status: 'failed',
+      error: 'ocr refused',
+      created_at: '2024-05-06T07:08:09Z',
+    }
+    const view = libraryView({ documents: [failed], has_next: false })
+    expect(view.rows[0]).toMatchObject({
+      statusLabel: 'Не удалось',
+      statusPill: 'failed',
+      meta: 'ocr refused',
+      failureReason: 'ocr refused',
+    })
+  })
+
   it('A ready presentation row shows title, ready pill, and piece meta without null pages', () => {
     const readyPresentation = {
       id: '55555555-5555-5555-5555-555555555555',

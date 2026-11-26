@@ -96,6 +96,19 @@ describe('quiz screens', () => {
     expect(unfinished.scoreText).toBeNull()
   })
 
+  it('keeps the deleted-source tombstone label on quiz cards', () => {
+    const [row] = cardRows([
+      {
+        id: 'quiz-gone',
+        document_name: 'Источник удалён',
+        topic: 'Матрицы',
+        question_count: 3,
+        last_score: null,
+      },
+    ])
+    expect(row.documentName).toBe('Источник удалён')
+  })
+
   it('keeps the previous score in place when a new attempt starts', () => {
     const rows = [{
       id: 'quiz-1',

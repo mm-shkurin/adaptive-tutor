@@ -33,7 +33,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | R2 | HttpFormulaAssist multimodal | Prod Noop; need FREE_LLM image enricher decision |
 | R3 | Merge → `dev` | Human |
 | R4 | Confirm D1–D5 | Human |
-| R5 | Docker daemon down at start | Selenium/acceptance parked until stack |
+| R5 | Docker daemon down at start | `docker info` has Client only / exit -1 — Selenium/acceptance parked |
 | R6 | Formal hazard-scan / tiering / spec-skeptic | Optional; Notes + provisional Tier markers exist |
 | R7 | Load 40-slide 5-min budget | Needs real OCR timing; keep Tier 2 parked or synthetic deadline test |
 | R8 | Drag-and-drop reorder | ↑↓ already shipped |

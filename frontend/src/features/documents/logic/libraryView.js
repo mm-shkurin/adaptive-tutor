@@ -69,6 +69,8 @@ function presentationMeta(document) {
       return 'индексация…'
     case 'ready':
       return document.piece_count == null ? 'готова' : `${document.piece_count} чанков`
+    case 'failed':
+      return document.error || 'не удалось'
     default:
       return formatMegabytes(document.size_bytes)
   }

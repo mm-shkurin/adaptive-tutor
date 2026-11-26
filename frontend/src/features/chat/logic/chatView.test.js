@@ -154,4 +154,19 @@ describe('chatView', () => {
     expect(view.sources).toEqual([])
     expect(view.heading).toBe('Чат с AI-тьютором')
   })
+
+  it('keeps the deleted-source tombstone label on chat list rows', () => {
+    const view = chatScreenView({
+      summaries: [
+        {
+          id: 'c-gone',
+          document_id: 'd-gone',
+          document_name: 'Источник удалён',
+          preview: null,
+        },
+      ],
+      chat: null,
+    })
+    expect(view.rows[0].documentName).toBe('Источник удалён')
+  })
 })

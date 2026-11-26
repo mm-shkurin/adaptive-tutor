@@ -31,7 +31,9 @@ def test_ocr_channel_failure_fails_index_without_pieces():
     assert body["status"] == "failed"
     assert body["error"] == "ocr refused"
     assert pieces(bundle, presentation_id) == ()
-    assert material(bundle, access)["documents"][0]["status"] == "failed"
+    listed = material(bundle, access)["documents"][0]
+    assert listed["status"] == "failed"
+    assert listed["error"] == "ocr refused"
 
 
 def test_embeddings_failure_fails_the_index():

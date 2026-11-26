@@ -50,6 +50,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Remove slide from editor (DELETE …/slides/{id})
 - [x] Integration 1.1–1.3 + infra fakes: virus timeout; OCR/embeddings index → `failed` + empty pieces; FakeOcr/FakeFormulaAssist wiring; unreadable virus gate (`test_presentation_index_failures.py`)
 - [x] D1 tombstone «Источник удалён» on quiz/chat list+get after presentation hard-delete (Postgres chat outerjoin; ListQuizzes/GetQuiz/ListChats/GetChat)
+- [x] Failed index surfaces `error` on documents list (`material_row`); libraryView failed presentation meta; load budget 40-slide fake index &lt;5m; FE tombstone passthrough vitest
 
 ## Integration seam (chat slide citation)
 

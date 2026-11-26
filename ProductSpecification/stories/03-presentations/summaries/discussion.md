@@ -51,3 +51,15 @@
 **Mistake:** Soft-stopped the 110-minute AFK after ~17 minutes when the «ready without human» queue looked empty.
 **Why wrong:** The user set an explicit wall-clock budget and said park blockers in a file and keep going.
 **Correct location/approach:** Spend remaining AFK budget on parkable work (write selenium, formal hazard/tiering, CI, scaffold) instead of ending at the first soft queue gap.
+
+## IndexPresentation fail paths (2026-11-26)
+
+**Surprise:** `Presentation.failed` existed but `IndexPresentation` never called it; OCR/search exceptions left the deck indexing or ready with partial pieces.
+**Why:** Happy-path index was wired first; external-failure branches from the test-spec were still open.
+**Impact:** Index now maps OCR/store refusal to `failed` with empty pieces; callers must treat `failed` as terminal for re-index until a retry path is added.
+
+## Deleted-source tombstone (2026-11-26)
+
+**Surprise:** `PostgresChatStore` used an inner join on documents, so hard-deleted presentations made chats disappear from list/get instead of showing «Источник удалён».
+**Why:** Chat rows store only `document_id` and took the title from the join.
+**Impact:** Outer join + `DELETED_SOURCE_NAME` (and quiz list enrichment) keep history cards visible after D1 hard-delete.
