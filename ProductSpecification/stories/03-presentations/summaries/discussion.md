@@ -69,3 +69,15 @@
 **Decision:** After OCR/search index failure, keep slide bytes, allow re-index and add-slides from `failed`, and catch unexpected exceptions as `indexing failed`.
 **Why:** Leaving `failed` non-indexable made the editor CTA a 404 dead-end; clearing bytes on fail forced re-upload.
 **Where applied:** `index_presentation.py`, `add_slides.py`
+
+## Failed editor UX (2026-11-26)
+
+**Mistake:** Selenium UI 1.4 tried `send_keys` on the gallery button / hidden file input in headless Chrome.
+**Why wrong:** `slide-from-gallery` is a button that opens a native picker; hidden inputs did not reliably fire `change` under headless.
+**Correct location/approach:** Seed create/add/index over HTTP, then assert the Documents ready row; keep `slide-gallery-input` testid for a later headed path.
+
+## Failed editor UX (2026-11-26)
+
+**Quirk:** AcceptanceServer exposes `POST /acceptance/presentations/ocr-fail` and `ocr-clear` against the wired `FakeOcr`.
+**Where:** `acceptance/support/acceptance_server.py`
+**Implication:** Browser tests that need a failed index must hit those probes before `POST …/index`; production has no equivalent.
