@@ -81,3 +81,9 @@
 **Quirk:** AcceptanceServer exposes `POST /acceptance/presentations/ocr-fail` and `ocr-clear` against the wired `FakeOcr`.
 **Where:** `acceptance/support/acceptance_server.py`
 **Implication:** Browser tests that need a failed index must hit those probes before `POST …/index`; production has no equivalent.
+
+## Selenium progress topic actions (2026-11-26)
+
+**Mistake:** Located progress topics with `[data-testid^='prog-topic-']` and clicked the first match whose `.text` contained the topic name.
+**Why wrong:** `prog-topic-nodes` is a parent whose text includes every child label, so the click hit the card, not the `button[data-testid^='prog-topic-']` row; `topic-quiz` never appeared.
+**Correct location/approach:** Restrict to `button[data-testid^='prog-topic-']` (and exclude `prog-weak-mastery-*` when counting weak rows).

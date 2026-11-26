@@ -35,6 +35,8 @@ Questions are **not** asked in chat. Park here; keep shipping unblocked work.
 | D4 | Confirm D1–D5 | Human |
 | D5 | Formal `/hazard-scan` `/tiering` `/spec-skeptic` | Optional |
 | D6 | Headless gallery file upload | Flaky; UI 1.4 uses API seed |
+| D7 | Front line-limit leftovers outside story 3 | `useChatScreen`, `quizView`, `useQuizzesScreen`, `chat.css`, `quiz.css` — not this branch’s story |
+| D8 | Live OCR / FormulaAssist | Still FakeOcr + Noop |
 
 ## Session log
 
@@ -45,3 +47,6 @@ Questions are **not** asked in chat. Park here; keep shipping unblocked work.
 | 22:14 | Selenium UI 2.1 green; 3.2/3.3 selector fixes then green |
 | 22:17 | Split documents hooks + bodyGuards + CSS under 200; vitest 47 green |
 | 22:18 | Progress updated; commit + push next (no merge) |
+| 22:19 | Push `f62359f`; presentation pytest 29 green |
+| 22:21 | Selenium presentation+progress regression 9/9 green |
+| 22:22 | Soft stop: code queue empty; human gates only (D1–D5, merge, OCR/Formula) |
