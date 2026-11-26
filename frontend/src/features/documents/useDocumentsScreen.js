@@ -1,41 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listDocuments, uploadDocument } from '../../shared/api/backend/documentApi'
-import {
-  addSlides,
-  addSlidesOfficeFile,
-  addSlidesPdfPages,
-  createPresentation,
-  deletePresentation as removePresentation,
-  deleteSlide as removeSlide,
-  getPresentation,
-  indexPresentation as postPresentationIndex,
-  patchPresentation,
-} from '../../shared/api/backend/presentationApi'
-import { moveSlide } from './logic/presentationOrder'
-import { presentationErrorMessage } from './logic/presentationEditorView'
-import {
-  isStreamOpenError,
-  openDocumentStatusStream,
-} from '../../shared/api/backend/documentStatusStream'
 import { endSession } from '../../shared/session/authSession'
 import { isSessionExpired } from '../../shared/session/authorizedRequest'
 import {
   createListEpoch,
   createSubmission,
   fresherPage,
-  needsStatusStream,
   pageWithStatusEvent,
-  pageWithoutDocument,
   pageWithUploaded,
   shouldApplyUpload,
 } from './logic/documentPage'
-import { presentationDeleteConfirmed } from './logic/presentationDelete'
-import { leaveEditorAfterIndex } from './logic/presentationIndexLeave'
-import { readyPdfMaterials } from './logic/presentationPdfSlides'
 import { libraryView } from './logic/libraryView'
-import { FALLBACK_POLL_LIMIT, FALLBACK_POLL_MS } from './logic/statusStreamPolicy'
 import { uploadErrorMessage, uploadRefusal } from './logic/uploadFile'
+import { useDocumentListStream } from './useDocumentListStream'
+import { usePresentationEditor } from './usePresentationEditor'
 
 export function useDocumentsScreen() {
   const navigate = useNavigate()
@@ -43,8 +22,6 @@ export function useDocumentsScreen() {
   const [screen, setScreen] = useState({ status: 'loading' })
   const [uploading, setUploading] = useState(false)
   const [refusal, setRefusal] = useState(null)
-  const [editor, setEditor] = useState(null)
-  const [editorRefusal, setEditorRefusal] = useState(null)
   const lists = useRef(createListEpoch())
   const submission = useRef(createSubmission())
   const uploadAbort = useRef(null)
@@ -84,73 +61,14 @@ export function useDocumentsScreen() {
     return () => controller.abort()
   }, [attempt, navigate])
 
-  const inFlight =
-    screen.status === 'ready' && needsStatusStream(screen.page?.documents ?? [])
-
-  useEffect(() => {
-    if (!inFlight) return undefined
-    const controller = new AbortController()
-    let fallbackTimer = null
-    let fallbackLeft = FALLBACK_POLL_LIMIT
-
-    function pollOnce() {
-      const requestId = lists.current.start()
-      listDocuments(controller.signal)
-        .then((page) => {
-          if (controller.signal.aborted) return
-          showPage(page, requestId)
-        })
-        .catch((error) => {
-          if (controller.signal.aborted) return
-          leaveIfExpired(error, navigate)
-        })
-    }
-
-    function startFallbackPoll() {
-      if (fallbackTimer != null) return
-      pollOnce()
-      fallbackTimer = setInterval(() => {
-        fallbackLeft -= 1
-        if (fallbackLeft <= 0) {
-          clearInterval(fallbackTimer)
-          fallbackTimer = null
-          return
-        }
-        pollOnce()
-      }, FALLBACK_POLL_MS)
-    }
-
-    async function listen() {
-      while (!controller.signal.aborted) {
-        try {
-          await openDocumentStatusStream({
-            signal: controller.signal,
-            onEvent: (update) => {
-              if (controller.signal.aborted) return
-              applyStatusEvent(update)
-            },
-          })
-        } catch (error) {
-          if (controller.signal.aborted) return
-          if (leaveIfExpired(error, navigate)) return
-          if (isStreamOpenError(error)) {
-            startFallbackPoll()
-            return
-          }
-          return
-        }
-        if (controller.signal.aborted) return
-        await new Promise((resolve) => setTimeout(resolve, 500))
-      }
-    }
-
-    listen()
-
-    return () => {
-      controller.abort()
-      if (fallbackTimer != null) clearInterval(fallbackTimer)
-    }
-  }, [inFlight, navigate])
+  useDocumentListStream({
+    screen,
+    navigate,
+    leaveIfExpired,
+    lists,
+    showPage,
+    applyStatusEvent,
+  })
 
   useEffect(() => {
     const abort = uploadAbort
@@ -171,234 +89,16 @@ export function useDocumentsScreen() {
     }
   }
 
-  async function openPresentationEditor() {
-    if (screen.status !== 'ready' || editor) return
-    const controller = new AbortController()
-    try {
-      const presentation = await createPresentation(undefined, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(presentation)
-      setEditorRefusal(null)
-      setRefusal(null)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setRefusal(uploadErrorMessage(error))
-    }
-  }
-
-  async function openPresentationRow(presentationId) {
-    if (screen.status !== 'ready' || editor || !presentationId) return
-    const controller = new AbortController()
-    setRefusal(null)
-    try {
-      const presentation = await getPresentation(presentationId, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(presentation)
-      setEditorRefusal(null)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setRefusal(presentationErrorMessage(error))
-    }
-  }
-
-  async function renamePresentation(title) {
-    if (!editor) return
-    const trimmed = typeof title === 'string' ? title.trim() : ''
-    if (!trimmed || trimmed === editor.title) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await patchPresentation(editor.id, { title: trimmed }, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    }
-  }
-
-  async function reorderSlide(slideId, direction) {
-    if (!editor) return
-    const order = moveSlide(editor.slides, slideId, direction)
-    if (!order) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await patchPresentation(editor.id, { slide_order: order }, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    }
-  }
-
-  async function saveSlideText(slideId, text) {
-    if (!editor || editor.status !== 'ready') return
-    const current = editor.slides.find((slide) => slide.id === slideId)
-    if (!current || current.text === text) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await patchPresentation(
-        editor.id,
-        { slides: [{ id: slideId, text }] },
-        controller.signal,
-      )
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    }
-  }
-
-  async function deleteSlide(slideId) {
-    if (!editor || !slideId) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await removeSlide(editor.id, slideId, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    }
-  }
-
-  function closeEditor() {
-    setEditor(null)
-    setEditorRefusal(null)
-    reconcileList()
-  }
-
-  async function addPdfPages(pdfDocumentId, pages) {
-    if (!editor || !pdfDocumentId || !pages?.length) return
-    const key = submission.current.begin(crypto.randomUUID())
-    if (!key) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await addSlidesPdfPages(editor.id, pdfDocumentId, pages, key, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    } finally {
-      submission.current.finish()
-    }
-  }
-
-  function addPdfQuickPage() {
-    const materials = readyPdfMaterials(pageRef.current?.documents ?? [])
-    const first = materials[0]
-    if (!first) {
-      setEditorRefusal('Нет готовых PDF — загрузите и дождитесь индексации.')
-      return
-    }
-    addPdfPages(first.id, [1])
-  }
-
-  async function deletePresentation(presentationId, { fromEditor = false } = {}) {
-    const confirm =
-      typeof window !== 'undefined' && typeof window.confirm === 'function'
-        ? window.confirm.bind(window)
-        : null
-    if (!presentationDeleteConfirmed(confirm)) return
-    const controller = new AbortController()
-    if (fromEditor) setEditorRefusal(null)
-    try {
-      await removePresentation(presentationId, controller.signal)
-      if (controller.signal.aborted) return
-      if (fromEditor) {
-        setEditor(null)
-      }
-      const next = pageWithoutDocument(pageRef.current, presentationId)
-      pageRef.current = next
-      if (next) {
-        setScreen({ status: 'ready', view: libraryView(next), page: next })
-      }
-      void reconcileList()
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      const message = presentationErrorMessage(error)
-      if (fromEditor) setEditorRefusal(message)
-      else setRefusal(message)
-    }
-  }
-
-  async function addOfficeFile(file) {
-    if (!editor || !file) return
-    const key = submission.current.begin(crypto.randomUUID())
-    if (!key) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await addSlidesOfficeFile(editor.id, file, key, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    } finally {
-      submission.current.finish()
-    }
-  }
-
-  async function addGallerySlides(files) {
-    if (!editor || !files?.length) return
-    const key = submission.current.begin(crypto.randomUUID())
-    if (!key) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await addSlides(editor.id, [...files], key, controller.signal)
-      if (controller.signal.aborted) return
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    } finally {
-      submission.current.finish()
-    }
-  }
-
-  async function indexPresentation() {
-    if (!editor) return
-    const key = submission.current.begin(crypto.randomUUID())
-    if (!key) return
-    const controller = new AbortController()
-    setEditorRefusal(null)
-    try {
-      const updated = await postPresentationIndex(editor.id, key, controller.signal)
-      if (controller.signal.aborted) return
-      await reconcileList()
-      if (leaveEditorAfterIndex(updated.status)) {
-        setEditor(null)
-        setEditorRefusal(null)
-        return
-      }
-      setEditor(updated)
-    } catch (error) {
-      if (controller.signal.aborted) return
-      if (leaveIfExpired(error, navigate)) return
-      setEditorRefusal(presentationErrorMessage(error))
-    } finally {
-      submission.current.finish()
-    }
-  }
+  const presentation = usePresentationEditor({
+    screen,
+    setScreen,
+    setRefusal,
+    navigate,
+    leaveIfExpired,
+    submission,
+    pageRef,
+    reconcileList,
+  })
 
   async function uploadPdf(file) {
     if (!file || screen.status !== 'ready') return
@@ -422,7 +122,6 @@ export function useDocumentsScreen() {
       if (!shouldApplyUpload(controller.signal.aborted)) return
       if (leaveIfExpired(error, navigate)) return
       setRefusal(uploadErrorMessage(error))
-      // Server may have accepted the PDF after the client gave up (virus scan / size).
       await reconcileList()
     } finally {
       if (shouldApplyUpload(controller.signal.aborted)) {
@@ -432,29 +131,12 @@ export function useDocumentsScreen() {
     }
   }
 
-  const readyPdfs = readyPdfMaterials(pageRef.current?.documents ?? screen.page?.documents ?? [])
-
   return {
     ...screen,
-    editor,
-    editorRefusal,
-    readyPdfs,
+    ...presentation,
     uploading,
     refusal,
     uploadPdf,
-    addGallerySlides,
-    addOfficeFile,
-    addPdfPages,
-    addPdfQuickPage,
-    deletePresentation,
-    indexPresentation,
-    openPresentationEditor,
-    openPresentationRow,
-    renamePresentation,
-    reorderSlide,
-    saveSlideText,
-    deleteSlide,
-    closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }
 }

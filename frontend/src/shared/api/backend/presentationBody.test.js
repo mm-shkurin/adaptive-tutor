@@ -28,4 +28,29 @@ describe('presentation body guards', () => {
       }),
     ).toBe(false)
   })
+
+  it('accepts a draft after one gallery slide is added', () => {
+    expect(
+      isPresentationBody({
+        id: 'pres-1',
+        title: 'Новая презентация',
+        status: 'draft',
+        slide_count: 1,
+        piece_count: null,
+        error: null,
+        slides: [
+          {
+            id: 'slide-1',
+            position: 1,
+            source: 'image',
+            empty: false,
+            text: '',
+            formula_phrase: null,
+            formula_latex: null,
+            pdf_page: null,
+          },
+        ],
+      }),
+    ).toBe(true)
+  })
 })

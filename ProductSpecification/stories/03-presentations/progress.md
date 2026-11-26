@@ -1,6 +1,6 @@
 # Story 3: Презентации (+ прогресс) — Progress
 
-AFK started 2026-11-25 ~21:58; continued 2026-11-26b ~08:59 + 2026-11-26c ~21:47. Branch `features/presentations`. Issues: `AFK_ISSUES.md`, `AFK_ISSUES_2026-11-26b.md`, `AFK_ISSUES_2026-11-26c.md`.
+AFK started 2026-11-25 ~21:58; continued 2026-11-26b ~08:59 + 2026-11-26c ~21:47 + 2026-11-26d ~22:07. Branch `features/presentations`. Issues: `AFK_ISSUES.md`, `AFK_ISSUES_2026-11-26b.md`, `AFK_ISSUES_2026-11-26c.md`, `AFK_ISSUES_2026-11-26d.md`.
 
 ## Spec
 - [x] interview (2026-11-25; open gaps → AFK defaults)
@@ -58,6 +58,9 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Failed editor UX: retry CTA + failure banner (vitest + Selenium via acceptance OCR probe)
 - [x] Tighten UI 0.1/1.1 selenium (no editor for guest; empty draft maxlength 80 + 0 slides); indexing label/disabled; list `document-failure`
 - [x] Split PresentationEditor → toolbar/grid components (&lt;200 lines)
+- [x] Selenium UI 2.1 ready text not photo; UI 3.2 weak band; UI 3.3 topic quiz/chat
+- [x] Split oversized FE: `useDocumentsScreen` / presentation hooks / bodyGuards / documents+progress CSS
+- [x] Vitest: gallery one-slide presentation body guard (UI 1.2 contract)
 
 ## Integration seam (chat slide citation)
 
