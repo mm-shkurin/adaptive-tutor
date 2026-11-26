@@ -75,6 +75,7 @@ export function DocumentsLibrary({ screen, fileRef }) {
           <DocumentRow
             key={row.id}
             row={row}
+            onOpenPresentation={(id) => screen.openPresentationRow(id)}
             onDeletePresentation={(id) => screen.deletePresentation(id)}
           />
         ))}

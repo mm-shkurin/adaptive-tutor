@@ -13,10 +13,11 @@ def token(bundle):
 
 
 def create(bundle, token, title="LinAlg"):
+    body = {} if title is None else {"title": title}
     return bundle.client.post(
         "/api/v1/presentations",
         headers=bearer(token),
-        json={"title": title},
+        json=body,
     )
 
 

@@ -27,6 +27,16 @@ def test_creating_a_draft_stores_an_empty_presentation():
     assert materials["id"] == body["id"]
 
 
+def test_omitted_title_becomes_the_default_draft_title():
+    bundle = build()
+    access = token(bundle)
+    created = create(bundle, access, None)
+    assert created.status_code == 201
+    body = created.json()
+    assert body["title"] == "Новая презентация"
+    assert body["status"] == "draft"
+
+
 def test_oversized_image_is_refused():
     bundle = build()
     access = token(bundle)
@@ -151,6 +161,43 @@ def test_ready_text_edit_keeps_status_ready():
     assert body["slides"][0]["text"] == "after"
     read_back = bundle.client.get(f"/api/v1/presentations/{presentation_id}", headers=bearer(access)).json()
     assert read_back["slides"][0]["text"] == "after"
+
+
+def test_reorder_changes_slide_positions():
+    bundle = build()
+    access = token(bundle)
+    presentation_id = create(bundle, access).json()["id"]
+    first = add_image(bundle, access, presentation_id, key="a").json()["slides"][0]["id"]
+    second = add_image(bundle, access, presentation_id, key="b").json()["slides"][1]["id"]
+    for slide_id in (first, second):
+        bundle.ocr.set_text(UUID(slide_id), "text")
+    index(bundle, access, presentation_id)
+    patched = bundle.client.patch(
+        f"/api/v1/presentations/{presentation_id}",
+        headers=bearer(access),
+        json={"slide_order": [second, first]},
+    )
+    assert patched.status_code == 200
+    body = patched.json()
+    assert [slide["id"] for slide in body["slides"]] == [second, first]
+    assert body["slides"][0]["position"] == 1
+    assert body["slides"][1]["position"] == 2
+
+
+def test_deleting_the_only_slide_of_a_draft_leaves_slide_count_zero():
+    bundle = build()
+    access = token(bundle)
+    presentation_id = create(bundle, access).json()["id"]
+    slide_id = add_image(bundle, access, presentation_id).json()["slides"][0]["id"]
+    deleted = bundle.client.delete(
+        f"/api/v1/presentations/{presentation_id}/slides/{slide_id}",
+        headers=bearer(access),
+    )
+    assert deleted.status_code == 200
+    body = deleted.json()
+    assert body["slide_count"] == 0
+    assert body["status"] == "draft"
+    assert body["slides"] == []
 
 
 def test_delete_removes_searchability_and_refuses_later_get():

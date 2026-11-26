@@ -7,6 +7,7 @@ import {
   addSlidesPdfPages,
   createPresentation,
   deletePresentation as removePresentation,
+  getPresentation,
   indexPresentation as postPresentationIndex,
 } from '../../shared/api/backend/presentationApi'
 import { presentationErrorMessage } from './logic/presentationEditorView'
@@ -180,6 +181,22 @@ export function useDocumentsScreen() {
       if (controller.signal.aborted) return
       if (leaveIfExpired(error, navigate)) return
       setRefusal(uploadErrorMessage(error))
+    }
+  }
+
+  async function openPresentationRow(presentationId) {
+    if (screen.status !== 'ready' || editor || !presentationId) return
+    const controller = new AbortController()
+    setRefusal(null)
+    try {
+      const presentation = await getPresentation(presentationId, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(presentation)
+      setEditorRefusal(null)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setRefusal(presentationErrorMessage(error))
     }
   }
 
@@ -359,6 +376,7 @@ export function useDocumentsScreen() {
     deletePresentation,
     indexPresentation,
     openPresentationEditor,
+    openPresentationRow,
     closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }

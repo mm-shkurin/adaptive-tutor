@@ -40,6 +40,15 @@ export function slideCardCaption(slide) {
   return SLIDE_PLACEHOLDER
 }
 
+/** Ready editor never shows slide photos — bytes are erased after index. */
+export function readySlideShowsPhoto(presentationStatus) {
+  return presentationStatus !== 'ready'
+}
+
+export function readySlideCardText(slide) {
+  return slideCardCaption(slide)
+}
+
 export function presentationErrorMessage(error) {
   const failure = httpErrorIn(error)
   const code = failure?.errorCode

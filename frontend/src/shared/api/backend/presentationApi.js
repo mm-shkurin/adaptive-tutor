@@ -13,6 +13,14 @@ export function createPresentation(title, signal) {
   })
 }
 
+export function getPresentation(id, signal) {
+  return send(BACKEND.presentations.item(id), {
+    method: 'GET',
+    signal,
+    guard: isPresentationBody,
+  })
+}
+
 export function addSlides(id, files, idempotencyKey, signal) {
   const form = new FormData()
   for (const file of files) {

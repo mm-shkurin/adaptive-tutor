@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { parsePdfPageList } from '../logic/presentationPdfSlides'
-import { slideCardCaption, slideCountLabel } from '../logic/presentationEditorView'
+import { readySlideCardText, slideCardCaption, slideCountLabel } from '../logic/presentationEditorView'
 
 const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
 const OFFICE_ACCEPT =
@@ -169,7 +169,9 @@ export function PresentationEditor({ screen }) {
         {presentation.slides.map((slide) => (
           <div key={slide.id} className="slide-card" data-testid="slide-card">
             <span className="slide-num">{slide.position}</span>
-            <p className="slide-card-text">{slideCardCaption(slide)}</p>
+            <p className="slide-card-text" data-testid="slide-card-text">
+              {presentation.status === 'ready' ? readySlideCardText(slide) : slideCardCaption(slide)}
+            </p>
           </div>
         ))}
       </div>

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   NO_SLIDES_INDEX,
   presentationErrorMessage,
+  readySlideCardText,
+  readySlideShowsPhoto,
   slideCardCaption,
   slideCountLabel,
 } from './presentationEditorView'
@@ -33,5 +35,11 @@ describe('presentationEditorView', () => {
     expect(presentationErrorMessage(coded('no_slides', 'Presentation has no slides'))).toBe(NO_SLIDES_INDEX)
     expect(presentationErrorMessage(coded('invalid_image', 'Image is not supported'))).toMatch(/jpeg/)
     expect(presentationErrorMessage(coded('invalid_office', 'Office file is not supported'))).toMatch(/pptx/i)
+  })
+
+  it('ready editor shows recognized text and no photo', () => {
+    expect(readySlideShowsPhoto('ready')).toBe(false)
+    expect(readySlideShowsPhoto('draft')).toBe(true)
+    expect(readySlideCardText({ text: '  Recognized line  ', position: 1 })).toBe('Recognized line')
   })
 })
