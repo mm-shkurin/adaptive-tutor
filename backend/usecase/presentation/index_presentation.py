@@ -3,10 +3,11 @@ from uuid import UUID
 from domain.document.extracted_text import ExtractedText
 from domain.presentation.presentation import Presentation
 from domain.presentation.slide import Slide
+from domain.presentation.weak_ocr import is_weak_ocr
 from usecase.document.ports import DocumentIntake, FileStore, PdfRead, PdfReader, PieceIndex
 from usecase.presentation.errors import PresentationNotFound
 from usecase.presentation.materials import material_row
-from usecase.presentation.ports import Ocr, PresentationStore
+from usecase.presentation.ports import FormulaAssist, Ocr, PresentationStore
 
 
 class IndexPresentation:
@@ -18,6 +19,7 @@ class IndexPresentation:
         ocr: Ocr,
         files: FileStore,
         reader: PdfReader,
+        formulas: FormulaAssist,
     ):
         self.presentations = presentations
         self.intake = intake
@@ -25,6 +27,7 @@ class IndexPresentation:
         self.ocr = ocr
         self.files = files
         self.reader = reader
+        self.formulas = formulas
 
     async def index(self, owner_id: UUID, presentation_id: UUID, key: str) -> tuple[Presentation, bool]:
         async def build() -> Presentation:
@@ -39,13 +42,13 @@ class IndexPresentation:
             pages: list[int | None] = []
             slides: list[int] = []
             for slide in working.slides:
-                text = await self._slide_text(owner_id, slide, await self.presentations.take_bytes(
-                    owner_id, presentation_id, slide.id
-                ))
-                indexed = slide.mark_indexed(text)
+                content = await self.presentations.take_bytes(owner_id, presentation_id, slide.id)
+                text, phrase, latex = await self._recognize(owner_id, slide, content)
+                indexed = slide.mark_indexed(text, phrase, latex)
                 indexed_slides.append(indexed)
-                if not indexed.empty and text.strip():
-                    searchable.append(text.strip())
+                piece = (phrase or text).strip()
+                if not indexed.empty and piece:
+                    searchable.append(piece)
                     pages.append(indexed.pdf_page)
                     slides.append(indexed.position)
             ready = working.ready(tuple(indexed_slides), len(searchable))
@@ -59,6 +62,21 @@ class IndexPresentation:
             return ready
 
         return await self.presentations.with_index_key(owner_id, presentation_id, key, build)
+
+    async def _recognize(
+        self, owner_id: UUID, slide: Slide, content: bytes | None
+    ) -> tuple[str, str, str]:
+        text = await self._slide_text(owner_id, slide, content)
+        if not content or not is_weak_ocr(text, len(content)):
+            return text, "", ""
+        try:
+            enriched = await self.formulas.enrich(slide.id, content, text)
+        except Exception:
+            return text, "", ""
+        if enriched is None:
+            return text, "", ""
+        phrase, latex = enriched
+        return text, phrase or "", latex or ""
 
     async def _slide_text(self, owner_id: UUID, slide: Slide, content: bytes | None) -> str:
         if content:

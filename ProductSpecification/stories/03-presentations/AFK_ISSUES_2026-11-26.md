@@ -43,3 +43,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 08:42 | Open row via GET; UI 2.1 ready text helpers; API 2.2/5.1/5.3 pytest green (13) |
 | 08:46 | UI 3.2/3.3 topic detail actions + weak filter; API 3.3 missing Idempotency-Key |
 | 08:48 | P8: chat_lines.created_at + PostgresChatStore.person_send_times |
+| 08:50 | Security mass-assign + virus disclosure + neighbour slide verbs |
+| 08:51 | Continued after first push — not soft-stopping early |
+| 08:55 | API 4.5 weak OCR formula assist + timeout keeps OCR; prod NoopFormulaAssist (live LLM still P4) |
+| | Still parked: selenium (stack down), formal hazard/tiering, live OCR/Tesseract, drag-reorder UI, HttpFormulaAssist |

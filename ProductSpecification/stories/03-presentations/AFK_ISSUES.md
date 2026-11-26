@@ -31,7 +31,7 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | P3 | Live OCR / Tesseract / real camera | Tests use fakes; **production still wires `FakeOcr`** until live Tesseract lands — human poke for real OCR. |
 | P7 | Postgres presentation store | Migration `0014_presentation_store_support` + `PostgresPresentationStore` wired in `context_build.py`; requires `alembic upgrade head` before presentations persist in prod. |
 | P8 | Progress chat sessions in Postgres | **Done 2026-11-26** — `chat_lines.created_at` (migration `0018`) + `PostgresChatStore.person_send_times`. Run `alembic upgrade head` before poke. |
-| P4 | Formula LLM quality | Prompt + store phrase+LaTeX; no language refuse rule. |
+| P4 | Formula LLM live HTTP | Path + FakeAssist tests land 2026-11-26; prod still `NoopFormulaAssist` — wire FREE_LLM_CHAT_URL enricher + prompt quality poke. |
 | P5 | Mockups HTML screenshots / align-design | Frontend strip; after api-spec exists. |
 | P6 | Merging `features/presentations` → `dev` | Human order; AFK only `git push -u origin HEAD`. |
 | P9 | PDF-page slides index without PyMuPDF text yet | Add path stores metadata; index/OCR may leave those slides empty until text extract lands. |

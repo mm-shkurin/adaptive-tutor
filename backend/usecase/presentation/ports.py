@@ -32,6 +32,12 @@ class Ocr(Protocol):
     async def read(self, slide_id: UUID, content: bytes) -> str: ...
 
 
+class FormulaAssist(Protocol):
+    async def enrich(
+        self, slide_id: UUID, content: bytes, ocr_text: str
+    ) -> tuple[str, str] | None: ...
+
+
 class VirusCheck(Protocol):
     async def clear(self, content: bytes) -> None: ...
 

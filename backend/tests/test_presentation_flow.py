@@ -181,6 +181,51 @@ def test_ready_text_edit_keeps_status_ready():
     assert read_back["slides"][0]["text"] == "after"
 
 
+def test_weak_ocr_may_call_formula_assist_once_per_slide():
+    bundle = build()
+    access = token(bundle)
+    presentation_id = create(bundle, access).json()["id"]
+    # Oversized jpeg body so thin OCR counts as weak.
+    huge = b"\xff\xd8\xff" + b"\x00" * 12_000
+    added = bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers={**bearer(access), "Idempotency-Key": "weak-1"},
+        files=[("images", ("slide.jpg", huge, "image/jpeg"))],
+    )
+    slide_id = UUID(added.json()["slides"][0]["id"])
+    bundle.ocr.set_text(slide_id, "x=?")
+    bundle.formulas.set_result(slide_id, "x equals question", "x=?")
+    indexed = index(bundle, access, presentation_id)
+    assert indexed.status_code == 202
+    body = indexed.json()
+    assert body["slides"][0]["formula_phrase"] == "x equals question"
+    assert body["slides"][0]["formula_latex"] == "x=?"
+    assert bundle.formulas.calls == [slide_id]
+    assert pieces(bundle, presentation_id) == ("x equals question",)
+
+
+def test_formula_assist_timeout_keeps_ocr_text_without_formulas():
+    bundle = build()
+    access = token(bundle)
+    presentation_id = create(bundle, access).json()["id"]
+    huge = b"\xff\xd8\xff" + b"\x00" * 12_000
+    added = bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers={**bearer(access), "Idempotency-Key": "weak-to"},
+        files=[("images", ("slide.jpg", huge, "image/jpeg"))],
+    )
+    slide_id = UUID(added.json()["slides"][0]["id"])
+    bundle.ocr.set_text(slide_id, "x=?")
+    bundle.formulas.set_failure(slide_id)
+    indexed = index(bundle, access, presentation_id)
+    body = indexed.json()
+    assert body["status"] == "ready"
+    assert body["slides"][0]["text"] == "x=?"
+    assert body["slides"][0]["formula_phrase"] is None
+    assert body["slides"][0]["formula_latex"] is None
+    assert pieces(bundle, presentation_id) == ("x=?",)
+
+
 def test_reorder_changes_slide_positions():
     bundle = build()
     access = token(bundle)

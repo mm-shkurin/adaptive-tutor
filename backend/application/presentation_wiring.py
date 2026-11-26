@@ -1,4 +1,5 @@
 from adapters.office.python_office_parser import PythonOfficeParser
+from adapters.presentation.noop_formula_assist import NoopFormulaAssist
 from adapters.progress.quiz_chat_activity import QuizChatActivity
 from usecase.presentation.add_slides import AddSlides
 from usecase.presentation.create_presentation import CreatePresentation
@@ -10,7 +11,20 @@ from usecase.presentation.patch_presentation import PatchPresentation
 from usecase.presentation.progress_materials import IntakeMaterials
 
 
-def wire_presentations(documents, pieces, presentations, ocr, virus, clock, quizzes, chats, files, reader, office=None) -> dict:
+def wire_presentations(
+    documents,
+    pieces,
+    presentations,
+    ocr,
+    virus,
+    clock,
+    quizzes,
+    chats,
+    files,
+    reader,
+    office=None,
+    formulas=None,
+) -> dict:
     materials = IntakeMaterials(documents)
     activity = QuizChatActivity(quizzes, chats)
     return {
@@ -19,6 +33,8 @@ def wire_presentations(documents, pieces, presentations, ocr, virus, clock, quiz
         "patch_presentation": PatchPresentation(presentations, documents),
         "delete_presentation": DeletePresentation(presentations, documents, pieces),
         "add_slides": AddSlides(presentations, documents, virus, office or PythonOfficeParser()),
-        "index_presentation": IndexPresentation(presentations, documents, pieces, ocr, files, reader),
+        "index_presentation": IndexPresentation(
+            presentations, documents, pieces, ocr, files, reader, formulas or NoopFormulaAssist()
+        ),
         "get_progress": GetProgress(materials, activity, clock),
     }
