@@ -42,6 +42,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Weak list &lt;40% matches count (UI 3.2 — client filter in `progressView`)
 - [x] Topic actions quiz + chat (UI 3.3 — TopicDetail; navigate with state to `/quizzes/new` and `/chat`)
 - [x] Tier 2 API 3.3 — add slides without Idempotency-Key → 422
+- [x] Security: mass-assignment create ignored; virus error no path/bytes; neighbour slides/delete-slide absent (sec 1.1–1.3; 1.4 already in progress tests)
 
 ## Integration seam (chat slide citation)
 

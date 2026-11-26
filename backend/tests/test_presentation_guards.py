@@ -73,3 +73,71 @@ def test_progress_without_session_matches_absent():
     response = bundle.client.get("/api/v1/progress")
     assert response.status_code == 404
     assert response.json() == PROGRESS_MISSING
+
+
+def test_mass_assignment_cannot_set_status_or_piece_count_on_create():
+    bundle = build()
+    access, _ = ada(bundle)
+    created = bundle.client.post(
+        "/api/v1/presentations",
+        headers=bearer(access),
+        json={"title": "LinAlg", "status": "ready", "piece_count": 9},
+    )
+    assert created.status_code == 201
+    body = created.json()
+    assert body["status"] == "draft"
+    assert body["piece_count"] is None
+
+
+def test_virus_error_body_does_not_disclose_path_or_bytes():
+    bundle = build()
+    access, _ = ada(bundle)
+    bundle.virus.set_outcome("finds_virus")
+    presentation_id = create(bundle, access).json()["id"]
+    response = bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers={**bearer(access), "Idempotency-Key": "v1"},
+        files=[("images", ("C:\\secrets\\slide.jpg", JPEG, "image/jpeg"))],
+    )
+    assert response.status_code == 400
+    payload = response.json()
+    text = str(payload)
+    assert payload == {"code": "virus_detected", "message": "Virus detected"}
+    assert "C:\\secrets" not in text
+    assert "\\xff" not in text
+    assert "Traceback" not in text
+
+
+def test_neighbour_slides_and_delete_slide_look_absent():
+    bundle = build()
+    ada_token, _ = ada(bundle)
+    grace_token, _ = neighbour(bundle)
+    presentation_id = create(bundle, grace_token, "secret").json()["id"]
+    slide_id = bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers={**bearer(grace_token), "Idempotency-Key": "g1"},
+        files=[("images", ("a.jpg", JPEG, "image/jpeg"))],
+    ).json()["slides"][0]["id"]
+    before = bundle.client.get(
+        f"/api/v1/presentations/{presentation_id}",
+        headers=bearer(grace_token),
+    ).json()
+    for call in (
+        lambda: bundle.client.post(
+            f"/api/v1/presentations/{presentation_id}/slides",
+            headers={**bearer(ada_token), "Idempotency-Key": "steal"},
+            files=[("images", ("b.jpg", JPEG, "image/jpeg"))],
+        ),
+        lambda: bundle.client.delete(
+            f"/api/v1/presentations/{presentation_id}/slides/{slide_id}",
+            headers=bearer(ada_token),
+        ),
+    ):
+        response = call()
+        assert response.status_code == 404
+        assert response.json() == MISSING
+    after = bundle.client.get(
+        f"/api/v1/presentations/{presentation_id}",
+        headers=bearer(grace_token),
+    ).json()
+    assert after == before
