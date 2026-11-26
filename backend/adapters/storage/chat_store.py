@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select
@@ -14,11 +14,17 @@ from usecase.chat.send_message import Attempt, ReplyError
 
 
 class PostgresChatStore:
-    def __init__(self, sessions):
+    def __init__(self, sessions, clock=None):
         self._sessions = sessions
+        self._clock = clock
         self._attempt_locks: dict[tuple[UUID, str], asyncio.Lock] = {}
         self._chat_locks: dict[UUID, asyncio.Lock] = {}
         self._write_lock = asyncio.Lock()
+
+    def _now(self) -> datetime:
+        if self._clock is None:
+            return datetime.now(timezone.utc)
+        return self._clock.now()
 
     async def add(self, owner_id: UUID, chat: Chat, created_at: datetime) -> None:
         async def work(session):
@@ -82,9 +88,17 @@ class PostgresChatStore:
             )
             if row is None:
                 raise ChatNotFound()
+            prior = {line.id: line.created_at for line in row.lines}
+            stamped = self._now()
             row.lines.clear()
             row.lines.extend(
-                ChatLineRow.from_line(chat.id, position, line) for position, line in enumerate(chat.lines)
+                ChatLineRow.from_line(
+                    chat.id,
+                    position,
+                    line,
+                    prior.get(line.id, stamped),
+                )
+                for position, line in enumerate(chat.lines)
             )
 
         await self._run(work)
@@ -146,9 +160,10 @@ class PostgresChatStore:
             if remembered is not None:
                 return remembered
             try:
+                stamped = self._now()
                 await self._run(
                     lambda session: append_attempt(
-                        session, owner_id, chat_id, attempt_key, attempt
+                        session, owner_id, chat_id, attempt_key, attempt, stamped
                     )
                 )
             except IntegrityError:
@@ -177,7 +192,18 @@ class PostgresChatStore:
         return Chat.stored(chat_row.id, chat_row.document_id, name, lines)
 
     async def person_send_times(self, owner_id: UUID) -> tuple[datetime, ...]:
-        return ()
+        async def work(session):
+            rows = (
+                await session.execute(
+                    select(ChatLineRow.created_at)
+                    .join(ChatRow, ChatRow.id == ChatLineRow.chat_id)
+                    .where(ChatRow.owner_id == owner_id, ChatLineRow.role == "person")
+                    .order_by(ChatLineRow.created_at.asc())
+                )
+            ).scalars().all()
+            return tuple(rows)
+
+        return await self._run(work)
 
     async def _run(self, work):
         try:

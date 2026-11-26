@@ -138,6 +138,7 @@ class ChatLineRow(Base):
     choice_id: Mapped[str | None] = mapped_column(String(64))
     correct: Mapped[bool | None] = mapped_column(Boolean)
     supported_choice_id: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     def to_domain(self):
         from domain.chat.choice import Choice
@@ -163,7 +164,7 @@ class ChatLineRow(Base):
         )
 
     @staticmethod
-    def from_line(chat_id: UUID, position: int, line) -> "ChatLineRow":
+    def from_line(chat_id: UUID, position: int, line, created_at: datetime) -> "ChatLineRow":
         return ChatLineRow(
             id=line.id,
             chat_id=chat_id,
@@ -179,6 +180,7 @@ class ChatLineRow(Base):
             choice_id=line.choice_id,
             correct=line.correct,
             supported_choice_id=line.supported_choice_id,
+            created_at=created_at,
         )
 
 

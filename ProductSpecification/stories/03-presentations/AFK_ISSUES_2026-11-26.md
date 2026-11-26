@@ -32,7 +32,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | Q3 | Merge `features/presentations` → `dev` | Human order. |
 | Q4 | Confirm AFK defaults D1–D5 | Human poke. |
 | Q5 | Selenium full presentation journey if infra down | Vitest covers row mapping; park selenium fail reason here. |
-| Q6 | P8 chat `person_send_times` in Postgres | Prior parking; touch only if budget after Tier 1 UI. |
+| Q6 | P8 chat `person_send_times` in Postgres | **Done this AFK** — migration `0018`; run `alembic upgrade head` before poke. |
 
 ## Session log
 
@@ -42,3 +42,4 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 08:40 | UI 1.4: libraryView draft+ready presentation rows; leaveEditorAfterIndex; close editor on ready; CSS draft pill; sanity fail observed |
 | 08:42 | Open row via GET; UI 2.1 ready text helpers; API 2.2/5.1/5.3 pytest green (13) |
 | 08:46 | UI 3.2/3.3 topic detail actions + weak filter; API 3.3 missing Idempotency-Key |
+| 08:48 | P8: chat_lines.created_at + PostgresChatStore.person_send_times |

@@ -30,7 +30,7 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | P2 | Spec-skeptic `block` / second `revise` | Fold safe findings; leave remainder here — do not wait in AFK. |
 | P3 | Live OCR / Tesseract / real camera | Tests use fakes; **production still wires `FakeOcr`** until live Tesseract lands — human poke for real OCR. |
 | P7 | Postgres presentation store | Migration `0014_presentation_store_support` + `PostgresPresentationStore` wired in `context_build.py`; requires `alembic upgrade head` before presentations persist in prod. |
-| P8 | Progress chat sessions in Postgres | `GET /api/v1/progress` records chat send days in memory (`MemoryChatStore` + clock). `PostgresChatStore.person_send_times` returns empty until line timestamps exist — prod `sessions_this_week` counts quiz finishes only until P8. Run migration `0017_quiz_finished_at` for quiz finish times in prod. |
+| P8 | Progress chat sessions in Postgres | **Done 2026-11-26** — `chat_lines.created_at` (migration `0018`) + `PostgresChatStore.person_send_times`. Run `alembic upgrade head` before poke. |
 | P4 | Formula LLM quality | Prompt + store phrase+LaTeX; no language refuse rule. |
 | P5 | Mockups HTML screenshots / align-design | Frontend strip; after api-spec exists. |
 | P6 | Merging `features/presentations` → `dev` | Human order; AFK only `git push -u origin HEAD`. |
@@ -39,8 +39,8 @@ Progress screen («Ваш прогресс») is **in story 3**. Remove story 8 
 | P11 | Formal hazard-scan + tiering-agent + spec-skeptic | Parked; Notes fold + provisional Tier markers only. |
 | P12 | Selenium for presentations / progress | Not run this AFK. |
 | P13 | Live OCR (Tesseract) in production | Still FakeOcr in context_build. |
-| P14 | Postgres chat `person_send_times` empty | sessions_this_week in prod mostly quiz finishes until chat timestamps wired. |
-| P15 | Run `alembic upgrade head` (0013–0017) | Required before poke against local/prod DB. |
+| P14 | Postgres chat `person_send_times` empty | Closed by P8 / `0018`. |
+| P15 | Run `alembic upgrade head` (0013–0018) | Required before poke against local/prod DB. |
 
 ## Session log
 

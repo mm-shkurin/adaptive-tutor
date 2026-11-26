@@ -52,3 +52,25 @@ async def test_should_keep_the_reply_lines_on_the_chat(sessions, intake):
     assert listed[0].lines[1].kind == "reply"
     assert listed[0].lines[1].page == 4
     assert listed[0].lines[1].sources == (Source(page=4, text="piece-0"),)
+
+
+@pytest.mark.asyncio
+async def test_should_return_person_send_times_for_progress(sessions, intake):
+    owner_id = uuid4()
+    document = Document.accepted("study.pdf", 2048).ready(1, 1)
+    await intake.store(owner_id, document, b"pdf", str(uuid4()))
+    chat = Chat.bound_to(document)
+    created_at = datetime(2024, 5, 6, 7, 8, 9, tzinfo=timezone.utc)
+    store = PostgresChatStore(sessions)
+    await store.add(owner_id, chat, created_at)
+    updated, _lines = chat.record_grounded(
+        "hello",
+        "qwen/qwen3-32b",
+        "professor",
+        (Source(page=1, text="piece-0"),),
+        "reply",
+    )
+    await store.save(owner_id, updated)
+    sends = await store.person_send_times(owner_id)
+    assert len(sends) == 1
+    assert isinstance(sends[0], datetime)

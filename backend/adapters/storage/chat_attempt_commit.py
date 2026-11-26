@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -9,7 +10,12 @@ from usecase.chat.send_message import Attempt
 
 
 async def append_attempt(
-    session, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
+    session,
+    owner_id: UUID,
+    chat_id: UUID,
+    attempt_key: str,
+    attempt: Attempt,
+    created_at: datetime,
 ) -> None:
     row = await session.scalar(
         select(ChatRow)
@@ -25,7 +31,7 @@ async def append_attempt(
     if attempt.persist:
         start = len(row.lines)
         row.lines.extend(
-            ChatLineRow.from_line(chat_id, start + offset, line)
+            ChatLineRow.from_line(chat_id, start + offset, line, created_at)
             for offset, line in enumerate(attempt.lines)
         )
     error = attempt.error

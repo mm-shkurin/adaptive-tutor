@@ -23,6 +23,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] account Tier 1 API scenarios done (1.1–1.3, 2.1, 3.1–3.2, 3.4, 4.1–4.3, 4.4, 5.2, 6.1, 7.1 unsigned); 4.2 index>40 → slide_limit on add
 - [x] GET `/api/v1/progress` — materials chips, topic mastery from quiz `last_score`, weak &lt;40%, sessions (quiz finish + chat send in memory), activity; `?material=` foreign → `progress_not_found`; migration `0017_quiz_finished_at`; `test_progress.py` (7.2–7.4, 7.3 Tier 2)
 - [x] Postgres `PostgresPresentationStore` + migration `0014` (slide bytes, add/index idempotency snapshots); wired in production context (memory store unchanged for pytest)
+- [x] Postgres chat `person_send_times` (P8 — migration `0018_chat_line_created_at`; progress sessions include chat days in prod)
 
 ## Tier 1 — Frontend (after backend meeting point)
 
