@@ -315,10 +315,24 @@
   font-size: 0.75rem;
   line-height: 1.35;
   color: var(--text-soft);
+}
+
+p.slide-card-text {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
+}
+
+.slide-card-edit {
+  width: 100%;
+  min-height: 4.5rem;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
 }
 
 @media (max-width: 800px) {

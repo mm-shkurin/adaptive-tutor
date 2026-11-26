@@ -45,6 +45,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Security: mass-assignment create ignored; virus error no path/bytes; neighbour slides/delete-slide absent (sec 1.1–1.3; 1.4 already in progress tests)
 - [x] Weak OCR → formula assist (API 4.5 + intg timeout path); prod `NoopFormulaAssist` until live chat-LLM wire (P4)
 - [x] Editor title blur → PATCH; slide ↑/↓ reorder (UI for API 5.1)
+- [x] Ready slide text edit on blur (UI for API 5.2)
 
 ## Integration seam (chat slide citation)
 

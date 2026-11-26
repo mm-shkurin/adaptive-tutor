@@ -236,6 +236,27 @@ export function useDocumentsScreen() {
     }
   }
 
+  async function saveSlideText(slideId, text) {
+    if (!editor || editor.status !== 'ready') return
+    const current = editor.slides.find((slide) => slide.id === slideId)
+    if (!current || current.text === text) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await patchPresentation(
+        editor.id,
+        { slides: [{ id: slideId, text }] },
+        controller.signal,
+      )
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    }
+  }
+
   function closeEditor() {
     setEditor(null)
     setEditorRefusal(null)
@@ -415,6 +436,7 @@ export function useDocumentsScreen() {
     openPresentationRow,
     renamePresentation,
     reorderSlide,
+    saveSlideText,
     closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }

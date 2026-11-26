@@ -188,9 +188,19 @@ export function PresentationEditor({ screen }) {
                 ↓
               </button>
             </div>
-            <p className="slide-card-text" data-testid="slide-card-text">
-              {presentation.status === 'ready' ? readySlideCardText(slide) : slideCardCaption(slide)}
-            </p>
+            {presentation.status === 'ready' ? (
+              <textarea
+                className="slide-card-text slide-card-edit"
+                data-testid="slide-card-text"
+                defaultValue={readySlideCardText(slide)}
+                aria-label={`Текст слайда ${slide.position}`}
+                onBlur={(event) => screen.saveSlideText(slide.id, event.target.value)}
+              />
+            ) : (
+              <p className="slide-card-text" data-testid="slide-card-text">
+                {slideCardCaption(slide)}
+              </p>
+            )}
           </div>
         ))}
       </div>
