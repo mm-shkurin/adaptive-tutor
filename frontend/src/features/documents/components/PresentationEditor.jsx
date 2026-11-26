@@ -91,6 +91,7 @@ export function PresentationEditor({ screen }) {
           hidden
           accept={GALLERY_ACCEPT}
           multiple
+          data-testid="slide-gallery-input"
           onChange={(event) => {
             const selected = event.target.files
             event.target.value = ''
