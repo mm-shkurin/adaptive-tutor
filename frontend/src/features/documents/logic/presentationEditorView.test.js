@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   NO_SLIDES_INDEX,
+  indexButtonLabel,
+  indexFailureBanner,
   presentationErrorMessage,
   readySlideCardText,
   readySlideShowsPhoto,
@@ -41,5 +43,13 @@ describe('presentationEditorView', () => {
     expect(readySlideShowsPhoto('ready')).toBe(false)
     expect(readySlideShowsPhoto('draft')).toBe(true)
     expect(readySlideCardText({ text: '  Recognized line  ', position: 1 })).toBe('Recognized line')
+  })
+
+  it('failed index keeps a retry label and failure banner', () => {
+    expect(indexButtonLabel('draft')).toBe('Готово · индексировать')
+    expect(indexButtonLabel('failed')).toBe('Повторить индексацию')
+    expect(indexFailureBanner({ status: 'draft' })).toBeNull()
+    expect(indexFailureBanner({ status: 'failed', error: 'ocr refused' })).toBe('ocr refused')
+    expect(indexFailureBanner({ status: 'failed', error: '' })).toMatch(/повторить/i)
   })
 })

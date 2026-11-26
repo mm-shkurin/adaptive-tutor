@@ -212,9 +212,20 @@ class AcceptanceServer:
         app.state.index_probe = self.probe
         app.state.peak_chat_hold = self.peak_chat_hold
         app.state.accounts = self._accounts
+        app.state.presentation_ocr = self._ocr
         search = SearchDocuments(self._intake, self._pieces)
 
         from adapters.http.documents import _caller as document_caller
+
+        @app.post("/acceptance/presentations/ocr-fail")
+        async def presentation_ocr_fail():
+            self._ocr.fail()
+            return {"ok": True}
+
+        @app.post("/acceptance/presentations/ocr-clear")
+        async def presentation_ocr_clear():
+            self._ocr.clear_failures()
+            return {"ok": True}
 
         @app.get("/acceptance/documents/{document_id}/searchable-pieces")
         async def searchable_pieces(document_id: UUID, request: Request):

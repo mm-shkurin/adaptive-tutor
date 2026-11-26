@@ -1,14 +1,14 @@
 # Story 3: Презентации (+ прогресс) — Progress
 
-AFK started 2026-11-25 ~21:58; continued 2026-11-26b ~08:59 budget 110m. Branch `features/presentations`. Issues: `AFK_ISSUES.md`, `AFK_ISSUES_2026-11-26b.md`.
+AFK started 2026-11-25 ~21:58; continued 2026-11-26b ~08:59 + 2026-11-26c ~21:47. Branch `features/presentations`. Issues: `AFK_ISSUES.md`, `AFK_ISSUES_2026-11-26b.md`, `AFK_ISSUES_2026-11-26c.md`.
 
 ## Spec
 - [x] interview (2026-11-25; open gaps → AFK defaults)
 - [x] story (`03_Presentations.md` + Notes)
 - [x] api-spec (`endpoints.md`, `presentations.yaml`, `progress.yaml`, `documents.yaml` kind)
 - [x] test-spec (`tests/01`–`06`)
-- [ ] hazard-scan fold on tests (parked — Notes fold + security tests; formal `/hazard-scan` optional)
-- [ ] tiering (provisional Tier markers already in `tests/*.md`; formal `/tiering` optional)
+- [x] hazard-scan fold on tests (Notes fold + security tests; formal `/hazard-scan` agent skipped — parked as optional)
+- [x] tiering (provisional Tier markers in `tests/*.md`; formal `/tiering` agent skipped — parked as optional)
 
 ## Delivery notes
 
@@ -54,6 +54,8 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] AcceptanceServer wires presentations + progress; Selenium UI 1.1 editor door, UI 1.3 no-slides refusal, UI 1.4 ready row (API seed), UI 2.2 delete, UI 3.1 progress stats
 - [x] Docker backend image rebuild → alembic `0018` head on local stack
 - [x] Failed-index recovery: re-index + add slides from `failed`; keep bytes on fail; unexpected errors → `indexing failed`
+- [x] Embeddings fail then retry recovers searchable pieces (`test_presentation_index_failures`)
+- [x] Failed editor UX: retry CTA + failure banner (vitest + Selenium via acceptance OCR probe)
 
 ## Integration seam (chat slide citation)
 

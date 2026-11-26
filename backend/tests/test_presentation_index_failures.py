@@ -57,6 +57,10 @@ def test_embeddings_failure_fails_the_index():
     assert body["error"] == "search store refused"
     bundle.pieces.dead = False
     assert pieces(bundle, presentation_id) == ()
+    retry = index(bundle, access, presentation_id, key="retry-embed")
+    assert retry.status_code == 202
+    assert retry.json()["status"] == "ready"
+    assert pieces(bundle, presentation_id) == ("searchable",)
 
 
 def test_app_uses_fake_ocr_and_formula_ports():

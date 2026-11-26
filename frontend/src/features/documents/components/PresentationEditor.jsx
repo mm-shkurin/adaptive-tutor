@@ -1,6 +1,12 @@
 import { useRef, useState } from 'react'
 import { parsePdfPageList } from '../logic/presentationPdfSlides'
-import { readySlideCardText, slideCardCaption, slideCountLabel } from '../logic/presentationEditorView'
+import {
+  indexButtonLabel,
+  indexFailureBanner,
+  readySlideCardText,
+  slideCardCaption,
+  slideCountLabel,
+} from '../logic/presentationEditorView'
 
 const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
 const OFFICE_ACCEPT =
@@ -51,10 +57,15 @@ export function PresentationEditor({ screen }) {
             data-testid="pres-index"
             onClick={() => screen.indexPresentation()}
           >
-            Готово · индексировать
+            {indexButtonLabel(presentation.status)}
           </button>
         </div>
       </div>
+      {indexFailureBanner(presentation) ? (
+        <div className="refuse" role="alert" data-testid="pres-index-failure">
+          {indexFailureBanner(presentation)}
+        </div>
+      ) : null}
       {screen.editorRefusal ? (
         <div className="refuse" role="alert" data-testid="pres-refusal">
           {screen.editorRefusal}

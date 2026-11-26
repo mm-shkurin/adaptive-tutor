@@ -56,3 +56,13 @@ export function presentationErrorMessage(error) {
   if (code && ADD_REASON[code]) return ADD_REASON[code]
   return failureText(error)
 }
+
+export function indexButtonLabel(status) {
+  return status === 'failed' ? 'Повторить индексацию' : 'Готово · индексировать'
+}
+
+export function indexFailureBanner(presentation) {
+  if (presentation?.status !== 'failed') return null
+  const reason = presentation.error?.trim()
+  return reason || 'Индексация не удалась. Можно поправить слайды и повторить.'
+}
