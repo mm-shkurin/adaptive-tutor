@@ -37,7 +37,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | R6 | Formal hazard-scan / tiering / spec-skeptic | Optional; Notes + provisional Tier markers exist |
 | R7 | Load 40-slide 5-min budget | Needs real OCR timing; keep Tier 2 parked or synthetic deadline test |
 | R8 | Drag-and-drop reorder | ↑↓ already shipped |
-| R9 | Docker backend image / alembic head | Container reports `0012_quizzes`; story needs `0014`–`0018` — rebuild backend image + `make migrate` before live poke |
+| R9 | Docker backend image / alembic head | **Done this AFK** — rebuilt `adaptive-tutor-backend:local`; alembic now `0018_chat_line_created_at` |
 
 ## Session log
 
