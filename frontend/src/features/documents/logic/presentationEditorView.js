@@ -58,7 +58,9 @@ export function presentationErrorMessage(error) {
 }
 
 export function indexButtonLabel(status) {
-  return status === 'failed' ? 'Повторить индексацию' : 'Готово · индексировать'
+  if (status === 'failed') return 'Повторить индексацию'
+  if (status === 'indexing') return 'Индексация…'
+  return 'Готово · индексировать'
 }
 
 export function indexFailureBanner(presentation) {

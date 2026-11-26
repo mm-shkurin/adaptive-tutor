@@ -56,6 +56,8 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Failed-index recovery: re-index + add slides from `failed`; keep bytes on fail; unexpected errors → `indexing failed`
 - [x] Embeddings fail then retry recovers searchable pieces (`test_presentation_index_failures`)
 - [x] Failed editor UX: retry CTA + failure banner (vitest + Selenium via acceptance OCR probe)
+- [x] Tighten UI 0.1/1.1 selenium (no editor for guest; empty draft maxlength 80 + 0 slides); indexing label/disabled; list `document-failure`
+- [x] Split PresentationEditor → toolbar/grid components (&lt;200 lines)
 
 ## Integration seam (chat slide citation)
 

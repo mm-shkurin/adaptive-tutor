@@ -80,6 +80,17 @@ class DocumentLibraryStatements:
         assert self._visible(PRES_TITLE)
         assert self._visible(PRES_INDEX)
 
+    def then_the_presentation_editor_is_empty_draft(self) -> None:
+        title = self._visible(PRES_TITLE)[0]
+        assert title.get_attribute("maxlength") == "80"
+        assert self._visible((By.CSS_SELECTOR, "[data-testid='slide-card']")) == []
+        count = self._visible((By.CSS_SELECTOR, "[data-testid='slides-count']"))
+        assert count and "0" in count[0].text
+
+    def then_the_presentation_editor_is_not_shown(self) -> None:
+        assert self._visible(PRES_TITLE) == []
+        assert self._visible((By.CSS_SELECTOR, "[data-testid='docs-editor']")) == []
+
     def then_the_list_reads_no_materials(self) -> None:
         self._assert_visible_text(DOCUMENT_LIST, NO_MATERIALS)
 

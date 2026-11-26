@@ -30,3 +30,4 @@ class TestGuestWhoOpensDocumentsSeesNoList(AbstractUiTest):
         document_library.then_the_guest_sees_the_landing()
         document_library.then_no_document_list_is_shown()
         document_library.then_no_upload_door_is_shown()
+        document_library.then_the_presentation_editor_is_not_shown()

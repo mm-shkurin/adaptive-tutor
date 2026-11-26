@@ -1,31 +1,14 @@
-import { useRef, useState } from 'react'
-import { parsePdfPageList } from '../logic/presentationPdfSlides'
 import {
   indexButtonLabel,
   indexFailureBanner,
-  readySlideCardText,
-  slideCardCaption,
-  slideCountLabel,
 } from '../logic/presentationEditorView'
-
-const GALLERY_ACCEPT = 'image/jpeg,image/png,image/webp'
-const OFFICE_ACCEPT =
-  '.pptx,.docx,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+import { PresentationSlidesGrid } from './PresentationSlidesGrid'
+import { PresentationSlidesToolbar } from './PresentationSlidesToolbar'
 
 export function PresentationEditor({ screen }) {
   const presentation = screen.editor
-  const galleryRef = useRef(null)
-  const cameraRef = useRef(null)
-  const officeRef = useRef(null)
   const readyPdfs = screen.readyPdfs ?? []
-  const [pdfId, setPdfId] = useState(readyPdfs[0]?.id ?? '')
-  const [pageList, setPageList] = useState('1')
-  const selectedPdf = readyPdfs.find((pdf) => pdf.id === pdfId) ?? readyPdfs[0]
-
-  function submitPdfPages(pages) {
-    if (!selectedPdf || !pages.length) return
-    screen.addPdfPages(selectedPdf.id, pages)
-  }
+  const failure = indexFailureBanner(presentation)
 
   return (
     <main className="documents-page" data-testid="docs-editor">
@@ -55,15 +38,16 @@ export function PresentationEditor({ screen }) {
             type="button"
             className="btn btn-dark"
             data-testid="pres-index"
+            disabled={presentation.status === 'indexing'}
             onClick={() => screen.indexPresentation()}
           >
             {indexButtonLabel(presentation.status)}
           </button>
         </div>
       </div>
-      {indexFailureBanner(presentation) ? (
+      {failure ? (
         <div className="refuse" role="alert" data-testid="pres-index-failure">
-          {indexFailureBanner(presentation)}
+          {failure}
         </div>
       ) : null}
       {screen.editorRefusal ? (
@@ -71,159 +55,8 @@ export function PresentationEditor({ screen }) {
           {screen.editorRefusal}
         </div>
       ) : null}
-      <div className="slides-toolbar">
-        <button
-          type="button"
-          className="btn btn-outline"
-          data-testid="slide-from-gallery"
-          onClick={() => galleryRef.current?.click()}
-        >
-          Из галереи
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline"
-          data-testid="slide-from-camera"
-          onClick={() => cameraRef.current?.click()}
-        >
-          Камера
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline"
-          data-testid="slide-from-office"
-          onClick={() => officeRef.current?.click()}
-        >
-          PPTX / DOCX
-        </button>
-        <input
-          ref={galleryRef}
-          type="file"
-          hidden
-          accept={GALLERY_ACCEPT}
-          multiple
-          data-testid="slide-gallery-input"
-          onChange={(event) => {
-            const selected = event.target.files
-            event.target.value = ''
-            if (selected?.length) screen.addGallerySlides(selected)
-          }}
-        />
-        <input
-          ref={cameraRef}
-          type="file"
-          hidden
-          accept={GALLERY_ACCEPT}
-          capture="environment"
-          onChange={(event) => {
-            const selected = event.target.files
-            event.target.value = ''
-            if (selected?.length) screen.addGallerySlides(selected)
-          }}
-        />
-        <input
-          ref={officeRef}
-          type="file"
-          hidden
-          accept={OFFICE_ACCEPT}
-          onChange={(event) => {
-            const selected = event.target.files?.[0]
-            event.target.value = ''
-            if (selected) screen.addOfficeFile(selected)
-          }}
-        />
-        {readyPdfs.length > 0 ? (
-          <div className="slides-pdf-add" data-testid="slide-pdf-picker">
-            <select
-              className="slides-pdf-select"
-              data-testid="slide-pdf-select"
-              value={selectedPdf?.id ?? ''}
-              onChange={(event) => setPdfId(event.target.value)}
-              aria-label="Готовый PDF"
-            >
-              {readyPdfs.map((pdf) => (
-                <option key={pdf.id} value={pdf.id}>
-                  {pdf.name}
-                </option>
-              ))}
-            </select>
-            <input
-              className="slides-pdf-pages"
-              data-testid="slide-pdf-pages"
-              type="text"
-              inputMode="numeric"
-              aria-label="Номера страниц"
-              value={pageList}
-              onChange={(event) => setPageList(event.target.value)}
-            />
-            <button
-              type="button"
-              className="btn btn-outline"
-              data-testid="slide-from-pdf"
-              onClick={() => submitPdfPages(parsePdfPageList(pageList, selectedPdf?.page_count))}
-            >
-              Из PDF
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline"
-              data-testid="slide-pdf-page-1"
-              onClick={() => screen.addPdfQuickPage()}
-            >
-              Стр. 1
-            </button>
-          </div>
-        ) : null}
-        <span className="slides-count" data-testid="slides-count">
-          {slideCountLabel(presentation.slide_count)}
-        </span>
-      </div>
-      <div className="slides-grid" data-testid="slides-grid">
-        {presentation.slides.map((slide) => (
-          <div key={slide.id} className="slide-card" data-testid="slide-card">
-            <span className="slide-num">{slide.position}</span>
-            <div className="slide-card-actions">
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                data-testid={`slide-up-${slide.id}`}
-                onClick={() => screen.reorderSlide(slide.id, 'up')}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                data-testid={`slide-down-${slide.id}`}
-                onClick={() => screen.reorderSlide(slide.id, 'down')}
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                data-testid={`slide-remove-${slide.id}`}
-                onClick={() => screen.deleteSlide(slide.id)}
-              >
-                ×
-              </button>
-            </div>
-            {presentation.status === 'ready' ? (
-              <textarea
-                className="slide-card-text slide-card-edit"
-                data-testid="slide-card-text"
-                defaultValue={readySlideCardText(slide)}
-                aria-label={`Текст слайда ${slide.position}`}
-                onBlur={(event) => screen.saveSlideText(slide.id, event.target.value)}
-              />
-            ) : (
-              <p className="slide-card-text" data-testid="slide-card-text">
-                {slideCardCaption(slide)}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
+      <PresentationSlidesToolbar screen={screen} presentation={presentation} readyPdfs={readyPdfs} />
+      <PresentationSlidesGrid presentation={presentation} screen={screen} />
     </main>
   )
 }

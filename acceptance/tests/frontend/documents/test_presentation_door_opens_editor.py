@@ -20,4 +20,5 @@ class TestPresentationDoorOpensEditor(AbstractUiTest):
         document_library.when_the_person_opens_documents()
         document_library.when_the_person_activates_create_presentation()
         document_library.then_the_presentation_editor_is_open()
+        document_library.then_the_presentation_editor_is_empty_draft()
         document_library.then_no_pdf_upload_starts()

@@ -49,6 +49,10 @@ class TestFailedPresentationShowsRetryInEditor(AbstractUiTest):
                 if element.is_displayed()
             )
         )
+        failure = document_library.driver.find_element(
+            By.CSS_SELECTOR, "[data-testid='document-failure']"
+        ).text
+        assert "ocr refused" in failure
         row = next(
             element
             for element in document_library.driver.find_elements(

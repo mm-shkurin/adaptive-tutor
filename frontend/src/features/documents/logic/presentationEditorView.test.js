@@ -48,6 +48,7 @@ describe('presentationEditorView', () => {
   it('failed index keeps a retry label and failure banner', () => {
     expect(indexButtonLabel('draft')).toBe('Готово · индексировать')
     expect(indexButtonLabel('failed')).toBe('Повторить индексацию')
+    expect(indexButtonLabel('indexing')).toBe('Индексация…')
     expect(indexFailureBanner({ status: 'draft' })).toBeNull()
     expect(indexFailureBanner({ status: 'failed', error: 'ocr refused' })).toBe('ocr refused')
     expect(indexFailureBanner({ status: 'failed', error: '' })).toMatch(/повторить/i)

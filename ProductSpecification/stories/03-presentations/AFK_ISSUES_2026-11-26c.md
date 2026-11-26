@@ -34,3 +34,5 @@ Questions are **not** asked in chat. Park here; keep shipping unblocked work.
 | 21:47 | Resume AFK; inspect WIP after morning session |
 | 21:49 | Embed-retry assertion; failed editor CTA/banner; acceptance OCR probe; Selenium retry label |
 | 21:50 | Mark hazard/tiering parked-done in progress (formal agents still optional for human) |
+| 21:54 | UI 0.1/1.1 selenium tighten; indexing label; list failure meta |
+| 21:56 | Split PresentationEditor; soft-stop — story ready for human merge/D1–D5 |
