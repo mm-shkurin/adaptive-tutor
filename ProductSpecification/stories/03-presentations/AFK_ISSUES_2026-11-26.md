@@ -27,12 +27,14 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 
 | # | Item | Notes |
 |---|------|-------|
-| Q1 | Dirty newline-only `__init__.py` WIP + discussion.md from prior AFK | Fold discussion into handoff/commit if still valid; discard empty `__init__` noise or leave unstaged. |
+| Q1 | Dirty newline-only `__init__.py` WIP | Discarded this AFK. |
 | Q2 | Live OCR / Tesseract | Still FakeOcr — prior P3/P13. |
 | Q3 | Merge `features/presentations` → `dev` | Human order. |
 | Q4 | Confirm AFK defaults D1–D5 | Human poke. |
-| Q5 | Selenium full presentation journey if infra down | Vitest covers row mapping; park selenium fail reason here. |
-| Q6 | P8 chat `person_send_times` in Postgres | **Done this AFK** — migration `0018`; run `alembic upgrade head` before poke. |
+| Q5 | Selenium UI 1.4 / presentation journey | No `infrastructure/.env` / stack this session; vitest covers list/editor. |
+| Q6 | P8 chat `person_send_times` in Postgres | **Done** — migration `0018`. |
+| Q7 | HttpFormulaAssist (multimodal) | Path + FakeAssist green; prod Noop until FREE_LLM image enricher decided. |
+| Q8 | Formal `/hazard-scan` + `/tiering` | Optional; Notes + provisional Tier markers exist. |
 
 ## Session log
 
@@ -48,4 +50,5 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 08:55 | API 4.5 weak OCR formula assist + timeout keeps OCR; prod NoopFormulaAssist (live LLM still P4) |
 | 08:52–08:54 | Editor title/reorder/ready-text PATCH UI |
 | 08:54 | Progress activity feed card |
+| 08:55 | Delete-slide UI; activity feed; soft-stop of ready queue (selenium needs stack; HttpFormulaAssist needs multimodal decision) |
 | | Still parked: selenium (no local stack/.env), formal hazard/tiering, live OCR/Tesseract, drag-and-drop (↑↓ instead), HttpFormulaAssist |

@@ -7,8 +7,8 @@ AFK started 2026-11-25 ~21:58, budget 110m. Branch `features/presentations`. Iss
 - [x] story (`03_Presentations.md` + Notes)
 - [x] api-spec (`endpoints.md`, `presentations.yaml`, `progress.yaml`, `documents.yaml` kind)
 - [x] test-spec (`tests/01`–`06`)
-- [ ] hazard-scan fold on tests (parked — AFK used Notes fold; formal scan optional)
-- [ ] tiering (provisional Tier markers in test files; formal `/tiering` optional)
+- [ ] hazard-scan fold on tests (parked — Notes fold + security tests; formal `/hazard-scan` optional)
+- [ ] tiering (provisional Tier markers already in `tests/*.md`; formal `/tiering` optional)
 
 ## Delivery notes
 
