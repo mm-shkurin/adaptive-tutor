@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { bandDotClass, formatMasteryPercent, materialChips, progressView } from './progressView'
+import {
+  bandDotClass,
+  formatMasteryPercent,
+  materialChips,
+  progressView,
+  weakTopicsOnly,
+} from './progressView'
 
 function topic(id, name, mastery, band) {
   return { id, name, mastery, material_id: 'mat-1', band }
@@ -57,5 +63,22 @@ describe('progressView', () => {
     const chips = materialChips(progressBody().materials, 'mat-1')
     expect(chips[0]).toMatchObject({ label: 'Все материалы', active: false })
     expect(chips[1]).toMatchObject({ id: 'mat-1', active: true })
+  })
+
+  it('weak list keeps only topics below 40% and matches the weak count', () => {
+    const view = progressView(
+      progressBody({
+        weak_topic_count: 2,
+        weak_topics: [
+          topic('t2', 'Интегралы', 35, 'weak'),
+          topic('t3', 'Среднее', 52, 'medium'),
+          topic('t4', 'Ещё слабо', 10, 'weak'),
+        ],
+      }),
+    )
+    expect(weakTopicsOnly(view.weakTopics).map((row) => row.name)).toEqual(['Интегралы', 'Ещё слабо'])
+    expect(view.weakTopics).toHaveLength(2)
+    expect(view.stats.find((stat) => stat.key === 'weak').value).toBe('2')
+    expect(view.topicNodes[0].materialId).toBe('mat-1')
   })
 })

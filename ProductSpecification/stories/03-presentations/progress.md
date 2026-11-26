@@ -38,6 +38,9 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] ready editor text not photo (UI 2.1 — `readySlideShowsPhoto` / `readySlideCardText`)
 - [x] Tier 2 API: omitted title default (2.2), reorder positions (5.1), delete only draft slide (5.3)
 - [x] Progress panel from GET `/api/v1/progress` (UI 3.1 — four stats, topic nodes, weak list; vitest `progressView` + `progressBody`)
+- [x] Weak list &lt;40% matches count (UI 3.2 — client filter in `progressView`)
+- [x] Topic actions quiz + chat (UI 3.3 — TopicDetail; navigate with state to `/quizzes/new` and `/chat`)
+- [x] Tier 2 API 3.3 — add slides without Idempotency-Key → 422
 
 ## Integration seam (chat slide citation)
 

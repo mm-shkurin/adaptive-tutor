@@ -41,3 +41,4 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 08:38 | Start AFK 110m on `features/presentations`; queue from progress.md |
 | 08:40 | UI 1.4: libraryView draft+ready presentation rows; leaveEditorAfterIndex; close editor on ready; CSS draft pill; sanity fail observed |
 | 08:42 | Open row via GET; UI 2.1 ready text helpers; API 2.2/5.1/5.3 pytest green (13) |
+| 08:46 | UI 3.2/3.3 topic detail actions + weak filter; API 3.3 missing Idempotency-Key |

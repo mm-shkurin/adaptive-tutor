@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   createChat,
   getChat,
@@ -16,6 +16,7 @@ import { applySendLines, shouldPaintSend } from './logic/sendResult'
 
 export function useChatScreen() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [attempt, setAttempt] = useState(0)
   const [status, setStatus] = useState('loading')
   const [summaries, setSummaries] = useState([])
@@ -33,6 +34,9 @@ export function useChatScreen() {
   const switchLock = useRef(false)
   const inFlight = useRef(0)
   const draftRef = useRef('')
+  const pendingDocumentId = useRef(
+    typeof location.state?.documentId === 'string' ? location.state.documentId : null,
+  )
 
   const setDraft = (value) => {
     draftRef.current = value
@@ -43,9 +47,28 @@ export function useChatScreen() {
     const controller = new AbortController()
     setStatus('loading')
     const state = { activeId, setChat, setSummaries, setEmptyReason, setStatus, navigate }
+    const wantedDocumentId = pendingDocumentId.current
     listChats(controller.signal)
       .then(async (listed) => {
-        if (!controller.signal.aborted) await openListedChats(listed.chats, controller, state)
+        if (controller.signal.aborted) return
+        if (wantedDocumentId) {
+          pendingDocumentId.current = null
+          try {
+            const opened = await openChat(wantedDocumentId, controller.signal)
+            if (controller.signal.aborted) return
+            activeId.current = opened.id
+            const loaded = await getChat(opened.id, controller.signal)
+            if (controller.signal.aborted) return
+            setChat(loaded)
+            setSummaries(upsertSummary(listed.chats, loaded))
+            setEmptyReason(null)
+            setStatus('ready')
+            return
+          } catch (error) {
+            if (leaveIfExpired(error, navigate)) return
+          }
+        }
+        await openListedChats(listed.chats, controller, state)
       })
       .catch((error) => {
         if (!controller.signal.aborted && !leaveIfExpired(error, navigate)) setStatus('error')

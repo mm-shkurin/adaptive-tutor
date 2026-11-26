@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useLocation, useMatch, useNavigate } from 'react-router-dom'
 import { failureText } from '../../shared/api/failureText'
 import { httpErrorIn } from '../../shared/api/httpResponse'
 import {
@@ -35,12 +35,14 @@ import {
 
 export function useQuizzesScreen() {
   const navigate = useNavigate()
+  const location = useLocation()
   const isNew = Boolean(useMatch({ path: '/quizzes/new', end: true }))
   const playMatch = useMatch({ path: '/quizzes/:quizId', end: true })
   const quizId = isNew ? null : (playMatch?.params.quizId ?? null)
   const isNewRef = useRef(isNew)
   isNewRef.current = isNew
   const heldQuizId = useRef(null)
+  const seed = location.state && typeof location.state === 'object' ? location.state : null
 
   const [attempt, setAttempt] = useState(0)
   const [status, setStatus] = useState('loading')
@@ -48,9 +50,11 @@ export function useQuizzesScreen() {
   const [documents, setDocuments] = useState([])
   const [documentsFailed, setDocumentsFailed] = useState(false)
   const [quiz, setQuiz] = useState(null)
-  const [topic, setTopic] = useState('')
+  const [topic, setTopic] = useState(() => (typeof seed?.topic === 'string' ? seed.topic : ''))
   const [questionCount, setQuestionCount] = useState(DEFAULT_QUESTION_COUNT)
-  const [documentId, setDocumentId] = useState('')
+  const [documentId, setDocumentId] = useState(() =>
+    typeof seed?.documentId === 'string' ? seed.documentId : '',
+  )
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState(null)
   const [listError, setListError] = useState(null)

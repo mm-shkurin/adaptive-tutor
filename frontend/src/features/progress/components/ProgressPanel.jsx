@@ -11,7 +11,13 @@ export function ProgressPanel({ screen }) {
       <MaterialFilter chips={panel.materialChips} onPick={screen.pickMaterial} />
       <ProgressStats stats={panel.stats} />
       <div className="progress-grid">
-        <TopicNodesCard nodes={panel.topicNodes} />
+        <TopicNodesCard
+          nodes={panel.topicNodes}
+          selectedTopicId={screen.selectedTopicId}
+          onSelectTopic={screen.selectTopic}
+          onQuiz={screen.startTopicQuiz}
+          onChat={screen.askTopicInChat}
+        />
         <WeakTopicsCard topics={panel.weakTopics} />
       </div>
     </>

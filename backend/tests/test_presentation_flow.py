@@ -75,6 +75,24 @@ def test_same_idempotency_key_does_not_duplicate_slides():
     assert first.json()["slide_count"] == 1
 
 
+def test_adding_slides_without_idempotency_key_is_refused():
+    bundle = build()
+    access = token(bundle)
+    presentation_id = create(bundle, access).json()["id"]
+    response = bundle.client.post(
+        f"/api/v1/presentations/{presentation_id}/slides",
+        headers=bearer(access),
+        files=[("images", ("slide.jpg", b"\xff\xd8\xff\xd9", "image/jpeg"))],
+    )
+    assert response.status_code == 422
+    assert (
+        bundle.client.get(f"/api/v1/presentations/{presentation_id}", headers=bearer(access)).json()[
+            "slide_count"
+        ]
+        == 0
+    )
+
+
 def test_index_with_zero_slides_is_refused():
     bundle = build()
     access = token(bundle)

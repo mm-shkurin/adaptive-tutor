@@ -9,12 +9,15 @@ export function bandDotClass(band) {
   return 'prog-band-weak'
 }
 
+const WEAK_MASTERY_BELOW = 40
+
 function topicRow(topic) {
   return {
     id: topic.id,
     name: topic.name,
     mastery: topic.mastery,
     masteryLabel: formatMasteryPercent(topic.mastery),
+    materialId: topic.material_id,
     band: topic.band,
     bandClass: bandDotClass(topic.band),
   }
@@ -28,7 +31,15 @@ export function materialChips(materials, selectedMaterialId) {
   return chips
 }
 
+export function weakTopicsOnly(topics) {
+  return topics.filter((topic) => topic.mastery < WEAK_MASTERY_BELOW)
+}
+
 export function progressView(body, selectedMaterialId = null) {
+  const weakTopics = weakTopicsOnly(body.weak_topics.map(topicRow)).map((topic) => ({
+    ...topic,
+    barWidth: `${Math.round(topic.mastery)}%`,
+  }))
   return {
     stats: [
       {
@@ -40,7 +51,7 @@ export function progressView(body, selectedMaterialId = null) {
       {
         key: 'weak',
         testId: 'prog-weak-n',
-        value: String(body.weak_topic_count),
+        value: String(weakTopics.length),
         label: 'Слабые темы',
       },
       {
@@ -57,10 +68,7 @@ export function progressView(body, selectedMaterialId = null) {
       },
     ],
     topicNodes: body.topics.map(topicRow),
-    weakTopics: body.weak_topics.map((topic) => ({
-      ...topicRow(topic),
-      barWidth: `${Math.round(topic.mastery)}%`,
-    })),
+    weakTopics,
     materialChips: materialChips(body.materials, selectedMaterialId),
   }
 }

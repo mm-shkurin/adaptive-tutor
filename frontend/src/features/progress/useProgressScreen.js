@@ -4,12 +4,14 @@ import { fetchProgress } from '../../shared/api/backend/progressApi'
 import { isSessionExpired } from '../../shared/session/authorizedRequest'
 import { endSession } from '../../shared/session/authSession'
 import { progressView } from './logic/progressView'
+import { chatForMaterialTarget, quizCreateTarget } from './logic/topicActions'
 
 export function useProgressScreen() {
   const navigate = useNavigate()
   const [attempt, setAttempt] = useState(0)
   const [status, setStatus] = useState('loading')
   const [materialId, setMaterialId] = useState(null)
+  const [selectedTopicId, setSelectedTopicId] = useState(null)
   const [panel, setPanel] = useState(null)
 
   useEffect(() => {
@@ -31,13 +33,32 @@ export function useProgressScreen() {
 
   function pickMaterial(id) {
     setMaterialId(id)
+    setSelectedTopicId(null)
+  }
+
+  function selectTopic(id) {
+    setSelectedTopicId(id)
+  }
+
+  function startTopicQuiz(topic) {
+    const target = quizCreateTarget(topic)
+    if (target) navigate(target.path, { state: target.state })
+  }
+
+  function askTopicInChat(topic) {
+    const target = chatForMaterialTarget(topic)
+    if (target) navigate(target.path, { state: target.state })
   }
 
   return {
     status,
     panel,
     materialId,
+    selectedTopicId,
     pickMaterial,
+    selectTopic,
+    startTopicQuiz,
+    askTopicInChat,
     retry: () => setAttempt((value) => value + 1),
   }
 }

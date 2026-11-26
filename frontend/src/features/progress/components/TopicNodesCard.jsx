@@ -1,4 +1,7 @@
-export function TopicNodesCard({ nodes }) {
+import { TopicDetail } from './TopicDetail'
+
+export function TopicNodesCard({ nodes, selectedTopicId, onSelectTopic, onQuiz, onChat }) {
+  const selected = nodes.find((node) => node.id === selectedTopicId) ?? null
   return (
     <div className="prog-card" data-testid="prog-topic-nodes">
       <div className="prog-card-head">
@@ -12,12 +15,19 @@ export function TopicNodesCard({ nodes }) {
       ) : (
         <ul className="prog-node-list">
           {nodes.map((node) => (
-            <li key={node.id} className="prog-node-row" data-testid={`prog-topic-${node.id}`}>
-              <span className={`prog-band-dot ${node.bandClass}`} aria-hidden="true" />
-              <span className="prog-node-name">{node.name}</span>
-              <span className="prog-node-mastery" data-testid={`prog-topic-mastery-${node.id}`}>
-                {node.masteryLabel}
-              </span>
+            <li key={node.id}>
+              <button
+                type="button"
+                className={`prog-node-row${node.id === selectedTopicId ? ' is-selected' : ''}`}
+                data-testid={`prog-topic-${node.id}`}
+                onClick={() => onSelectTopic?.(node.id)}
+              >
+                <span className={`prog-band-dot ${node.bandClass}`} aria-hidden="true" />
+                <span className="prog-node-name">{node.name}</span>
+                <span className="prog-node-mastery" data-testid={`prog-topic-mastery-${node.id}`}>
+                  {node.masteryLabel}
+                </span>
+              </button>
             </li>
           ))}
         </ul>
@@ -36,6 +46,7 @@ export function TopicNodesCard({ nodes }) {
           Слабо &lt;40%
         </span>
       </div>
+      <TopicDetail topic={selected} onQuiz={onQuiz} onChat={onChat} />
     </div>
   )
 }
