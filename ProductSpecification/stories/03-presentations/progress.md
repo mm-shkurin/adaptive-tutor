@@ -47,6 +47,7 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Editor title blur → PATCH; slide ↑/↓ reorder (UI for API 5.1)
 - [x] Ready slide text edit on blur (UI for API 5.2)
 - [x] Progress activity feed (Недавняя активность from GET activity[])
+- [x] Remove slide from editor (DELETE …/slides/{id})
 
 ## Integration seam (chat slide citation)
 

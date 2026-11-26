@@ -34,6 +34,7 @@ export const BACKEND = {
     create: `${V1}/presentations`,
     item: (id) => `${V1}/presentations/${id}`,
     slides: (id) => `${V1}/presentations/${id}/slides`,
+    slide: (id, slideId) => `${V1}/presentations/${id}/slides/${slideId}`,
     index: (id) => `${V1}/presentations/${id}/index`,
   },
   progress: `${V1}/progress`,

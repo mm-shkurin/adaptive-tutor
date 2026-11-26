@@ -78,6 +78,14 @@ export function deletePresentation(id, signal) {
   })
 }
 
+export function deleteSlide(id, slideId, signal) {
+  return send(BACKEND.presentations.slide(id, slideId), {
+    method: 'DELETE',
+    signal,
+    guard: isPresentationBody,
+  })
+}
+
 export function indexPresentation(id, idempotencyKey, signal) {
   return send(BACKEND.presentations.index(id), {
     method: 'POST',

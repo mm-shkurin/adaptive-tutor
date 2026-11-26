@@ -7,6 +7,7 @@ import {
   addSlidesPdfPages,
   createPresentation,
   deletePresentation as removePresentation,
+  deleteSlide as removeSlide,
   getPresentation,
   indexPresentation as postPresentationIndex,
   patchPresentation,
@@ -257,6 +258,21 @@ export function useDocumentsScreen() {
     }
   }
 
+  async function deleteSlide(slideId) {
+    if (!editor || !slideId) return
+    const controller = new AbortController()
+    setEditorRefusal(null)
+    try {
+      const updated = await removeSlide(editor.id, slideId, controller.signal)
+      if (controller.signal.aborted) return
+      setEditor(updated)
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (leaveIfExpired(error, navigate)) return
+      setEditorRefusal(presentationErrorMessage(error))
+    }
+  }
+
   function closeEditor() {
     setEditor(null)
     setEditorRefusal(null)
@@ -437,6 +453,7 @@ export function useDocumentsScreen() {
     renamePresentation,
     reorderSlide,
     saveSlideText,
+    deleteSlide,
     closeEditor,
     retry: () => setAttempt((value) => value + 1),
   }

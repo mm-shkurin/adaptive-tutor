@@ -187,6 +187,14 @@ export function PresentationEditor({ screen }) {
               >
                 ↓
               </button>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                data-testid={`slide-remove-${slide.id}`}
+                onClick={() => screen.deleteSlide(slide.id)}
+              >
+                ×
+              </button>
             </div>
             {presentation.status === 'ready' ? (
               <textarea
