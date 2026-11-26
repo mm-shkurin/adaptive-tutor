@@ -34,7 +34,7 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | R2 | HttpFormulaAssist multimodal | Prod Noop; need FREE_LLM image enricher decision |
 | R3 | Merge → `dev` | Human |
 | R4 | Confirm D1–D5 | Human |
-| R5 | Docker daemon / Selenium | Docker later up; Selenium UI 1.1/1.3/2.2/3.1 green. UI 1.4 gallery upload parked — `slide-from-gallery` is a button, hidden file input has no testid |
+| R5 | Docker daemon / Selenium | Docker later up; Selenium UI 1.1/1.3/1.4/2.2/3.1 green. Gallery file upload in headless still flaky; UI 1.4 seeds via API then asserts list |
 | R6 | Formal hazard-scan / tiering / spec-skeptic | Optional; Notes + provisional Tier markers exist |
 | R7 | Load 40-slide 5-min budget | Needs real OCR timing; keep Tier 2 parked or synthetic deadline test |
 | R8 | Drag-and-drop reorder | ↑↓ already shipped |
@@ -51,3 +51,6 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 09:12 | material_row error + libraryView failed meta; load budget; FE tombstone vitest |
 | 09:14 | Docker Desktop up; AcceptanceServer wire presentations; Selenium UI 1.1 / 3.1 green |
 | 09:16 | Note: docker backend alembic still at `0012_quizzes` — needs image rebuild + upgrade for live poke (R9) |
+| 09:20 | Rebuild backend image → alembic `0018`; Selenium delete UI 2.2 |
+| 09:26 | Failed-index recovery (re-index from failed, keep bytes) |
+| 09:30 | Selenium UI 1.4 ready row via API seed; gallery input testid |
