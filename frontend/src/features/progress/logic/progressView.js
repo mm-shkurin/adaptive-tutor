@@ -69,6 +69,26 @@ export function progressView(body, selectedMaterialId = null) {
     ],
     topicNodes: body.topics.map(topicRow),
     weakTopics,
+    activity: (body.activity ?? []).map((item) => ({
+      id: `${item.kind}-${item.at}-${item.title}`,
+      title: item.title,
+      kind: item.kind,
+      at: item.at,
+      meta: formatActivityWhen(item.at),
+      warn: item.kind === 'quiz',
+    })),
     materialChips: materialChips(body.materials, selectedMaterialId),
   }
+}
+
+function formatActivityWhen(iso) {
+  if (typeof iso !== 'string' || !iso) return ''
+  const stamp = Date.parse(iso)
+  if (Number.isNaN(stamp)) return iso
+  return new Date(stamp).toLocaleString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }

@@ -46,4 +46,6 @@ Questions are **not** asked in chat. Defaults / park notes go here; work continu
 | 08:50 | Security mass-assign + virus disclosure + neighbour slide verbs |
 | 08:51 | Continued after first push — not soft-stopping early |
 | 08:55 | API 4.5 weak OCR formula assist + timeout keeps OCR; prod NoopFormulaAssist (live LLM still P4) |
-| | Still parked: selenium (stack down), formal hazard/tiering, live OCR/Tesseract, drag-reorder UI, HttpFormulaAssist |
+| 08:52–08:54 | Editor title/reorder/ready-text PATCH UI |
+| 08:54 | Progress activity feed card |
+| | Still parked: selenium (no local stack/.env), formal hazard/tiering, live OCR/Tesseract, drag-and-drop (↑↓ instead), HttpFormulaAssist |

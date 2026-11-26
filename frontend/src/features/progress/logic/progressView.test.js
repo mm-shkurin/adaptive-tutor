@@ -81,4 +81,19 @@ describe('progressView', () => {
     expect(view.stats.find((stat) => stat.key === 'weak').value).toBe('2')
     expect(view.topicNodes[0].materialId).toBe('mat-1')
   })
+
+  it('maps recent activity rows', () => {
+    const view = progressView(
+      progressBody({
+        activity: [{ at: '2024-05-06T07:08:09Z', kind: 'quiz', title: 'Викторина: Матрицы' }],
+      }),
+    )
+    expect(view.activity).toHaveLength(1)
+    expect(view.activity[0]).toMatchObject({
+      title: 'Викторина: Матрицы',
+      kind: 'quiz',
+      warn: true,
+    })
+    expect(view.activity[0].meta).toBeTruthy()
+  })
 })

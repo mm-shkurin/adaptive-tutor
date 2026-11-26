@@ -2,6 +2,7 @@ import { ProgressStats } from './ProgressStats'
 import { MaterialFilter } from './MaterialFilter'
 import { TopicNodesCard } from './TopicNodesCard'
 import { WeakTopicsCard } from './WeakTopicsCard'
+import { ActivityCard } from './ActivityCard'
 
 export function ProgressPanel({ screen }) {
   const { panel } = screen
@@ -20,6 +21,7 @@ export function ProgressPanel({ screen }) {
         />
         <WeakTopicsCard topics={panel.weakTopics} />
       </div>
+      <ActivityCard items={panel.activity} />
     </>
   )
 }
