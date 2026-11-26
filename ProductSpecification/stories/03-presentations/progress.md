@@ -1,6 +1,6 @@
 # Story 3: Презентации (+ прогресс) — Progress
 
-AFK started 2026-11-25 ~21:58, budget 110m. Branch `features/presentations`. Issues: `AFK_ISSUES.md`.
+AFK started 2026-11-25 ~21:58; continued 2026-11-26b ~08:59 budget 110m. Branch `features/presentations`. Issues: `AFK_ISSUES.md`, `AFK_ISSUES_2026-11-26b.md`.
 
 ## Spec
 - [x] interview (2026-11-25; open gaps → AFK defaults)
@@ -48,6 +48,8 @@ Default strip: `/backend-delivery` (no per-layer red/green). Spec-skeptic / merg
 - [x] Ready slide text edit on blur (UI for API 5.2)
 - [x] Progress activity feed (Недавняя активность from GET activity[])
 - [x] Remove slide from editor (DELETE …/slides/{id})
+- [x] Integration 1.1–1.3 + infra fakes: virus timeout; OCR/embeddings index → `failed` + empty pieces; FakeOcr/FakeFormulaAssist wiring; unreadable virus gate (`test_presentation_index_failures.py`)
+- [x] D1 tombstone «Источник удалён» on quiz/chat list+get after presentation hard-delete (Postgres chat outerjoin; ListQuizzes/GetQuiz/ListChats/GetChat)
 
 ## Integration seam (chat slide citation)
 

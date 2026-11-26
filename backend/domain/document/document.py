@@ -1,6 +1,8 @@
 from dataclasses import dataclass, replace
 from uuid import UUID, uuid4
 
+DELETED_SOURCE_NAME = "Источник удалён"
+
 
 class InvalidStatusTransition(Exception):
     """The step skips or reverses indexing."""

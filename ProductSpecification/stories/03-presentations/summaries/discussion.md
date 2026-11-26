@@ -39,3 +39,15 @@
 **Quirk:** `chat_lines.created_at` (migration `0018`) backfills from `chats.created_at` for old rows; new person lines stamp wall-clock (or injected store clock).
 **Where:** `adapters/storage/chat_store.py`, `chat_attempt_commit.py`
 **Implication:** Progress `sessions_this_week` needs `alembic upgrade head` through `0018` before chat days count in prod.
+
+## Weak OCR → formula assist (2026-11-26)
+
+**Decision:** Production keeps `NoopFormulaAssist`; tests script `FakeFormulaAssist` until a multimodal enricher is wired.
+**Why:** Existing chat LLM is text completions; image OCR enrichment needs a separate HTTP contract.
+**Where applied:** `application/presentation_wiring.py`, `adapters/presentation/noop_formula_assist.py`
+
+## discussion (2026-11-26)
+
+**Mistake:** Soft-stopped the 110-minute AFK after ~17 minutes when the «ready without human» queue looked empty.
+**Why wrong:** The user set an explicit wall-clock budget and said park blockers in a file and keep going.
+**Correct location/approach:** Spend remaining AFK budget on parkable work (write selenium, formal hazard/tiering, CI, scaffold) instead of ending at the first soft queue gap.

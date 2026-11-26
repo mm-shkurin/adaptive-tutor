@@ -6,14 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.exc import DBAPIError, IntegrityError, InterfaceError, OperationalError
 from sqlalchemy.orm import selectinload
 
-from adapters.persistence.tables import ChatAttemptRow, ChatLineRow, ChatRow, DocumentRow
-from adapters.storage.chat_attempt_commit import append_attempt
+from adapters.persistence.tables import ChatLineRow, ChatRow, DocumentRow
+from adapters.storage.chat_store_attempts import ChatStoreAttempts
 from domain.chat.chat import Chat
+from domain.document.document import DELETED_SOURCE_NAME
 from usecase.chat.errors import ChatNotFound, StoreUnavailable
-from usecase.chat.send_message import Attempt, ReplyError
 
 
-class PostgresChatStore:
+class PostgresChatStore(ChatStoreAttempts):
     def __init__(self, sessions, clock=None):
         self._sessions = sessions
         self._clock = clock
@@ -44,7 +44,7 @@ class PostgresChatStore:
             rows = (
                 await session.execute(
                     select(ChatRow, DocumentRow.name)
-                    .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
+                    .outerjoin(DocumentRow, DocumentRow.id == ChatRow.document_id)
                     .where(ChatRow.owner_id == owner_id)
                     .options(selectinload(ChatRow.lines))
                     .order_by(ChatRow.created_at.desc(), ChatRow.id.desc())
@@ -65,7 +65,7 @@ class PostgresChatStore:
             found = (
                 await session.execute(
                     select(ChatRow, DocumentRow.name)
-                    .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
+                    .outerjoin(DocumentRow, DocumentRow.id == ChatRow.document_id)
                     .where(ChatRow.owner_id == owner_id, ChatRow.document_id == document_id)
                     .options(selectinload(ChatRow.lines))
                     .order_by(ChatRow.created_at.desc(), ChatRow.id.desc())
@@ -103,81 +103,11 @@ class PostgresChatStore:
 
         await self._run(work)
 
-    async def find_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str) -> Attempt | None:
-        async def work(session):
-            chat = await self._owned(session, owner_id, chat_id)
-            if chat is None:
-                return None
-            row = await session.get(ChatAttemptRow, {"chat_id": chat_id, "attempt_key": attempt_key})
-            if row is None:
-                return None
-            by_id = {line.id: line for line in chat.lines}
-            lines = tuple(by_id[UUID(str(line_id))] for line_id in row.line_ids)
-            error = None
-            if row.error_code is not None:
-                error = ReplyError(row.error_code, row.error_message or "")
-            return Attempt(chat_id, lines, error)
-
-        return await self._run(work)
-
-    async def save_attempt(
-        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
-    ) -> None:
-        async def work(session):
-            if await self._owned(session, owner_id, chat_id) is None:
-                raise ChatNotFound()
-            error = attempt.error
-            session.add(
-                ChatAttemptRow(
-                    chat_id=chat_id,
-                    attempt_key=attempt_key,
-                    line_ids=[str(line.id) for line in attempt.lines],
-                    error_code=None if error is None else error.code,
-                    error_message=None if error is None else error.message,
-                )
-            )
-
-        await self._run(work)
-
-    async def with_attempt(self, owner_id: UUID, chat_id: UUID, attempt_key: str, build):
-        lock = self._attempt_locks.setdefault((chat_id, attempt_key), asyncio.Lock())
-        async with lock:
-            remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
-            if remembered is not None:
-                return remembered
-            return await build()
-
-    async def with_chat(self, chat_id: UUID, work):
-        lock = self._chat_locks.setdefault(chat_id, asyncio.Lock())
-        async with lock:
-            return await work()
-
-    async def commit_attempt(
-        self, owner_id: UUID, chat_id: UUID, attempt_key: str, attempt: Attempt
-    ) -> Attempt:
-        async with self._write_lock:
-            remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
-            if remembered is not None:
-                return remembered
-            try:
-                stamped = self._now()
-                await self._run(
-                    lambda session: append_attempt(
-                        session, owner_id, chat_id, attempt_key, attempt, stamped
-                    )
-                )
-            except IntegrityError:
-                remembered = await self.find_attempt(owner_id, chat_id, attempt_key)
-                if remembered is not None:
-                    return remembered
-                raise
-            return attempt
-
     async def _owned(self, session, owner_id: UUID, chat_id: UUID) -> Chat | None:
         found = (
             await session.execute(
                 select(ChatRow, DocumentRow.name)
-                .join(DocumentRow, DocumentRow.id == ChatRow.document_id)
+                .outerjoin(DocumentRow, DocumentRow.id == ChatRow.document_id)
                 .where(ChatRow.id == chat_id, ChatRow.owner_id == owner_id)
                 .options(selectinload(ChatRow.lines))
             )
@@ -187,9 +117,10 @@ class PostgresChatStore:
         chat_row, name = found
         return self._chat(chat_row, name)
 
-    def _chat(self, chat_row: ChatRow, name: str) -> Chat:
+    def _chat(self, chat_row: ChatRow, name: str | None) -> Chat:
         lines = tuple(line.to_domain() for line in chat_row.lines)
-        return Chat.stored(chat_row.id, chat_row.document_id, name, lines)
+        label = DELETED_SOURCE_NAME if name is None else name
+        return Chat.stored(chat_row.id, chat_row.document_id, label, lines)
 
     async def person_send_times(self, owner_id: UUID) -> tuple[datetime, ...]:
         async def work(session):

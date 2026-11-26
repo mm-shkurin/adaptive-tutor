@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from urllib.parse import parse_qs, urlparse
 
 from fastapi.testclient import TestClient
 
@@ -30,7 +29,6 @@ from application.quiz_wiring import wire_quizzes
 from usecase.tests.fake.presentation.fake_formula_assist import FakeFormulaAssist
 from usecase.tests.fake.presentation.fake_ocr import FakeOcr
 from usecase.tests.fake.presentation.fake_office_parser import FakeOfficeParser
-from domain.account.identity import ProviderIdentity
 from usecase.account.profile import ProfileService
 from usecase.account.session import SessionService
 from usecase.account.sign_in import SignIn
@@ -45,6 +43,7 @@ from usecase.document.list_documents import ListDocuments
 from usecase.document.read_document import ReadDocument
 from usecase.document.submit_document import SubmitDocument
 from usecase.tests.fake.document.fake_virus_check import FakeVirusCheck
+from tests.support_auth import allow, auth_profile, bearer, handoff, query, sign_in
 
 WHEN = datetime(2024, 5, 6, 7, 8, 9, tzinfo=timezone.utc)
 CREATED = "2024-05-06T07:08:09Z"
@@ -75,7 +74,7 @@ class ScriptedProvider:
     def authorization_url(self, state: str) -> str:
         return f"https://oauth.yandex.ru/authorize?state={state}"
 
-    async def fetch_identity(self, code: str) -> ProviderIdentity:
+    async def fetch_identity(self, code: str):
         self.calls += 1
         outcome = self.by_code[code]
         if isinstance(outcome, Exception):
@@ -110,7 +109,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     provider = ScriptedProvider()
     rates = MemoryUploadRateLimit(clock)
     tokens = JwtTokens("a" * 32, "b" * 32, timedelta(minutes=60), timedelta(days=30))
-    sign_in = SignIn(
+    sign_in_uc = SignIn(
         provider,
         MemoryOAuthStore(),
         store,
@@ -128,7 +127,6 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     virus = FakeVirusCheck()
     reader = PyPdfReader()
     chats = MemoryChatStore(clock)
-    search = MemoryMaterialSearch()
     quizzes = MemoryQuizStore(clock)
     presentations = MemoryPresentationStore()
     ocr = FakeOcr()
@@ -140,7 +138,7 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     search = PreferSeededSearch(MemoryMaterialSearch(), vectors, clock)
     context = AppContext(
         RuntimeConfig(timedelta(seconds=state_ttl), ("http://localhost:5173",)),
-        sign_in,
+        sign_in_uc,
         SessionService(store, tokens, MemoryRevocations()),
         ProfileService(store, "http://testserver", (QuizWipe(quizzes),)),
         store,
@@ -151,8 +149,8 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
         hub,
         (create := CreateChat(intake, chats, clock)),
         OpenChat(create, chats),
-        ListChats(chats),
-        GetChat(chats, pieces, vectors),
+        ListChats(chats, intake),
+        GetChat(chats, pieces, vectors, intake),
         SendMessage(chats, search, tutor, clock),
         **wire_quizzes(intake, search, quiz_tutor, quizzes, clock),
         **wire_presentations(
@@ -181,34 +179,21 @@ def build(state_ttl: int = 600, handoff_ttl: int = 120, quiz_tutor=None) -> Bund
     )
 
 
-def allow(bundle: Bundle, code: str, subject: str, email: str, name: str) -> None:
-    bundle.provider.by_code[code] = ProviderIdentity(subject, email, name)
-
-
-def query(url: str) -> dict:
-    return parse_qs(urlparse(url).query)
-
-
-def bearer(token: str) -> dict:
-    return {"Authorization": f"Bearer {token}"}
-
-
-def handoff(bundle: Bundle, code: str, subject: str, email: str, name: str) -> str:
-    allow(bundle, code, subject, email, name)
-    started = bundle.client.get("/api/v1/auth/oauth/yandex/start", follow_redirects=False)
-    state = query(started.headers["location"])["state"][0]
-    back = bundle.client.get(
-        "/api/v1/auth/oauth/yandex/callback",
-        params={"code": code, "state": state},
-        follow_redirects=False,
-    )
-    return query(back.headers["location"])["code"][0]
-
-
-def sign_in(bundle: Bundle, code="ada", subject="ya-ada", email="ada@yandex.ru", name="Ада"):
-    issued = handoff(bundle, code, subject, email, name)
-    return bundle.client.post("/api/v1/auth/oauth/exchange", json={"code": issued})
-
-
-def auth_profile(bundle: Bundle, token: str):
-    return bundle.client.get("/api/v1/user/profile", headers=bearer(token))
+__all__ = [
+    "Bundle",
+    "CREATED",
+    "Clock",
+    "GIF",
+    "JPEG",
+    "PNG",
+    "ScriptedProvider",
+    "WEBP",
+    "WHEN",
+    "allow",
+    "auth_profile",
+    "bearer",
+    "build",
+    "handoff",
+    "query",
+    "sign_in",
+]

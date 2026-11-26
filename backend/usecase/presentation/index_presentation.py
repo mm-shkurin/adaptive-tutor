@@ -4,8 +4,9 @@ from domain.document.extracted_text import ExtractedText
 from domain.presentation.presentation import Presentation
 from domain.presentation.slide import Slide
 from domain.presentation.weak_ocr import is_weak_ocr
+from usecase.document.errors import StoreUnavailable
 from usecase.document.ports import DocumentIntake, FileStore, PdfRead, PdfReader, PieceIndex
-from usecase.presentation.errors import PresentationNotFound
+from usecase.presentation.errors import OcrUnavailable, PresentationNotFound
 from usecase.presentation.materials import material_row
 from usecase.presentation.ports import FormulaAssist, Ocr, PresentationStore
 
@@ -37,31 +38,52 @@ class IndexPresentation:
             working = current.begin_index()
             await self.presentations.save(owner_id, working)
             await self.intake.upsert(owner_id, material_row(working))
-            indexed_slides: list[Slide] = []
-            searchable: list[str] = []
-            pages: list[int | None] = []
-            slides: list[int] = []
-            for slide in working.slides:
-                content = await self.presentations.take_bytes(owner_id, presentation_id, slide.id)
-                text, phrase, latex = await self._recognize(owner_id, slide, content)
-                indexed = slide.mark_indexed(text, phrase, latex)
-                indexed_slides.append(indexed)
-                piece = (phrase or text).strip()
-                if not indexed.empty and piece:
-                    searchable.append(piece)
-                    pages.append(indexed.pdf_page)
-                    slides.append(indexed.position)
-            ready = working.ready(tuple(indexed_slides), len(searchable))
-            extracted = ExtractedText.compose("\n\n".join(searchable)).value
-            await self.pieces.replace(
-                presentation_id, tuple(searchable), extracted, tuple(pages), tuple(slides)
-            )
-            await self.presentations.clear_bytes(owner_id, presentation_id)
-            await self.presentations.save(owner_id, ready)
-            await self.intake.upsert(owner_id, material_row(ready))
-            return ready
+            try:
+                return await self._finish(owner_id, presentation_id, working)
+            except OcrUnavailable:
+                return await self._fail(owner_id, working, "ocr refused")
+            except StoreUnavailable:
+                return await self._fail(owner_id, working, "search store refused")
 
         return await self.presentations.with_index_key(owner_id, presentation_id, key, build)
+
+    async def _finish(
+        self, owner_id: UUID, presentation_id: UUID, working: Presentation
+    ) -> Presentation:
+        indexed_slides: list[Slide] = []
+        searchable: list[str] = []
+        pages: list[int | None] = []
+        slides: list[int] = []
+        for slide in working.slides:
+            content = await self.presentations.take_bytes(owner_id, presentation_id, slide.id)
+            text, phrase, latex = await self._recognize(owner_id, slide, content)
+            indexed = slide.mark_indexed(text, phrase, latex)
+            indexed_slides.append(indexed)
+            piece = (phrase or text).strip()
+            if not indexed.empty and piece:
+                searchable.append(piece)
+                pages.append(indexed.pdf_page)
+                slides.append(indexed.position)
+        ready = working.ready(tuple(indexed_slides), len(searchable))
+        extracted = ExtractedText.compose("\n\n".join(searchable)).value
+        await self.pieces.replace(
+            presentation_id, tuple(searchable), extracted, tuple(pages), tuple(slides)
+        )
+        await self.presentations.clear_bytes(owner_id, presentation_id)
+        await self.presentations.save(owner_id, ready)
+        await self.intake.upsert(owner_id, material_row(ready))
+        return ready
+
+    async def _fail(self, owner_id: UUID, working: Presentation, reason: str) -> Presentation:
+        failed = working.failed(reason)
+        try:
+            await self.pieces.replace(working.id, (), "")
+        except StoreUnavailable:
+            pass
+        await self.presentations.clear_bytes(owner_id, working.id)
+        await self.presentations.save(owner_id, failed)
+        await self.intake.upsert(owner_id, material_row(failed))
+        return failed
 
     async def _recognize(
         self, owner_id: UUID, slide: Slide, content: bytes | None
@@ -80,7 +102,10 @@ class IndexPresentation:
 
     async def _slide_text(self, owner_id: UUID, slide: Slide, content: bytes | None) -> str:
         if content:
-            read = await self.ocr.read(slide.id, content)
+            try:
+                read = await self.ocr.read(slide.id, content)
+            except Exception as error:
+                raise OcrUnavailable() from error
             text = slide.text.strip()
             if text and read.strip():
                 return f"{text}\n\n{read}".strip()

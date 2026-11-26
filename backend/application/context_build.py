@@ -97,8 +97,8 @@ def production_context(settings: Settings) -> AppContext:
         status_hub=hub,
         create_chat=(create := CreateChat(intake, chats, clock)),
         open_chat=OpenChat(create, chats),
-        list_chats=ListChats(chats),
-        get_chat=GetChat(chats, pieces, vectors),
+        list_chats=ListChats(chats, intake),
+        get_chat=GetChat(chats, pieces, vectors, intake),
         send_message=SendMessage(
             chats,
             vectors,
